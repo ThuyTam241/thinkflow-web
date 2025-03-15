@@ -1,0 +1,56 @@
+@import url("https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Lora", serif;
+  --font-body: "Nunito", sans-serif;
+
+  --color-hawkes-blue: #dad7fc;
+  --color-ebony-clay: #272340;
+  --color-gravel: #4b4a4d;
+  --color-silver-chalice: #a0a0a0;
+  --color-gallery: #eeeeee;
+  --color-white: #ffffff;
+  --color-indigo: #6368d1;
+  --color-cornflower-blue: #6b76f6;
+  --color-crimson-red: #e63946;
+
+  --animate-marquee-vertical: marquee-vertical 15s linear infinite;
+  @keyframes marquee-vertical {
+    0% {
+      transform: translateY(30%);
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-70%);
+      opacity: 0;
+    }
+  }
+}
+
+.mask-fade {
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 1) 20%,
+    rgba(255, 255, 255, 1) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 1) 20%,
+    rgba(255, 255, 255, 1) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.animate-marquee-vertical:hover {
+  animation-play-state: paused;
+}
