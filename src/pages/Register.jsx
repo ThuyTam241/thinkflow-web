@@ -8,19 +8,18 @@ import facebookIconButton from "../assets/icons/facebook-button-icon.svg";
 import googleIconButton from "../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
 import { fadeIn } from "../components/utils/motion";
-
-const initialState = {
-  first_name: "",
-  last_name: "",
-  password: "",
-  email: "",
-  password: "",
-};
+import instance from "../services/axios.customize";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
 
-  const [inputs, setInputs] = useState(initialState);
+  const [inputs, setInputs] = useState({
+    firstName: "",
+    lastName: "",
+    password: "",
+    email: "",
+    password: "",
+  });
 
   return (
     <div className="from-hawkes-blue flex h-screen items-center justify-center bg-gradient-to-b via-[rgba(218,215,252,0.6)] to-[rgba(218,215,252,0.15)] px-6">
@@ -59,15 +58,15 @@ const RegisterPage = () => {
               <TextInput
                 type="text"
                 placeholder="First name"
-                name="first_name"
-                value={inputs.first_name}
+                name="firstName"
+                value={inputs.firstName}
                 onChange={() => alert("ok")}
               />
               <TextInput
                 type="text"
                 placeholder="Last name"
-                name="last_name"
-                value={inputs.last_name}
+                name="lastName"
+                value={inputs.lastName}
                 onChange={() => alert("ok")}
               />
             </div>

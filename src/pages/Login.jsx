@@ -10,15 +10,21 @@ import { motion } from "framer-motion";
 import { fadeIn } from "../components/utils/motion";
 import Checkbox from "../components/ui/inputs/Checkbox";
 
-const initialState = {
-  email: "",
-  password: "",
-}
-
 const LoginPage = () => {
   const navigate = useNavigate();
 
-  const [inputs, setInputs] = useState(initialState);
+  const [inputs, setInputs] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setInputs((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
   return (
     <div className="from-hawkes-blue flex h-screen items-center justify-center bg-gradient-to-b via-[rgba(218,215,252,0.6)] to-[rgba(218,215,252,0.15)] px-6">
@@ -54,18 +60,18 @@ const LoginPage = () => {
         <form action="/login" method="POST" className="mt-6 mb-3">
           <div className="flex flex-col items-center gap-3">
             <TextInput
-              type="email"
+              type="text"
               placeholder="Email"
               name="email"
               value={inputs.email}
-              onChange={() => alert("ok")}
+              onChange={handleChange}
             />
             <TextInput
               type="password"
               placeholder="Password"
               name="password"
               value={inputs.password}
-              onChange={() => alert("ok")}
+              onChange={handleChange}
             />
             <div className="mb-2 flex w-full items-center justify-between">
               <Checkbox
