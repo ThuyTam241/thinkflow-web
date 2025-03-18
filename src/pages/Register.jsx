@@ -1,4 +1,3 @@
-import { useState } from "react";
 import IconButton from "../components/ui/buttons/IconButton";
 import TextInput from "../components/ui/inputs/TextInput";
 import PrimaryButton from "../components/ui/buttons/PrimaryButton";
@@ -8,18 +7,30 @@ import facebookIconButton from "../assets/icons/facebook-button-icon.svg";
 import googleIconButton from "../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
 import { fadeIn } from "../components/utils/motion";
-import instance from "../services/axios.customize";
+import { useForm } from "react-hook-form";
+import { registerUserApi } from "../services/api.service";
+import { DevTool } from "@hookform/devtools";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
 
-  const [inputs, setInputs] = useState({
-    firstName: "",
-    lastName: "",
-    password: "",
-    email: "",
-    password: "",
-  });
+  const {
+    register,
+    control,
+    formState: { errors },
+    handleSubmit,
+  } = useForm();
+
+  const onSubmit = async (values) => {
+    const res = await registerUserApi(
+      values.email,
+      values.password,
+      values.first_name,
+      values.last_name,
+    );
+    navigate('/login');
+  };
+  console.log("re-render cha");
 
   return (
     <div className="from-hawkes-blue flex h-screen items-center justify-center bg-gradient-to-b via-[rgba(218,215,252,0.6)] to-[rgba(218,215,252,0.15)] px-6">
@@ -45,44 +56,63 @@ const RegisterPage = () => {
         initial="hidden"
         viewport={{ once: true }}
         whileInView="show"
-        className="w-full max-w-[364px] rounded-[6px] bg-white/60 px-8 py-7 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)]"
+        className="w-full max-w-96 rounded-[6px] bg-white/60 px-8 py-7 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)]"
       >
         <h1 className="font-heading text-indigo text-3xl font-bold md:text-[32px]">
           Sign Up
         </h1>
 
         {/* Sign up form */}
-        <form action="/login" method="POST" className="mt-6 mb-3">
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex gap-5">
+        <form
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
+          className="mt-8 mb-3"
+        >
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex w-full flex-col gap-4 md:flex-row md:gap-4">
               <TextInput
-                type="text"
                 placeholder="First name"
-                name="firstName"
-                value={inputs.firstName}
-                onChange={() => alert("ok")}
+                {...register("first_name", {
+                  required: "First name is required",
+                })}
+                errorMessage={errors.first_name}
               />
               <TextInput
-                type="text"
                 placeholder="Last name"
-                name="lastName"
-                value={inputs.lastName}
-                onChange={() => alert("ok")}
+                {...register("last_name", {
+                  required: "Last name is required",
+                })}
+                errorMessage={errors.last_name}
               />
             </div>
             <TextInput
               type="email"
               placeholder="Email"
-              name="email"
-              value={inputs.email}
-              onChange={() => alert("ok")}
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Invalid email format",
+                },
+              })}
+              errorMessage={errors.email}
             />
             <TextInput
               type="password"
               placeholder="Password"
-              name="password"
-              value={inputs.password}
-              onChange={() => alert("ok")}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 8,
+                  message: "Password must be at least 8 characters",
+                },
+                pattern: {
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!])/,
+                  message:
+                    "Password must contain uppercase, lowercase, number, and special character",
+                },
+              })}
+              errorMessage={errors.password}
             />
             <p className="font-body text-ebony-clay text-left text-xs md:text-sm">
               By signing up, you agree to our{" "}
@@ -90,15 +120,10 @@ const RegisterPage = () => {
                 Term of Use & Privacy Policy
               </Link>
             </p>
-            <PrimaryButton
-              color="blue"
-              label="Sign Up"
-              type="submit"
-              onClick={() => alert("ok")}
-            />
+            <PrimaryButton color="blue" label="Sign Up" type="submit" />
           </div>
         </form>
-
+        <DevTool control={control} />
         {/* Sign in link */}
         <p className="font-body text-ebony-clay text-xs md:text-sm">
           Already have an account?{" "}

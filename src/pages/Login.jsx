@@ -1,4 +1,3 @@
-import { useState } from "react";
 import IconButton from "../components/ui/buttons/IconButton";
 import TextInput from "../components/ui/inputs/TextInput";
 import PrimaryButton from "../components/ui/buttons/PrimaryButton";
@@ -9,21 +8,19 @@ import googleIconButton from "../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
 import { fadeIn } from "../components/utils/motion";
 import Checkbox from "../components/ui/inputs/Checkbox";
+import { useForm } from "react-hook-form";
 
 const LoginPage = () => {
   const navigate = useNavigate();
 
-  const [inputs, setInputs] = useState({
-    email: "",
-    password: "",
-  });
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm();
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setInputs((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+  const onSubmit = (data) => {
+    console.log(data);
   };
 
   return (
@@ -50,28 +47,24 @@ const LoginPage = () => {
         initial="hidden"
         viewport={{ once: true }}
         whileInView="show"
-        className="w-full max-w-[364px] rounded-[6px] bg-white/60 px-8 py-7 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)]"
+        className="w-full max-w-96 rounded-[6px] bg-white/60 px-8 py-7 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)]"
       >
         <h1 className="font-heading text-indigo text-3xl font-bold md:text-[32px]">
           Sign In
         </h1>
 
         {/* Sign in form */}
-        <form action="/login" method="POST" className="mt-6 mb-3">
-          <div className="flex flex-col items-center gap-3">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 mb-3">
+          <div className="flex flex-col items-center gap-4">
             <TextInput
-              type="text"
+              type="email"
               placeholder="Email"
-              name="email"
-              value={inputs.email}
-              onChange={handleChange}
+              {...register("email", { required: "Email is required" })}
             />
             <TextInput
               type="password"
               placeholder="Password"
-              name="password"
-              value={inputs.password}
-              onChange={handleChange}
+              {...register("password", { required: "Password is required", })}
             />
             <div className="mb-2 flex w-full items-center justify-between">
               <Checkbox
@@ -85,12 +78,7 @@ const LoginPage = () => {
                 Forgot password?
               </Link>
             </div>
-            <PrimaryButton
-              color="blue"
-              label="Sign In"
-              type="submit"
-              onClick={() => alert("ok")}
-            />
+            <PrimaryButton color="blue" label="Sign In" type="submit" />
           </div>
         </form>
 

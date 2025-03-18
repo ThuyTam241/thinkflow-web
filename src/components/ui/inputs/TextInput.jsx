@@ -2,14 +2,8 @@ import { useState } from "react";
 import eyeIcon from "../../../assets/icons/eye-icon.svg";
 import eyeOffIcon from "../../../assets/icons/eye-off-icon.svg";
 
-const TextInput = ({
-  type,
-  placeholder,
-  name,
-  value,
-  onChange,
-  errorMessage,
-}) => {
+const TextInput = ({ type = "text", placeholder, errorMessage, ...props }) => {
+  console.log(`Re-render: ${placeholder}`);
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -19,23 +13,21 @@ const TextInput = ({
       <input
         type={type === "password" && showPassword ? "text" : type}
         placeholder={placeholder}
-        name={name}
-        value={value}
-        onChange={onChange}
+        {...props}
         autoComplete="on"
-        className={`border-gallery font-body text-ebony-clay focus:outline-indigo w-full rounded-[6px] border px-3 py-[6px] text-sm focus:shadow-[0px_0px_8px_rgba(107,118,246,0.4)] focus:outline-1 md:text-base ${errorMessage ? "" : ""}`}
+        className={`outline-gallery peer font-body text-ebony-clay w-full rounded-[6px] px-3 py-[6px] text-sm outline md:text-base ${errorMessage ? "focus:outline-crimson-red outline-crimson-red! focus:shadow-[0px_0px_8px_rgba(230,57,70,0.4)]" : "focus:outline-indigo focus:shadow-[0px_0px_8px_rgba(107,118,246,0.4)]"}`}
       />
-      {type === "password" && value && (
+      {type === "password" && (
         <img
-          src={showPassword ? eyeOffIcon : eyeIcon}
+          src={showPassword ? eyeIcon : eyeOffIcon}
           alt={showPassword ? "eye-off-icon" : "eye-icon"}
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute top-1/2 right-3 w-5 -translate-y-1/2 cursor-pointer"
+          className="absolute top-2 right-3 w-5 cursor-pointer peer-placeholder-shown:hidden"
         />
       )}
       {errorMessage && (
-        <span className="font-body text-crimson-red text-xs md:text-sm">
-          {errorMessage}
+        <span className="font-body text-crimson-red text-left text-xs font-medium md:text-sm">
+          {errorMessage.message}
         </span>
       )}
     </div>
