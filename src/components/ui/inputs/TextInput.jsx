@@ -20,7 +20,7 @@ const TextInput = ({ type = "text", placeholder, errorMessage, ...props }) => {
       {type === "password" && (
         <img
           src={showPassword ? eyeIcon : eyeOffIcon}
-          alt={showPassword ? "eye-off-icon" : "eye-icon"}
+          alt={showPassword ? "eye-icon" : "eye-off-icon"}
           onClick={() => setShowPassword(!showPassword)}
           className="absolute top-2 right-3 w-5 cursor-pointer peer-placeholder-shown:hidden"
         />

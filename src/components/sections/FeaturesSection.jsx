@@ -4,7 +4,7 @@ import fileTextIcon from "../../assets/icons/file-text-icon.svg";
 import networkIcon from "../../assets/icons/network-icon.svg";
 import shareIcon from "../../assets/icons/share-icon.svg";
 import { motion } from "framer-motion";
-import { scale, staggerContainer } from "../utils/motion";
+import { scale, staggerContainer } from "../../utils/motion";
 
 const FeaturesSection = () => {
   const featureCards = [

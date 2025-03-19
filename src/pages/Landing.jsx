@@ -6,7 +6,7 @@ import TestimonialsSection from "../components/sections/TestimonialsSection";
 import AboutSection from "../components/sections/AboutSection";
 import Footer from "../components/layout/Footer";
 import { motion } from "framer-motion";
-import { fadeIn } from "../components/utils/motion";
+import { fadeIn } from "../utils/motion";
 import trapezoidShape from "../assets/images/trapezoid-shape.svg";
 import circlePairShape from "../assets/images/circle-pair-shape.svg";
 

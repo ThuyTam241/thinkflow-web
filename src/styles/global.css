@@ -10,10 +10,12 @@
   --color-gravel: #4b4a4d;
   --color-silver-chalice: #a0a0a0;
   --color-gallery: #eeeeee;
-  --color-white: #ffffff;
   --color-indigo: #6368d1;
   --color-cornflower-blue: #6b76f6;
   --color-crimson-red: #e63946;
+  --color-silver-tree: #65c299;
+  --color-yellow-orange: #f4a261;
+  --color-danube: #75a3dc;
 
   --animate-marquee-vertical: marquee-vertical 15s linear infinite;
   @keyframes marquee-vertical {
@@ -53,4 +55,13 @@
 
 .animate-marquee-vertical:hover {
   animation-play-state: paused;
+}
+
+.Toastify__toast {
+  --toastify-toast-width: auto;
+  --toastify-toast-bd-radius: 8px;
+}
+
+.Toastify__close-button > svg {
+  fill: var(--color-silver-chalice);
 }

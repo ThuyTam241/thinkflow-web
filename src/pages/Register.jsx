@@ -6,20 +6,28 @@ import circleArrowLeftIcon from "../assets/icons/circle-arrow-left-icon.svg";
 import facebookIconButton from "../assets/icons/facebook-button-icon.svg";
 import googleIconButton from "../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
-import { fadeIn } from "../components/utils/motion";
+import { fadeIn } from "../utils/motion";
 import { useForm } from "react-hook-form";
 import { registerUserApi } from "../services/api.service";
-import { DevTool } from "@hookform/devtools";
+import { toast } from "react-toastify";
+import CustomToast from "../components/ui/CustomToast";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
 
   const {
     register,
-    control,
     formState: { errors },
     handleSubmit,
+    setError,
   } = useForm();
+
+  const notify = (type, title, message, color) => {
+    toast(<CustomToast type={type} title={title} message={message} />, {
+      className: "max-w-xs",
+      style: { "--toastify-color-progress-light": color },
+    });
+  };
 
   const onSubmit = async (values) => {
     const res = await registerUserApi(
@@ -28,8 +36,30 @@ const RegisterPage = () => {
       values.first_name,
       values.last_name,
     );
-    navigate('/login');
+    if (res.data) {
+      notify(
+        "success",
+        "Account created!",
+        "Thanks for joining us",
+        "var(--color-silver-tree)",
+      );
+      navigate("/login");
+    } else {
+      if (res.code === 400) {
+        setError("email", {
+          type: "custom",
+          message: "Email already exists",
+        });
+      }
+      notify(
+        "error",
+        "Registration failed!",
+        "Something went wrong",
+        "var(--color-crimson-red)",
+      );
+    }
   };
+
   console.log("re-render cha");
 
   return (
@@ -91,7 +121,8 @@ const RegisterPage = () => {
               {...register("email", {
                 required: "Email is required",
                 pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  value:
+                    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
                   message: "Invalid email format",
                 },
               })}
@@ -123,7 +154,7 @@ const RegisterPage = () => {
             <PrimaryButton color="blue" label="Sign Up" type="submit" />
           </div>
         </form>
-        <DevTool control={control} />
+
         {/* Sign in link */}
         <p className="font-body text-ebony-clay text-xs md:text-sm">
           Already have an account?{" "}

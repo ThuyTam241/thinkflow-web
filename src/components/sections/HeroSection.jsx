@@ -1,6 +1,6 @@
 import PrimaryButton from "../ui/buttons/PrimaryButton";
 import { motion } from "framer-motion";
-import { scale, staggerContainer, textVariant } from "../utils/motion";
+import { scale, staggerContainer, textVariant } from "../../utils/motion";
 
 const HeroSection = () => {
   return (

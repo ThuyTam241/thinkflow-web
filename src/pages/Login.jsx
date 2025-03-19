@@ -6,9 +6,10 @@ import circleArrowLeftIcon from "../assets/icons/circle-arrow-left-icon.svg";
 import facebookIconButton from "../assets/icons/facebook-button-icon.svg";
 import googleIconButton from "../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
-import { fadeIn } from "../components/utils/motion";
+import { fadeIn } from "../utils/motion";
 import Checkbox from "../components/ui/inputs/Checkbox";
 import { useForm } from "react-hook-form";
+import { loginUserApi } from "../services/api.service";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -17,10 +18,40 @@ const LoginPage = () => {
     register,
     formState: { errors },
     handleSubmit,
+    setError,
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const notify = (type, title, message, color) => {
+    toast(<CustomToast type={type} title={title} message={message} />, {
+      className: "max-w-xs",
+      style: { "--toastify-color-progress-light": color },
+    });
+  };
+
+  const onSubmit = async (values) => {
+    const res = await loginUserApi(values.email, values.password);
+    if (res.data) {
+      notify(
+        "success",
+        "Account created!",
+        "Thanks for joing us",
+        "var(--color-silver-tree)",
+      );
+      navigate("/login");
+    } else {
+      if (res.code === 400) {
+        setError("email", {
+          type: "custom",
+          message: "Email already exists",
+        });
+      }
+      notify(
+        "error",
+        "Registration failed!",
+        "Something went wrong",
+        "var(--color-crimson-red)",
+      );
+    }
   };
 
   return (
@@ -64,7 +95,7 @@ const LoginPage = () => {
             <TextInput
               type="password"
               placeholder="Password"
-              {...register("password", { required: "Password is required", })}
+              {...register("password", { required: "Password is required" })}
             />
             <div className="mb-2 flex w-full items-center justify-between">
               <Checkbox

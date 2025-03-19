@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router";
 import PrimaryButton from "../ui/buttons/PrimaryButton";
 import { useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { fadeIn, getNavbarStyles } from "../utils/motion";
+import { fadeIn, getNavbarStyles } from "../../utils/motion";
 import logo from "../../assets/images/logo.svg";
 import closeIcon from "../../assets/icons/close-icon.svg";
 import menuIcon from "../../assets/icons/menu-icon.svg";

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { textVariant } from "../utils/motion";
+import { textVariant } from "../../utils/motion";
 
 const SectionTitle = ({ subTitle, title }) => {
   return (

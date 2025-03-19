@@ -1,6 +1,6 @@
 import SectionTitle from "./SectionTitle";
 import { motion } from "framer-motion";
-import { scale, staggerContainer } from "../utils/motion";
+import { scale, staggerContainer } from "../../utils/motion";
 
 const HowItWorksSection = () => {
   const howItWorksCards = [

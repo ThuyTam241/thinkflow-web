@@ -1,6 +1,6 @@
 import SectionTitle from "./SectionTitle";
 import { motion } from "framer-motion";
-import { fadeIn, scale, staggerContainer } from "../utils/motion";
+import { fadeIn, scale, staggerContainer } from "../../utils/motion";
 import backgroundTestimonials from "../../assets/images/bg-testimonials.svg";
 import blankAvatar from "../../assets/images/blank-avatar.jpg";
 
