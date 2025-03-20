@@ -3,7 +3,6 @@ import eyeIcon from "../../../assets/icons/eye-icon.svg";
 import eyeOffIcon from "../../../assets/icons/eye-off-icon.svg";
 
 const TextInput = ({ type = "text", placeholder, errorMessage, ...props }) => {
-  console.log(`Re-render: ${placeholder}`);
   const [showPassword, setShowPassword] = useState(false);
 
   return (

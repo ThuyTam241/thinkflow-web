@@ -7,11 +7,11 @@ const registerUserApi = (email, password, first_name, last_name) => {
     password,
     first_name,
     last_name,
-  }
+  };
   return instance.post(URL_BACKEND, data);
 };
 
-const loginUserApi = (email, password) => {
+const loginApi = (email, password) => {
   const URL_BACKEND = "/auth/v1/authenticate";
   const data = {
     email,
@@ -20,4 +20,4 @@ const loginUserApi = (email, password) => {
   return instance.post(URL_BACKEND, data);
 };
 
-export { registerUserApi, loginUserApi };
+export { registerUserApi, loginApi };

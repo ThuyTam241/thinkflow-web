@@ -1,16 +1,16 @@
-import IconButton from "../components/ui/buttons/IconButton";
-import TextInput from "../components/ui/inputs/TextInput";
-import PrimaryButton from "../components/ui/buttons/PrimaryButton";
+import IconButton from "../../components/ui/buttons/IconButton";
+import TextInput from "../../components/ui/inputs/TextInput";
+import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 import { Link, useNavigate } from "react-router";
 import circleArrowLeftIcon from "../assets/icons/circle-arrow-left-icon.svg";
 import facebookIconButton from "../assets/icons/facebook-button-icon.svg";
 import googleIconButton from "../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
-import { fadeIn } from "../utils/motion";
+import { fadeIn } from "../../utils/motion";
 import { useForm } from "react-hook-form";
-import { registerUserApi } from "../services/api.service";
+import { registerUserApi } from "../../services/api.service";
 import { toast } from "react-toastify";
-import CustomToast from "../components/ui/CustomToast";
+import CustomToast from "../../components/ui/CustomToast";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -46,10 +46,16 @@ const RegisterPage = () => {
       navigate("/login");
     } else {
       if (res.code === 400) {
-        setError("email", {
-          type: "custom",
-          message: "Email already exists",
-        });
+        setError(
+          "email",
+          {
+            type: "custom",
+            message: "Email already exists",
+          },
+          {
+            shouldFocus: true,
+          },
+        );
       }
       notify(
         "error",
@@ -59,8 +65,6 @@ const RegisterPage = () => {
       );
     }
   };
-
-  console.log("re-render cha");
 
   return (
     <div className="from-hawkes-blue flex h-screen items-center justify-center bg-gradient-to-b via-[rgba(218,215,252,0.6)] to-[rgba(218,215,252,0.15)] px-6">

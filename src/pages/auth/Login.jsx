@@ -1,15 +1,17 @@
-import IconButton from "../components/ui/buttons/IconButton";
-import TextInput from "../components/ui/inputs/TextInput";
-import PrimaryButton from "../components/ui/buttons/PrimaryButton";
+import IconButton from "../../components/ui/buttons/IconButton";
+import TextInput from "../../components/ui/inputs/TextInput";
+import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 import { Link, useNavigate } from "react-router";
 import circleArrowLeftIcon from "../assets/icons/circle-arrow-left-icon.svg";
 import facebookIconButton from "../assets/icons/facebook-button-icon.svg";
 import googleIconButton from "../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
-import { fadeIn } from "../utils/motion";
-import Checkbox from "../components/ui/inputs/Checkbox";
+import { fadeIn } from "../../utils/motion";
+import Checkbox from "../../components/ui/inputs/Checkbox";
 import { useForm } from "react-hook-form";
-import { loginUserApi } from "../services/api.service";
+import { loginApi } from "../../services/api.service";
+import { toast } from "react-toastify";
+import CustomToast from "../../components/ui/CustomToast";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -19,6 +21,7 @@ const LoginPage = () => {
     formState: { errors },
     handleSubmit,
     setError,
+    clearErrors,
   } = useForm();
 
   const notify = (type, title, message, color) => {
@@ -29,25 +32,25 @@ const LoginPage = () => {
   };
 
   const onSubmit = async (values) => {
-    const res = await loginUserApi(values.email, values.password);
+    const res = await loginApi(values.email, values.password);
     if (res.data) {
       notify(
         "success",
-        "Account created!",
-        "Thanks for joing us",
+        "Login successful!",
+        "Welcome back!",
         "var(--color-silver-tree)",
       );
-      navigate("/login");
+      navigate("/dashboard");
     } else {
       if (res.code === 400) {
-        setError("email", {
+        setError("custom_error", {
           type: "custom",
-          message: "Email already exists",
+          message: "Invalid email or password",
         });
       }
       notify(
         "error",
-        "Registration failed!",
+        "Login failed!",
         "Something went wrong",
         "var(--color-crimson-red)",
       );
@@ -85,18 +88,29 @@ const LoginPage = () => {
         </h1>
 
         {/* Sign in form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 mb-3">
+        <form
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
+          className="mt-8 mb-3"
+        >
           <div className="flex flex-col items-center gap-4">
             <TextInput
               type="email"
               placeholder="Email"
               {...register("email", { required: "Email is required" })}
+              errorMessage={errors.email}
             />
             <TextInput
               type="password"
               placeholder="Password"
               {...register("password", { required: "Password is required" })}
+              errorMessage={errors.password}
             />
+            {errors.custom_error && (
+              <span className="font-body text-crimson-red w-full text-left text-xs font-medium md:text-sm">
+                {errors.custom_error.message}
+              </span>
+            )}
             <div className="mb-2 flex w-full items-center justify-between">
               <Checkbox
                 label="Remember me"
@@ -109,7 +123,12 @@ const LoginPage = () => {
                 Forgot password?
               </Link>
             </div>
-            <PrimaryButton color="blue" label="Sign In" type="submit" />
+            <PrimaryButton
+              color="blue"
+              label="Sign In"
+              type="submit"
+              onClick={() => clearErrors()}
+            />
           </div>
         </form>
 

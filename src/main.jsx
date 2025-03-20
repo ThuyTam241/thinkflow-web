@@ -6,13 +6,15 @@ import LoginPage from './pages/Login.jsx';
 import RegisterPage from "./pages/Register.jsx";
 import { Bounce, ToastContainer } from "react-toastify";
 import Dashboard from './pages/Dashboard.jsx';
+import ForgotPassword from './pages/auth/ForgotPassword.jsx';
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<App />}></Route>
-      <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
+      <Route path="login" element={<LoginPage />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="dashboard" element={<Dashboard />} />
     </Routes>
     <ToastContainer
