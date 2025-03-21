@@ -2,16 +2,15 @@ import IconButton from "../../components/ui/buttons/IconButton";
 import TextInput from "../../components/ui/inputs/TextInput";
 import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 import { Link, useNavigate } from "react-router";
-import circleArrowLeftIcon from "../assets/icons/circle-arrow-left-icon.svg";
-import facebookIconButton from "../assets/icons/facebook-button-icon.svg";
-import googleIconButton from "../assets/icons/google-button-icon.svg";
+import circleArrowLeftIcon from "../../assets/icons/circle-arrow-left-icon.svg";
+import facebookIconButton from "../../assets/icons/facebook-button-icon.svg";
+import googleIconButton from "../../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
 import { fadeIn } from "../../utils/motion";
 import Checkbox from "../../components/ui/inputs/Checkbox";
 import { useForm } from "react-hook-form";
 import { loginApi } from "../../services/api.service";
-import { toast } from "react-toastify";
-import CustomToast from "../../components/ui/CustomToast";
+import notify from "../../components/ui/CustomToast";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -23,13 +22,6 @@ const LoginPage = () => {
     setError,
     clearErrors,
   } = useForm();
-
-  const notify = (type, title, message, color) => {
-    toast(<CustomToast type={type} title={title} message={message} />, {
-      className: "max-w-xs",
-      style: { "--toastify-color-progress-light": color },
-    });
-  };
 
   const onSubmit = async (values) => {
     const res = await loginApi(values.email, values.password);
@@ -47,6 +39,7 @@ const LoginPage = () => {
           type: "custom",
           message: "Invalid email or password",
         });
+        return;
       }
       notify(
         "error",
@@ -117,7 +110,7 @@ const LoginPage = () => {
                 onChange={() => alert("remember")}
               />
               <Link
-                to="#"
+                to="/forgot-password"
                 className="font-body text-indigo text-xs font-medium md:text-sm"
               >
                 Forgot password?

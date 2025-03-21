@@ -2,15 +2,14 @@ import IconButton from "../../components/ui/buttons/IconButton";
 import TextInput from "../../components/ui/inputs/TextInput";
 import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 import { Link, useNavigate } from "react-router";
-import circleArrowLeftIcon from "../assets/icons/circle-arrow-left-icon.svg";
-import facebookIconButton from "../assets/icons/facebook-button-icon.svg";
-import googleIconButton from "../assets/icons/google-button-icon.svg";
+import circleArrowLeftIcon from "../../assets/icons/circle-arrow-left-icon.svg";
+import facebookIconButton from "../../assets/icons/facebook-button-icon.svg";
+import googleIconButton from "../../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
 import { fadeIn } from "../../utils/motion";
 import { useForm } from "react-hook-form";
 import { registerUserApi } from "../../services/api.service";
-import { toast } from "react-toastify";
-import CustomToast from "../../components/ui/CustomToast";
+import notify from "../../components/ui/CustomToast";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -21,13 +20,6 @@ const RegisterPage = () => {
     handleSubmit,
     setError,
   } = useForm();
-
-  const notify = (type, title, message, color) => {
-    toast(<CustomToast type={type} title={title} message={message} />, {
-      className: "max-w-xs",
-      style: { "--toastify-color-progress-light": color },
-    });
-  };
 
   const onSubmit = async (values) => {
     const res = await registerUserApi(
@@ -56,6 +48,7 @@ const RegisterPage = () => {
             shouldFocus: true,
           },
         );
+        return;
       }
       notify(
         "error",

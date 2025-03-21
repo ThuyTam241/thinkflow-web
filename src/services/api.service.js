@@ -20,4 +20,28 @@ const loginApi = (email, password) => {
   return instance.post(URL_BACKEND, data);
 };
 
-export { registerUserApi, loginApi };
+const forgotPasswordApi = (email) => {
+  const URL_BACKEND = "/auth/v1/forgot-password";
+  const data = { email };
+  return instance.post(URL_BACKEND, data);
+};
+
+const resetPasswordApi = (email, otp, new_password) => {
+  const URL_BACKEND = "/auth/v1/reset-password";
+  const data = { email, otp, new_password };
+  return instance.post(URL_BACKEND, data);
+};
+
+const resendEmailCodeApi = (email) => {
+  const URL_BACKEND = "/auth/v1/verify-email/send-otp";
+  const data = { email };
+  return instance.post(URL_BACKEND, data);
+};
+
+export {
+  registerUserApi,
+  loginApi,
+  forgotPasswordApi,
+  resetPasswordApi,
+  resendEmailCodeApi,
+};

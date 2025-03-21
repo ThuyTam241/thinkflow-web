@@ -2,6 +2,7 @@ import checkCircleIcon from "../../assets/icons/circle-check-big-icon.svg";
 import xCircleIcon from "../../assets/icons/circle-x-icon.svg";
 import alertTriangleIcon from "../../assets/icons/triangle-alert-icon.svg";
 import infoIcon from "../../assets/icons/info-icon.svg";
+import { toast } from "react-toastify";
 
 const CustomToast = ({ type = "info", title, message }) => {
   const icons = {
@@ -12,22 +13,29 @@ const CustomToast = ({ type = "info", title, message }) => {
   };
 
   return (
-    <div
-      className="flex gap-3 mr-4"
-    >
-      <img className="w-6 h-6"
+    <div className="mr-4 flex gap-3">
+      <img
+        className="h-6 w-6"
         src={icons[type]}
         alt={icons[type].split("/").pop().replace(".svg", "")}
       />
 
       <div>
-        <h3 className="font-body text-black text-base font-semibold">
+        <h3 className="font-body text-base font-semibold text-black">
           {title}
         </h3>
-        <p className="mt-1 font-body text-gravel text-sm">{message}</p>
+        <p className="font-body text-gravel mt-1 text-sm">{message}</p>
       </div>
     </div>
   );
 };
 
-export default CustomToast;
+const notify = (type, title, message, color, position = "top-right") => {
+  toast(<CustomToast type={type} title={title} message={message} />, {
+    position,
+    className: "max-w-xs",
+    style: { "--toastify-color-progress-light": color },
+  });
+};
+
+export default notify;
