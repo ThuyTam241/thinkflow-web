@@ -8,11 +8,15 @@ import googleIconButton from "../../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
 import { fadeIn } from "../../utils/motion";
 import { useForm } from "react-hook-form";
+import { useContext } from "react";
+import { EmailVerificationContext } from "../../components/context/EmailVerificationContext";
 import { registerUserApi } from "../../services/api.service";
 import notify from "../../components/ui/CustomToast";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+
+  const { setEmail } = useContext(EmailVerificationContext);
 
   const {
     register,
@@ -35,7 +39,8 @@ const RegisterPage = () => {
         "Thanks for joining us",
         "var(--color-silver-tree)",
       );
-      navigate("/login");
+      setEmail(values.email);
+      navigate("/verify-email");
     } else {
       if (res.code === 400) {
         setError(
@@ -83,9 +88,9 @@ const RegisterPage = () => {
         initial="hidden"
         viewport={{ once: true }}
         whileInView="show"
-        className="w-full max-w-96 rounded-[6px] bg-white/60 px-8 py-7 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)]"
+        className="w-full max-w-96 rounded-[6px] bg-white/60 px-5 py-4 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)] md:px-8 md:py-7"
       >
-        <h1 className="font-heading text-indigo text-3xl font-bold md:text-[32px]">
+        <h1 className="font-heading text-indigo text-2xl font-bold md:text-[32px]">
           Sign Up
         </h1>
 
@@ -133,6 +138,10 @@ const RegisterPage = () => {
                 minLength: {
                   value: 8,
                   message: "Password must be at least 8 characters",
+                },
+                maxLength: {
+                  value: 30,
+                  message: "Password must be at most 30 characters",
                 },
                 pattern: {
                   value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!])/,

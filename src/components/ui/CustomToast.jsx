@@ -33,7 +33,7 @@ const CustomToast = ({ type = "info", title, message }) => {
 const notify = (type, title, message, color, position = "top-right") => {
   toast(<CustomToast type={type} title={title} message={message} />, {
     position,
-    className: "max-w-xs",
+    className: "max-w-96",
     style: { "--toastify-color-progress-light": color },
   });
 };

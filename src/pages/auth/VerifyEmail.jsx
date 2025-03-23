@@ -1,20 +1,16 @@
 import IconButton from "../../components/ui/buttons/IconButton";
-import TextInput from "../../components/ui/inputs/TextInput";
 import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 import { Link, useNavigate } from "react-router";
 import circleArrowLeftIcon from "../../assets/icons/circle-arrow-left-icon.svg";
 import { motion } from "framer-motion";
 import { fadeIn } from "../../utils/motion";
 import { useForm } from "react-hook-form";
-import {
-  forgotPasswordApi,
-  resetPasswordApi,
-} from "../../services/api.service";
-import { useContext } from "react";
+import { verifyEmailApi, resendEmailCodeApi } from "../../services/api.service";
+import { useContext, useEffect } from "react";
 import { EmailVerificationContext } from "../../components/context/EmailVerificationContext";
 import notify from "../../components/ui/CustomToast";
 
-const ResetPassword = () => {
+const VerifyEmail = () => {
   const navigate = useNavigate();
 
   const { email } = useContext(EmailVerificationContext);
@@ -24,48 +20,45 @@ const ResetPassword = () => {
     formState: { errors },
     handleSubmit,
     setError,
+    clearErrors,
   } = useForm();
 
   const onSubmit = async (values) => {
-    const res = await resetPasswordApi(email, values.code, values.new_password);
+    const code =
+      [...Array(6)].map((_, index) => values[`code${index}`]).join("") || "";
+    const res = await verifyEmailApi(email, code);
     if (res.data) {
       notify(
         "success",
-        "Password Updated!",
-        "Your password has been successfully reset",
+        "Email Verified",
+        "Your email has been successfully verified. Your account is now activated.",
         "var(--color-silver-tree)",
       );
       navigate("/login");
     } else {
       if (res.code === 400) {
-        setError(
-          "code",
-          {
-            type: "custom",
-            message: "Invalid or expired OTP",
-          },
-          {
-            shouldFocus: true,
-          },
-        );
+        setError("custom_error", {
+          type: "custom",
+          message: "Invalid or expired OTP",
+        });
         return;
       }
       notify(
         "error",
-        "Reset Failed",
-        "Unable to reset your password",
+        "Verification failed!",
+        "Something went wrong",
         "var(--color-crimson-red)",
       );
     }
   };
 
   const handleResendCode = async () => {
-    const res = await forgotPasswordApi(email);
+    const res = await resendEmailCodeApi(email);
     if (res.data) {
       notify(
         "success",
-        "Code Resent",
-        "A new verification code has been sent to your email. Please check your inbox",
+        "Code Sent",
+        "A new verification code has been sent to your email. Please check your inbox.",
         "var(--color-silver-tree)",
         "top-center",
       );
@@ -107,10 +100,11 @@ const ResetPassword = () => {
       >
         <div>
           <h1 className="font-heading text-indigo text-2xl font-bold md:text-[32px]">
-            Check Your Email
+            Verify Your Email
           </h1>
           <p className="font-body text-gravel mt-3 text-sm md:text-base">
-            We sent a code to <span className="font-semibold">{email}</span>
+            Enter the email 6-digit code sent to{" "}
+            <span className="font-semibold">{email}</span>
           </p>
         </div>
 
@@ -121,35 +115,30 @@ const ResetPassword = () => {
           className="mt-10 mb-3"
         >
           <div className="flex flex-col items-center gap-5">
-            <TextInput
-              type="text"
-              placeholder="6-digit code"
-              {...register("code", {
-                required: "Verification code is required",
-                pattern: {
-                  value: /^\d{6}$/,
-                  message: "Verification code must be exactly 6 digits",
-                },
-              })}
-              errorMessage={errors.code}
-            />
-            <TextInput
-              type="password"
-              placeholder="New password"
-              {...register("new_password", {
-                required: "Password is required",
-                minLength: {
-                  value: 8,
-                  message: "Password must be at least 8 characters",
-                },
-                pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!])/,
-                  message:
-                    "Password must contain uppercase, lowercase, number, and special character",
-                },
-              })}
-              errorMessage={errors.new_password}
-            />
+            <div className="grid grid-cols-6 gap-1 md:gap-3">
+              {[...Array(6)].map((_, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  maxLength={1}
+                  className={`text-ebony-clay outline-gallery font-body h-10 max-w-10 rounded-lg text-center text-xl font-semibold outline md:h-12 md:max-w-12 ${errors[`code${index}`] ? "focus:outline-crimson-red outline-crimson-red! focus:shadow-[0px_0px_8px_rgba(230,57,70,0.4)]" : "focus:outline-indigo focus:shadow-[0px_0px_8px_rgba(107,118,246,0.4)]"}`}
+                  {...register(`code${index}`, { required: true })}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/\D/g, "");
+                    if (e.target.value && index < 5) {
+                      document
+                        .querySelector(`[name="code${index + 1}"]`)
+                        ?.focus();
+                    }
+                  }}
+                />
+              ))}
+            </div>
+            {errors.custom_error && (
+              <span className="font-body text-crimson-red text-left text-xs font-medium md:text-sm">
+                {errors.custom_error.message}
+              </span>
+            )}
             <p className="font-body text-ebony-clay text-xs md:text-sm">
               Didn't receive the email?{" "}
               <Link
@@ -159,7 +148,12 @@ const ResetPassword = () => {
                 Click to resend
               </Link>
             </p>
-            <PrimaryButton color="blue" label="Reset password" type="submit" />
+            <PrimaryButton
+              color="blue"
+              label="Verify code"
+              type="submit"
+              onClick={() => clearErrors()}
+            />
           </div>
         </form>
       </motion.div>
@@ -167,4 +161,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default VerifyEmail;

@@ -32,10 +32,21 @@ const resetPasswordApi = (email, otp, new_password) => {
   return instance.post(URL_BACKEND, data);
 };
 
+const verifyEmailApi = (email, otp) => {
+  const URL_BACKEND = "/auth/v1/verify-email";
+  const data = { email, otp };
+  return instance.post(URL_BACKEND, data);
+};
+
 const resendEmailCodeApi = (email) => {
   const URL_BACKEND = "/auth/v1/verify-email/send-otp";
   const data = { email };
   return instance.post(URL_BACKEND, data);
+};
+
+const getUserProfileApi = () => {
+  const URL_BACKEND = "/user/v1/users/profile";
+  return instance.get(URL_BACKEND);
 };
 
 export {
@@ -43,5 +54,7 @@ export {
   loginApi,
   forgotPasswordApi,
   resetPasswordApi,
+  verifyEmailApi,
   resendEmailCodeApi,
+  getUserProfileApi,
 };

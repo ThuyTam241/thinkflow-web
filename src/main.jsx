@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
 import ResetPassword from "./pages/auth/ResetPassword.jsx";
 import ContextProvider from "./components/context/ContextProvider.jsx";
+import VerifyEmail from "./pages/auth/VerifyEmail.jsx";
 
 createRoot(document.getElementById("root")).render(
   <ContextProvider>
@@ -16,6 +17,7 @@ createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/" element={<App />}></Route>
         <Route path="register" element={<RegisterPage />} />
+        <Route path="verify-email" element={<VerifyEmail />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="reset-password" element={<ResetPassword />} />
@@ -23,7 +25,7 @@ createRoot(document.getElementById("root")).render(
       </Routes>
       <ToastContainer
         position="top-right"
-        autoClose={5000}
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick={false}

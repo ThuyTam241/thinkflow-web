@@ -1,10 +1,11 @@
-import { RecoveryProvider } from "./RecoveryContext";
+import { AuthProvider } from "./AuthContext";
+import { EmailVerificationProvider } from "./EmailVerificationContext";
 
 const ContextProvider = (props) => {
   return (
-    // <AuthProvider>
-    <RecoveryProvider>{props.children}</RecoveryProvider>
-    // </AuthProvider>
+    <AuthProvider>
+      <EmailVerificationProvider>{props.children}</EmailVerificationProvider>
+    </AuthProvider>
   );
 };
 

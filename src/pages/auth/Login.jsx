@@ -9,11 +9,21 @@ import { motion } from "framer-motion";
 import { fadeIn } from "../../utils/motion";
 import Checkbox from "../../components/ui/inputs/Checkbox";
 import { useForm } from "react-hook-form";
-import { loginApi } from "../../services/api.service";
+import {
+  getUserProfileApi,
+  loginApi,
+  resendEmailCodeApi,
+} from "../../services/api.service";
 import notify from "../../components/ui/CustomToast";
+import { useContext } from "react";
+import { AuthContext } from "../../components/context/AuthContext";
+import { EmailVerificationContext } from "../../components/context/EmailVerificationContext";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+
+  const { setUser } = useContext(AuthContext);
+  const { setEmail } = useContext(EmailVerificationContext);
 
   const {
     register,
@@ -32,8 +42,23 @@ const LoginPage = () => {
         "Welcome back!",
         "var(--color-silver-tree)",
       );
+      const user = await getUserProfileApi();
+      const { id, created_at, updated_at, ...profile } = user.data;
+      setUser(profile);
       navigate("/dashboard");
     } else {
+      if (res.code === 403) {
+        notify(
+          "error",
+          "Login failed!",
+          "Email address has not been verified. Please check your email for the verification code",
+          "var(--color-crimson-red)",
+          "top-center",
+        );
+        setEmail(values.email);
+        await resendEmailCodeApi(values.email);
+        return navigate("/verify-email");
+      }
       if (res.code === 400) {
         setError("custom_error", {
           type: "custom",
@@ -74,9 +99,9 @@ const LoginPage = () => {
         initial="hidden"
         viewport={{ once: true }}
         whileInView="show"
-        className="w-full max-w-96 rounded-[6px] bg-white/60 px-8 py-7 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)]"
+        className="w-full max-w-96 rounded-[6px] bg-white/60 px-5 py-4 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)] md:px-8 md:py-7"
       >
-        <h1 className="font-heading text-indigo text-3xl font-bold md:text-[32px]">
+        <h1 className="font-heading text-indigo text-2xl font-bold md:text-[32px]">
           Sign In
         </h1>
 
