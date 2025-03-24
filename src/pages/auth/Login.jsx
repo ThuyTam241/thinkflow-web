@@ -12,6 +12,8 @@ import { useForm } from "react-hook-form";
 import {
   getUserProfileApi,
   loginApi,
+  loginFacebookApi,
+  loginGoogleApi,
   resendEmailCodeApi,
 } from "../../services/api.service";
 import notify from "../../components/ui/CustomToast";
@@ -33,6 +35,12 @@ const LoginPage = () => {
     clearErrors,
   } = useForm();
 
+  const getProfile = async () => {
+    const user = await getUserProfileApi();
+    const { id, created_at, updated_at, ...profile } = user.data;
+    setUser(profile);
+  };
+
   const onSubmit = async (values) => {
     const res = await loginApi(values.email, values.password);
     if (res.data) {
@@ -42,9 +50,7 @@ const LoginPage = () => {
         "Welcome back!",
         "var(--color-silver-tree)",
       );
-      const user = await getUserProfileApi();
-      const { id, created_at, updated_at, ...profile } = user.data;
-      setUser(profile);
+      await getProfile();
       navigate("/dashboard");
     } else {
       if (res.code === 403) {
@@ -73,6 +79,12 @@ const LoginPage = () => {
         "var(--color-crimson-red)",
       );
     }
+  };
+
+  const handleLoginSocialMedia = async (api) => {
+    await api();
+    await getProfile();
+    navigate("/dashboard");
   };
 
   return (
@@ -165,15 +177,11 @@ const LoginPage = () => {
           </p>
           <div className="mt-5 flex justify-center gap-5">
             <IconButton
-              onClick={() => {
-                alert("gg auth");
-              }}
+              onClick={() => handleLoginSocialMedia(loginGoogleApi)}
               src={googleIconButton}
             />
             <IconButton
-              onClick={() => {
-                alert("fb auth");
-              }}
+              onClick={() => handleLoginSocialMedia(loginFacebookApi)}
               src={facebookIconButton}
             />
           </div>

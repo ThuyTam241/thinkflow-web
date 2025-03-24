@@ -49,6 +49,19 @@ const getUserProfileApi = () => {
   return instance.get(URL_BACKEND);
 };
 
+const loginFacebookApi = () => {
+  window.open(`${import.meta.env.VITE_BACKEND_URL}/auth/v1/facebook/login`);
+};
+
+const loginGoogleApi = () => {
+  window.open(`${import.meta.env.VITE_BACKEND_URL}/auth/v1/google/login`);
+};
+
+const logoutApi = () => {
+  const URL_BACKEND = "/auth/v1/logout";
+  return instance.post(URL_BACKEND);
+}
+
 export {
   registerUserApi,
   loginApi,
@@ -57,4 +70,7 @@ export {
   verifyEmailApi,
   resendEmailCodeApi,
   getUserProfileApi,
+  loginFacebookApi,
+  loginGoogleApi,
+  logoutApi,
 };

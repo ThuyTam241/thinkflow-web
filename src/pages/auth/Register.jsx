@@ -10,12 +10,19 @@ import { fadeIn } from "../../utils/motion";
 import { useForm } from "react-hook-form";
 import { useContext } from "react";
 import { EmailVerificationContext } from "../../components/context/EmailVerificationContext";
-import { registerUserApi } from "../../services/api.service";
+import {
+  getUserProfileApi,
+  loginFacebookApi,
+  loginGoogleApi,
+  registerUserApi,
+} from "../../services/api.service";
 import notify from "../../components/ui/CustomToast";
+import { AuthContext } from "../../components/context/AuthContext";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
 
+  const { setUser } = useContext(AuthContext);
   const { setEmail } = useContext(EmailVerificationContext);
 
   const {
@@ -62,6 +69,18 @@ const RegisterPage = () => {
         "var(--color-crimson-red)",
       );
     }
+  };
+
+  const getProfile = async () => {
+    const user = await getUserProfileApi();
+    const { id, created_at, updated_at, ...profile } = user.data;
+    setUser(profile);
+  };
+
+  const handleLoginSocialMedia = async (api) => {
+    await api();
+    await getProfile();
+    navigate("/dashboard");
   };
 
   return (
@@ -176,15 +195,11 @@ const RegisterPage = () => {
           </p>
           <div className="mt-5 flex justify-center gap-5">
             <IconButton
-              onClick={() => {
-                alert("gg auth");
-              }}
+              onClick={() => handleLoginSocialMedia(loginGoogleApi)}
               src={googleIconButton}
             />
             <IconButton
-              onClick={() => {
-                alert("fb auth");
-              }}
+              onClick={() => handleLoginSocialMedia(loginFacebookApi)}
               src={facebookIconButton}
             />
           </div>
