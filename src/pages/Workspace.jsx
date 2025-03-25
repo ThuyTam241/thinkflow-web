@@ -4,7 +4,7 @@ import { logoutApi } from "../services/api.service";
 import { useNavigate } from "react-router";
 import notify from "../components/ui/CustomToast";
 
-const Dashboard = () => {
+const Workspace = () => {
   const navigate = useNavigate();
 
   const { user, setUser } = useContext(AuthContext);
@@ -41,10 +41,10 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1>Dashboard {user.first_name}</h1>
+      <h1>Workspace {user.first_name}</h1>
       <button onClick={handleLogout}>logout</button>
     </div>
   );
 };
 
-export default Dashboard;
+export default Workspace;

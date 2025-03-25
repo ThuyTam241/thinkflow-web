@@ -10,18 +10,28 @@ import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
 import ResetPassword from "./pages/auth/ResetPassword.jsx";
 import ContextProvider from "./components/context/ContextProvider.jsx";
 import VerifyEmail from "./pages/auth/VerifyEmail.jsx";
+import RoleBasedRoute from "./components/routes/RoleBasedRoute.jsx";
+import PublicRoute from "./components/routes/PublicRoute.jsx";
+import Workspace from "./pages/Workspace.jsx";
 
 createRoot(document.getElementById("root")).render(
   <ContextProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}></Route>
-        <Route path="register" element={<RegisterPage />} />
-        <Route path="verify-email" element={<VerifyEmail />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="reset-password" element={<ResetPassword />} />
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route element={<PublicRoute />}>
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="verify-email" element={<VerifyEmail />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
+        </Route>
+        <Route element={<RoleBasedRoute isAllowed={["user"]} />}>
+          <Route path="workspace" element={<Workspace />} />
+        </Route>
+        <Route element={<RoleBasedRoute isAllowed={["admin"]} />}>
+          <Route path="dashboard" element={<Dashboard />} />
+        </Route>
       </Routes>
       <ToastContainer
         position="top-right"

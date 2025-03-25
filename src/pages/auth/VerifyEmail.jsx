@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { fadeIn } from "../../utils/motion";
 import { useForm } from "react-hook-form";
 import { verifyEmailApi, resendEmailCodeApi } from "../../services/api.service";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { EmailVerificationContext } from "../../components/context/EmailVerificationContext";
 import notify from "../../components/ui/CustomToast";
 

@@ -6,6 +6,8 @@ import { fadeIn, getNavbarStyles } from "../../utils/motion";
 import logo from "../../assets/images/logo.svg";
 import closeIcon from "../../assets/icons/close-icon.svg";
 import menuIcon from "../../assets/icons/menu-icon.svg";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
   const navLinks = [
@@ -33,6 +35,8 @@ const Navbar = () => {
   });
 
   const navigate = useNavigate();
+
+  const { user } = useContext(AuthContext);
 
   return (
     <motion.nav
@@ -71,18 +75,36 @@ const Navbar = () => {
         </div>
 
         {/* btn */}
-        <div className="ml-auto hidden gap-5 lg:flex">
-          <PrimaryButton
-            onClick={() => navigate("/login")}
-            color="white"
-            label="Sign In"
-          />
-          <PrimaryButton
-            onClick={() => navigate("/register")}
-            color="blue"
-            label="Sign Up"
-          />
-        </div>
+        {!user?.id ? (
+          <div className="ml-auto hidden gap-5 lg:flex">
+            <PrimaryButton
+              onClick={() => navigate("/login")}
+              color="white"
+              label="Sign In"
+            />
+            <PrimaryButton
+              onClick={() => navigate("/register")}
+              color="blue"
+              label="Sign Up"
+            />
+          </div>
+        ) : (
+          <div className="ml-auto hidden lg:flex">
+            <PrimaryButton
+              onClick={() => {
+                const path =
+                  user.system_role === "user" ? "/workspace" : "/dashboard";
+                navigate(path);
+              }}
+              color="blue"
+              label={
+                user.system_role === "user"
+                  ? "Go to workspace"
+                  : "Go to dashboard"
+              }
+            />
+          </div>
+        )}
 
         {/* menu icon */}
         <button
@@ -114,18 +136,36 @@ const Navbar = () => {
               {navLink.label}
             </a>
           ))}
-          <div className="flex justify-center gap-3 py-3">
-            <PrimaryButton
-              onClick={() => navigate("/login")}
-              color="white"
-              label="Sign In"
-            />
-            <PrimaryButton
-              color="blue"
-              label="Sign Up"
-              onClick={() => navigate("/register")}
-            />
-          </div>
+          {!user?.id ? (
+            <div className="flex justify-center gap-3 py-3">
+              <PrimaryButton
+                onClick={() => navigate("/login")}
+                color="white"
+                label="Sign In"
+              />
+              <PrimaryButton
+                color="blue"
+                label="Sign Up"
+                onClick={() => navigate("/register")}
+              />
+            </div>
+          ) : (
+            <div className="flex justify-center py-3">
+              <PrimaryButton
+                onClick={() => {
+                  const path =
+                    user.system_role === "user" ? "/workspace" : "/dashboard";
+                  navigate(path);
+                }}
+                color="blue"
+                label={
+                  user.system_role === "user"
+                    ? "Go to workspace"
+                    : "Go to dashboard"
+                }
+              />
+            </div>
+          )}
         </div>
       )}
     </motion.nav>

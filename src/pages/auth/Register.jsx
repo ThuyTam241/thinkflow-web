@@ -11,7 +11,6 @@ import { useForm } from "react-hook-form";
 import { useContext } from "react";
 import { EmailVerificationContext } from "../../components/context/EmailVerificationContext";
 import {
-  getUserProfileApi,
   loginFacebookApi,
   loginGoogleApi,
   registerUserApi,
@@ -22,7 +21,7 @@ import { AuthContext } from "../../components/context/AuthContext";
 const RegisterPage = () => {
   const navigate = useNavigate();
 
-  const { setUser } = useContext(AuthContext);
+  const { getUserProfile } = useContext(AuthContext);
   const { setEmail } = useContext(EmailVerificationContext);
 
   const {
@@ -71,15 +70,9 @@ const RegisterPage = () => {
     }
   };
 
-  const getProfile = async () => {
-    const user = await getUserProfileApi();
-    const { id, created_at, updated_at, ...profile } = user.data;
-    setUser(profile);
-  };
-
   const handleLoginSocialMedia = async (api) => {
     await api();
-    await getProfile();
+    await getUserProfile();
     navigate("/dashboard");
   };
 

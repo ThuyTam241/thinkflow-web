@@ -10,7 +10,6 @@ import { fadeIn } from "../../utils/motion";
 import Checkbox from "../../components/ui/inputs/Checkbox";
 import { useForm } from "react-hook-form";
 import {
-  getUserProfileApi,
   loginApi,
   loginFacebookApi,
   loginGoogleApi,
@@ -24,7 +23,7 @@ import { EmailVerificationContext } from "../../components/context/EmailVerifica
 const LoginPage = () => {
   const navigate = useNavigate();
 
-  const { setUser } = useContext(AuthContext);
+  const { getUserProfile } = useContext(AuthContext);
   const { setEmail } = useContext(EmailVerificationContext);
 
   const {
@@ -35,12 +34,6 @@ const LoginPage = () => {
     clearErrors,
   } = useForm();
 
-  const getProfile = async () => {
-    const user = await getUserProfileApi();
-    const { id, created_at, updated_at, ...profile } = user.data;
-    setUser(profile);
-  };
-
   const onSubmit = async (values) => {
     const res = await loginApi(values.email, values.password);
     if (res.data) {
@@ -50,7 +43,7 @@ const LoginPage = () => {
         "Welcome back!",
         "var(--color-silver-tree)",
       );
-      await getProfile();
+      await getUserProfile();
       navigate("/dashboard");
     } else {
       if (res.code === 403) {
