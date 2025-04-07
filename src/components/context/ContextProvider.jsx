@@ -1,11 +1,14 @@
 import { AuthProvider } from "./AuthContext";
 import { EmailVerificationProvider } from "./EmailVerificationContext";
+import { ThemeProvider } from "./ThemeContext";
 
 const ContextProvider = (props) => {
   return (
-    <AuthProvider>
-      <EmailVerificationProvider>{props.children}</EmailVerificationProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <EmailVerificationProvider>{props.children}</EmailVerificationProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

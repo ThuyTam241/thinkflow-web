@@ -1,8 +1,5 @@
 import { Link } from "react-router";
-import facebookIcon from "../../assets/icons/facebook-icon.svg";
-import instagramIcon from "../../assets/icons/instagram-icon.svg";
-import linkedinIcon from "../../assets/icons/linkedin-icon.svg";
-import youtubeIcon from "../../assets/icons/youtube-icon.svg";
+import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import logo from "../../assets/images/logo.svg";
 
 const Footer = () => {
@@ -14,10 +11,10 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { to: "#", icon: facebookIcon },
-    { to: "#", icon: instagramIcon },
-    { to: "#", icon: linkedinIcon },
-    { to: "#", icon: youtubeIcon },
+    { to: "#", icon: Facebook },
+    { to: "#", icon: Instagram },
+    { to: "#", icon: Linkedin },
+    { to: "#", icon: Youtube },
   ];
 
   const legalLinks = [
@@ -31,7 +28,7 @@ const Footer = () => {
         <div className="flex flex-col items-center justify-between md:flex-row">
           {/* logo */}
           <Link to="/">
-            <img src={logo} alt="logo" className="h-8 md:h-9 lg:h-auto" />
+            <img src={logo} alt="logo" className="h-8 md:h-9 lg:h-10" />
           </Link>
 
           {/* footer links */}
@@ -51,10 +48,7 @@ const Footer = () => {
           <ul className="flex gap-2.5">
             {socialLinks.map((socialLink, index) => (
               <Link key={index} to={socialLink.to}>
-                <img
-                  src={socialLink.icon}
-                  alt={socialLink.icon.split("/").pop().replace(".svg", "")}
-                />
+                <socialLink.icon className="text-ebony-clay w-5 h-5 stroke-[1.5]"/>
               </Link>
             ))}
           </ul>

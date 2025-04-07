@@ -1,35 +1,28 @@
-import { useState } from "react";
-import checkMarkIcon from "../../../assets/icons/check-mark-icon.svg"
-
 const Checkbox = ({ label, ...props }) => {
-  const [isChecked, setIsChecked] = useState(false);
-
   return (
-    <div
-      className="flex cursor-pointer items-center gap-1"
-      onClick={() => setIsChecked(!isChecked)}
-    >
-      {isChecked ? (
-        <img
-          src={checkMarkIcon}
-          alt="check-mark-icon"
-          className="h-3 w-3 rounded-[2px] md:h-3.5 md:w-3.5"
-        />
-      ) : (
-        <input
-          type="checkbox"
-          checked={isChecked}
-          {...props}
-          className="h-3 w-3 cursor-pointer md:h-3.5 md:w-3.5"
-        />
-      )}
-      <label
-        htmlFor={props.id}
-        className="font-body text-ebony-clay cursor-pointer text-xs md:text-sm"
+    <label className="font-body text-ebony-clay flex cursor-pointer items-center gap-1 text-xs md:text-sm">
+      <input type="checkbox" {...props} className="peer hidden" />
+      <div className="border-gallery h-4 w-4 rounded-sm border peer-checked:invisible"></div>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="invisible absolute rounded-sm peer-checked:visible"
       >
-        {label}
-      </label>
-    </div>
+        <rect width="16" height="16" rx="2" fill="#6B76F6" />
+        <rect width="16" height="16" rx="2" stroke="#6B76F6" />
+        <path
+          d="M4 7.63158L6.57143 10L12 5"
+          stroke="white"
+          strokeWidth="2"
+          strokeMiterlimit="10"
+          strokeLinecap="round"
+        />
+      </svg>
+      {label}
+    </label>
   );
 };
 

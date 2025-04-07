@@ -8,6 +8,7 @@ import closeIcon from "../../assets/icons/close-icon.svg";
 import menuIcon from "../../assets/icons/menu-icon.svg";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { ThemeContext } from "../context/ThemeContext";
 
 const Navbar = () => {
   const navLinks = [
@@ -38,11 +39,13 @@ const Navbar = () => {
 
   const { user } = useContext(AuthContext);
 
+  const { theme } = useContext(ThemeContext);
+
   return (
     <motion.nav
       variants={fadeIn("down", 0.2, hidden)}
       initial="hidden"
-      style={getNavbarStyles(hidden, scrollYValue, isMenuOpen)}
+      style={getNavbarStyles(hidden, scrollYValue, isMenuOpen, theme)}
       animate="show"
       className={`fixed top-0 right-0 left-0 z-20 px-2.5 md:px-5 lg:px-10 ${isMenuOpen ? "lg:border-transparent! lg:bg-transparent!" : ""}`}
     >
@@ -70,7 +73,7 @@ const Navbar = () => {
         {/* logo */}
         <div className="my-auto lg:absolute lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2">
           <Link to="/">
-            <img src={logo} alt="logo" className="h-8 md:h-9 lg:h-auto" />
+            <img src={logo} alt="logo" className="h-8 md:h-9 lg:h-10" />
           </Link>
         </div>
 

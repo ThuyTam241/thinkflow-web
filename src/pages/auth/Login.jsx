@@ -3,6 +3,7 @@ import TextInput from "../../components/ui/inputs/TextInput";
 import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 import { Link, useNavigate } from "react-router";
 import circleArrowLeftIcon from "../../assets/icons/circle-arrow-left-icon.svg";
+import circleArrowLeftIconDark from "../../assets/icons/circle-arrow-left-icon-dark.svg";
 import facebookIconButton from "../../assets/icons/facebook-button-icon.svg";
 import googleIconButton from "../../assets/icons/google-button-icon.svg";
 import { motion } from "framer-motion";
@@ -16,12 +17,15 @@ import {
   resendEmailCodeApi,
 } from "../../services/api.service";
 import notify from "../../components/ui/CustomToast";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../../components/context/AuthContext";
 import { EmailVerificationContext } from "../../components/context/EmailVerificationContext";
+import { ThemeContext } from "../../components/context/ThemeContext";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+
+  const [isLogin, setIsLogin] = useState(false);
 
   const { getUserProfile } = useContext(AuthContext);
   const { setEmail } = useContext(EmailVerificationContext);
@@ -35,7 +39,9 @@ const LoginPage = () => {
   } = useForm();
 
   const onSubmit = async (values) => {
+    setIsLogin(true);
     const res = await loginApi(values.email, values.password);
+    setIsLogin(false);
     if (res.data) {
       notify(
         "success",
@@ -80,22 +86,26 @@ const LoginPage = () => {
     navigate("/dashboard");
   };
 
+  const { theme } = useContext(ThemeContext);
+
   return (
-    <div className="from-hawkes-blue flex h-screen items-center justify-center bg-gradient-to-b via-[rgba(218,215,252,0.6)] to-[rgba(218,215,252,0.15)] px-6">
+    <div className="flex h-screen items-center justify-center bg-[radial-gradient(50%_50%_at_50%_50%,_#DAD7FC_0%,_#EDEBFE_50%,_#FFFFFF_100%)] px-6 dark:bg-[radial-gradient(50%_50%_at_50%_50%,_#4C3D99_0%,_rgba(43,35,101,0.5)_50%,_rgba(10,9,48,0)_100%)]">
       {/* Back button */}
       <motion.div
         variants={fadeIn("right", 0.2)}
         initial="hidden"
         viewport={{ once: true }}
         whileInView="show"
-        whileHover={{ boxShadow: "0px 6px 20px rgba(0,0,0,0.1)" }}
+        whileHover={{ boxShadow: "0px 6px 20px rgba(39,35,64,0.1)" }}
         className="absolute top-6 left-6 h-12 rounded-full md:top-10 md:left-[60px]"
       >
         <IconButton
           onClick={() => {
             navigate(-1);
           }}
-          src={circleArrowLeftIcon}
+          src={
+            theme === "light" ? circleArrowLeftIcon : circleArrowLeftIconDark
+          }
         />
       </motion.div>
 
@@ -104,7 +114,7 @@ const LoginPage = () => {
         initial="hidden"
         viewport={{ once: true }}
         whileInView="show"
-        className="w-full max-w-96 rounded-[6px] bg-white/60 px-5 py-4 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)] md:px-8 md:py-7"
+        className="border-hawkes-blue/50 w-full max-w-96 rounded-md border bg-white/60 px-5 py-4 text-center md:px-8 md:py-7 dark:bg-[#FFFFFF]/5"
       >
         <h1 className="font-heading text-indigo text-2xl font-bold md:text-[32px]">
           Sign In
@@ -135,10 +145,7 @@ const LoginPage = () => {
               </span>
             )}
             <div className="mb-2 flex w-full items-center justify-between">
-              <Checkbox
-                label="Remember me"
-                onChange={() => alert("remember")}
-              />
+              <Checkbox label="Remember me" />
               <Link
                 to="/forgot-password"
                 className="font-body text-indigo text-xs font-medium md:text-sm"
@@ -151,6 +158,7 @@ const LoginPage = () => {
               label="Sign In"
               type="submit"
               onClick={() => clearErrors()}
+              isLoading={isLogin}
             />
           </div>
         </form>

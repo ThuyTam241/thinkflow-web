@@ -62,6 +62,38 @@ const logoutApi = () => {
   return instance.post(URL_BACKEND);
 }
 
+const uploadImageApi = (file) => {
+  const URL_BACKEND = "/media/v1/media/images";
+  let config = {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    },
+  };
+  const bodyFormData = new FormData();
+  bodyFormData.append("file",file)
+  return instance.post(URL_BACKEND, bodyFormData, config);
+};
+
+const updateUserProfileApi = (
+  first_name,
+  last_name,
+  gender,
+  phone,
+  email,
+  avatar_id,
+) => {
+  const URL_BACKEND = "/user/v1/users/profile";
+  const data = {
+    first_name,
+    last_name,
+    gender,
+    phone,
+    email,
+    avatar_id,
+  };
+  return instance.patch(URL_BACKEND, data);
+};
+
 export {
   registerUserApi,
   loginApi,
@@ -73,4 +105,6 @@ export {
   loginFacebookApi,
   loginGoogleApi,
   logoutApi,
+  uploadImageApi,
+  updateUserProfileApi,
 };

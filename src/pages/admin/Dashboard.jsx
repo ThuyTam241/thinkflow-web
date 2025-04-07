@@ -1,11 +1,9 @@
 import { useContext } from "react";
-import { AuthContext } from "../components/context/AuthContext";
-import { logoutApi } from "../services/api.service";
-import { useNavigate } from "react-router";
-import notify from "../components/ui/CustomToast";
+import { AuthContext } from "../../components/context/AuthContext";
+import { logoutApi } from "../../services/api.service";
+import notify from "../../components/ui/CustomToast";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
 
   const { user, setUser } = useContext(AuthContext);
 

@@ -2,7 +2,7 @@ import SectionTitle from "./SectionTitle";
 import { motion } from "framer-motion";
 import { fadeIn, scale, staggerContainer } from "../../utils/motion";
 import backgroundTestimonials from "../../assets/images/bg-testimonials.svg";
-import blankAvatar from "../../assets/images/blank-avatar.jpg";
+import Avatar from "../ui/Avatar";
 
 const TestimonialsSection = () => {
   const testimonialsCards = [
@@ -75,32 +75,23 @@ const TestimonialsSection = () => {
             <motion.div
               key={index}
               variants={scale(0.3 + index * 0.1)}
-              className={`border-gallery mb-6 max-w-[340px] rounded-[10px] border bg-white p-5`}
+              className={`border-gallery mb-6 max-w-[340px] rounded-[10px] border p-5 bg-[#FFF] dark:bg-[#0A0930]/50`}
             >
               <div className="flex items-center gap-2.5 md:gap-3">
-                {testimonialCard.avatar ? (
-                  <img
-                    className="w-10 rounded-full md:w-[46px]"
-                    src={testimonialCard.avatar}
-                    alt="user-avatar"
-                  />
-                ) : (
-                  <img
-                    className="w-10 rounded-full md:w-[46px]"
-                    src={blankAvatar}
-                    alt="blank-avatar"
-                  />
-                )}
+                <Avatar
+                  className="h-10 w-10 rounded-full md:h-[46px] md:w-[46px]"
+                  src={testimonialCard.avatar}
+                />
                 <div>
                   <h3 className="font-body text-ebony-clay text-sm font-semibold md:text-base/[22px]">
                     {testimonialCard.name}
                   </h3>
-                  <p className="text-gravel font-body mt-0.5 text-[10px] md:mt-1 md:text-xs">
+                  <p className="text-silver-chalice font-body mt-0.5 text-[10px] md:mt-1 md:text-xs">
                     {testimonialCard.date}
                   </p>
                 </div>
               </div>
-              <p className="font-body text-ebony-clay mt-2.5 text-sm/normal md:mt-5 md:text-base/normal">
+              <p className="font-body text-ebony-clay dark:text-gravel mt-2.5 text-sm/normal md:mt-5 md:text-base/normal">
                 {testimonialCard.message}
               </p>
             </motion.div>

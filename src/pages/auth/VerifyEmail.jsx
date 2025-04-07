@@ -2,16 +2,21 @@ import IconButton from "../../components/ui/buttons/IconButton";
 import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 import { Link, useNavigate } from "react-router";
 import circleArrowLeftIcon from "../../assets/icons/circle-arrow-left-icon.svg";
+import circleArrowLeftIconDark from "../../assets/icons/circle-arrow-left-icon-dark.svg";
 import { motion } from "framer-motion";
 import { fadeIn } from "../../utils/motion";
 import { useForm } from "react-hook-form";
 import { verifyEmailApi, resendEmailCodeApi } from "../../services/api.service";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { EmailVerificationContext } from "../../components/context/EmailVerificationContext";
 import notify from "../../components/ui/CustomToast";
+import { ThemeContext } from "../../components/context/ThemeContext";
 
 const VerifyEmail = () => {
   const navigate = useNavigate();
+
+  const [isVerify, setIsVerify] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const { email } = useContext(EmailVerificationContext);
 
@@ -24,9 +29,11 @@ const VerifyEmail = () => {
   } = useForm();
 
   const onSubmit = async (values) => {
+    setIsVerify(true);
     const code =
       [...Array(6)].map((_, index) => values[`code${index}`]).join("") || "";
     const res = await verifyEmailApi(email, code);
+    setIsVerify(false);
     if (res.data) {
       notify(
         "success",
@@ -34,6 +41,7 @@ const VerifyEmail = () => {
         "Your email has been successfully verified. Your account is now activated.",
         "var(--color-silver-tree)",
       );
+      localStorage.removeItem("email");
       navigate("/login");
     } else {
       if (res.code === 400) {
@@ -53,7 +61,9 @@ const VerifyEmail = () => {
   };
 
   const handleResendCode = async () => {
+    setIsResending(true);
     const res = await resendEmailCodeApi(email);
+    setIsResending(false);
     if (res.data) {
       notify(
         "success",
@@ -72,22 +82,26 @@ const VerifyEmail = () => {
     }
   };
 
+  const { theme } = useContext(ThemeContext);
+
   return (
-    <div className="from-hawkes-blue flex h-screen items-center justify-center bg-gradient-to-b via-[rgba(218,215,252,0.6)] to-[rgba(218,215,252,0.15)] px-6">
+    <div className="flex h-screen items-center justify-center bg-[radial-gradient(50%_50%_at_50%_50%,_#DAD7FC_0%,_#EDEBFE_50%,_#FFFFFF_100%)] px-6 dark:bg-[radial-gradient(50%_50%_at_50%_50%,_#4C3D99_0%,_rgba(43,35,101,0.5)_50%,_rgba(10,9,48,0)_100%)]">
       {/* Back button */}
       <motion.div
         variants={fadeIn("right", 0.2)}
         initial="hidden"
         viewport={{ once: true }}
         whileInView="show"
-        whileHover={{ boxShadow: "0px 6px 20px rgba(0,0,0,0.1)" }}
+        whileHover={{ boxShadow: "0px 6px 20px rgba(39,35,64,0.1)" }}
         className="absolute top-6 left-6 h-12 rounded-full md:top-10 md:left-[60px]"
       >
         <IconButton
           onClick={() => {
             navigate(-1);
           }}
-          src={circleArrowLeftIcon}
+          src={
+            theme === "light" ? circleArrowLeftIcon : circleArrowLeftIconDark
+          }
         />
       </motion.div>
 
@@ -96,7 +110,7 @@ const VerifyEmail = () => {
         initial="hidden"
         viewport={{ once: true }}
         whileInView="show"
-        className="w-full max-w-96 rounded-[6px] bg-white/60 px-5 py-4 text-center shadow-[0px_4px_20px_rgba(99,104,209,0.4)] md:px-8 md:py-7"
+        className="border-hawkes-blue/50 w-full max-w-96 rounded-md border bg-white/60 px-5 py-4 text-center md:px-8 md:py-7 dark:bg-[#FFFFFF]/5"
       >
         <div>
           <h1 className="font-heading text-indigo text-2xl font-bold md:text-[32px]">
@@ -142,8 +156,14 @@ const VerifyEmail = () => {
             <p className="font-body text-ebony-clay text-xs md:text-sm">
               Didn't receive the email?{" "}
               <Link
-                onClick={handleResendCode}
-                className="font-body text-indigo font-medium"
+                onClick={(e) => {
+                  if (isResending) {
+                    e.preventDefault();
+                    return;
+                  }
+                  handleResendCode();
+                }}
+                className={`font-body text-indigo font-medium ${isResending ? "cursor-progress" : ""}`}
               >
                 Click to resend
               </Link>
@@ -153,6 +173,7 @@ const VerifyEmail = () => {
               label="Verify code"
               type="submit"
               onClick={() => clearErrors()}
+              isLoading={isVerify}
             />
           </div>
         </form>

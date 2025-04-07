@@ -3,29 +3,37 @@ import micIcon from "../../assets/icons/mic-icon.svg";
 import fileTextIcon from "../../assets/icons/file-text-icon.svg";
 import networkIcon from "../../assets/icons/network-icon.svg";
 import shareIcon from "../../assets/icons/share-icon.svg";
+import micIconDark from "../../assets/icons/mic-icon-dark.svg";
+import fileTextIconDark from "../../assets/icons/file-text-icon-dark.svg";
+import networkIconDark from "../../assets/icons/network-icon-dark.svg";
+import shareIconDark from "../../assets/icons/share-icon-dark.svg";
 import { motion } from "framer-motion";
 import { scale, staggerContainer } from "../../utils/motion";
+import { useContext } from "react";
+import { ThemeContext } from "../context/ThemeContext";
 
 const FeaturesSection = () => {
+  const { theme } = useContext(ThemeContext);
+
   const featureCards = [
     {
-      icon: micIcon,
+      icon: theme === "light" ? micIcon : micIconDark,
       title: "Transcribe voice notes",
       description:
         "Convert speech into text for quick and effortless note-taking",
     },
     {
-      icon: fileTextIcon,
+      icon: theme === "light" ? fileTextIcon : fileTextIconDark,
       title: "Summarize notes instantly",
       description: "Get concise summaries of your notes in just one click",
     },
     {
-      icon: networkIcon,
+      icon: theme === "light" ? networkIcon : networkIconDark,
       title: "Generate mind maps",
       description: "Turn your notes into structured visual mind maps",
     },
     {
-      icon: shareIcon,
+      icon: theme === "light" ? shareIcon : shareIconDark,
       title: "Share notes easily",
       description: "Collaborate and share notes seamlessly with others",
     },

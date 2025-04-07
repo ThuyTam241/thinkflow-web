@@ -19,11 +19,19 @@ export const fadeIn = (direction, delay, hidden = false) => {
   };
 };
 
-export const getNavbarStyles = (hidden, scrollYValue, isMenuOpen) => {
+export const getNavbarStyles = (hidden, scrollYValue, isMenuOpen, theme) => {
   const applyStyles = (scrollYValue === 0 || hidden) && !isMenuOpen;
   return {
-    backgroundColor: applyStyles ? "transparent" : "white",
-    borderBottom: applyStyles ? "1px solid transparent" : "1px solid #E5E5E5",
+    backgroundColor: applyStyles
+      ? "transparent"
+      : theme === "light"
+        ? "white"
+        : "#0A0930",
+    borderBottom: applyStyles
+      ? "1px solid transparent"
+      : theme === "light"
+        ? "1px solid #EEEEEE"
+        : "1px solid rgb(255, 255, 255, 0.1)",
     paddingTop: applyStyles ? "0px" : "6px",
     paddingBottom: applyStyles ? "0px" : "6px",
     transition: "background-color 0.3s ease-in-out, padding 0.3s ease-in-out",
@@ -63,10 +71,12 @@ export const textVariant = (delay) => {
 export const slideIn = (direction, type, delay, duration) => {
   return {
     hidden: {
-      x: direction === "left" ? "-100%" : direction === "right" ? "100%" : 0,
-      y: direction === "up" ? "100%" : direction === "down" ? "100%" : 0,
+      opacity: 0,
+      x: direction === "left" ? "-50px" : direction === "right" ? "50px" : 0,
+      y: direction === "up" ? "50px" : direction === "down" ? "-50px" : 0,
     },
     show: {
+      opacity: 1,
       x: 0,
       y: 0,
       transition: {
@@ -96,3 +106,22 @@ export const scale = (delay) => {
     },
   };
 };
+
+export const getSidebarStyles = (isExpanded) => ({
+  width: isExpanded ? "281px" : "101px",
+  transition: "width 0.3s ease-in-out",
+});
+
+export const submenuVariants = {
+  hidden: { maxHeight: 0, opacity: 0 },
+  visible: {
+    maxHeight: 120,
+    opacity: 1,
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
+};
+
+export const getTopbarStyles = (isExpanded) => ({
+  left: isExpanded ? 281 : 101,
+  transition: "left 0.3s ease-in-out",
+});

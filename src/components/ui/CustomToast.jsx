@@ -21,7 +21,9 @@ const CustomToast = ({ type = "info", title, message }) => {
       />
 
       <div>
-        <h3 className="font-body text-base font-semibold text-black">
+        <h3
+          className={`font-body text-base ${message ? "font-semibold text-black dark:text-white" : "text-gravel font-medium"}`}
+        >
           {title}
         </h3>
         <p className="font-body text-gravel mt-1 text-sm">{message}</p>
@@ -34,7 +36,10 @@ const notify = (type, title, message, color, position = "top-right") => {
   toast(<CustomToast type={type} title={title} message={message} />, {
     position,
     className: "max-w-96",
-    style: { "--toastify-color-progress-light": color },
+    style: {
+      "--toastify-color-progress-light": color,
+      "--toastify-color-progress-dark": color,
+    },
   });
 };
 
