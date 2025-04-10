@@ -183,7 +183,7 @@ const ResetPassword = () => {
               color="blue"
               label="Reset password"
               type="submit"
-              isLoading={isReset}
+              isProcessing={isReset}
             />
           </div>
         </form>

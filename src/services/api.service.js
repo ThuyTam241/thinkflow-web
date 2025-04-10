@@ -94,6 +94,68 @@ const updateUserProfileApi = (
   return instance.patch(URL_BACKEND, data);
 };
 
+const getAllUserNotes = (nextCursor) => {
+  const URL_BACKEND = `/note/v1/notes?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=8`;
+  return instance.get(URL_BACKEND);
+};
+
+const createNewNoteApi = (title) => {
+  const URL_BACKEND = "/note/v1/notes";
+   const data = {
+     title,
+   };
+  return instance.post(URL_BACKEND, data);
+};
+
+const createNewTextNoteApi = (text_content, noteId) => {
+  const URL_BACKEND = `/note/v1/texts/note/${noteId}`;
+  const data = {
+    text_content,
+  };
+  return instance.post(URL_BACKEND, data);
+};
+
+const updateNewNoteApi = (title, noteId) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}`;
+  const data = {
+    title,
+  };
+  return instance.patch(URL_BACKEND, data);
+};
+
+const updateNewTextNoteApi = (text_content, text_noteId) => {
+  const URL_BACKEND = `/note/v1/texts/${text_noteId}`;
+  const data = {
+    text_content,
+  };
+  return instance.patch(URL_BACKEND, data);
+};
+
+const getTextNoteApi = (noteId) => {
+  const URL_BACKEND = `/note/v1/texts/note/${noteId}`;
+  return instance.get(URL_BACKEND);
+}
+
+const archiveNoteApi = (noteId) => {
+  const URL_BACKEND = `/note/v1/notes/archive/${noteId}`;
+  return instance.patch(URL_BACKEND);
+};
+
+const unArchiveNoteApi = (noteId) => {
+  const URL_BACKEND = `/note/v1/notes/unarchive/${noteId}`;
+  return instance.patch(URL_BACKEND);
+};
+
+const deleteNoteApi = (noteId) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}`;
+  return instance.patch(URL_BACKEND);
+};
+
+const getAllUserArchivedResources = (nextCursor, pageSize) => {
+  const URL_BACKEND = `/note/v1/notes/archived?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=${pageSize}`;
+  return instance.get(URL_BACKEND);
+};
+
 export {
   registerUserApi,
   loginApi,
@@ -107,4 +169,14 @@ export {
   logoutApi,
   uploadImageApi,
   updateUserProfileApi,
+  getAllUserNotes,
+  createNewNoteApi,
+  createNewTextNoteApi,
+  updateNewNoteApi,
+  updateNewTextNoteApi,
+  getTextNoteApi,
+  archiveNoteApi,
+  unArchiveNoteApi,
+  deleteNoteApi,
+  getAllUserArchivedResources,
 };

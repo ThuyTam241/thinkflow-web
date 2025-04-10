@@ -69,7 +69,7 @@ const Profile = () => {
 
   const onSubmit = async (values) => {
     setIsUpdating(true);
-    let newAvatarId = user.avatar.id;
+    let newAvatarId = user?.avatar?.id;
     if (selectedFile) {
       setIsUploading(true);
       const resAvatar = await uploadImageApi(selectedFile);
@@ -82,14 +82,6 @@ const Profile = () => {
         return;
       }
     }
-    console.log("Sending data to API:", {
-      first_name: values.first_name,
-      last_name: values.last_name,
-      gender: values.gender,
-      phone: values.phone,
-      email: values.email,
-      avatar_id: newAvatarId,
-    });
     const res = await updateUserProfileApi(
       values.first_name,
       values.last_name,
@@ -109,7 +101,7 @@ const Profile = () => {
       );
       setIsEditing(false);
     } else {
-      notify("error", "Update failed", "", "var(--color-crimson-red)");
+      notify("error", "Update profile failed", "", "var(--color-crimson-red)");
     }
   };
 
@@ -119,6 +111,7 @@ const Profile = () => {
       className="relative flex w-full flex-col space-y-8"
     >
       <div className="relative mb-16 flex w-fit gap-10">
+        {/* Avatar */}
         <div className="bg-hawkes-blue/60 absolute top-14 -left-2 h-40 w-52 rounded-full blur-[30px]"></div>
         <div className="relative h-48 w-48">
           <Avatar
@@ -127,10 +120,12 @@ const Profile = () => {
           />
           {isUploading && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <MoonLoader size={40} color="#6366F1" />
+              <MoonLoader size={40} color="var(--color-cornflower-blue)" />
             </div>
           )}
         </div>
+
+        {/* Name & Email */}
         <div className="flex flex-col justify-center gap-2">
           <h2 className="font-body text-ebony-clay text-xl font-bold">
             {fullName(user)}
@@ -153,6 +148,8 @@ const Profile = () => {
           </motion.div>
         )}
       </div>
+
+      {/* Edit & cancel button */}
       <div className="absolute -top-10 right-0">
         <IconButton
           onClick={() => setIsEditing(!isEditing)}
@@ -174,6 +171,7 @@ const Profile = () => {
           className="font-body"
         />
       </div>
+
       <div className="flex gap-8">
         <TextInput
           placeholder="First name"
@@ -242,7 +240,7 @@ const Profile = () => {
             type="submit"
             color="blue"
             label="Save Changes"
-            isLoading={isUpdating}
+            isProcessing={isUpdating}
           />
         )}
       </motion.div>

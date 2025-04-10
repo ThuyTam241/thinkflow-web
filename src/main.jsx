@@ -19,6 +19,7 @@ import MindMaps from "./pages/user/MindMaps.jsx";
 import { useContext } from "react";
 import { ThemeContext } from "./components/context/ThemeContext.jsx";
 import Settings from "./pages/Settings.jsx";
+import ArchivedResources from "./pages/user/ArchivedResources.jsx";
 
 const RootApp = () => {
   const { theme } = useContext(ThemeContext);
@@ -39,6 +40,7 @@ const RootApp = () => {
             <Route path="my-notes/text-notes" element={<TextNotes />} />
             <Route path="my-notes/audio-notes" element={<AudioNotes />} />
             <Route path="ai-mind-maps" element={<MindMaps />} />
+            <Route path="archived" element={<ArchivedResources />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Route>

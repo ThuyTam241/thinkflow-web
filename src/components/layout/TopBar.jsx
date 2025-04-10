@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { fadeIn, getTopbarStyles } from "../../utils/motion";
 import SearchBar from "../ui/SearchBar";
-import { Moon, Sun } from "lucide-react";
+import { ListFilter, Moon, Sun } from "lucide-react";
 import IconButton from "../ui/buttons/IconButton";
 import { useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext";
@@ -21,7 +21,10 @@ const TopBar = ({ isExpanded, title }) => {
         {title}
       </h1>
       <div className="ml-auto flex items-center">
-        <SearchBar />
+        <div className="flex items-center gap-3">
+          <SearchBar />
+          <IconButton size="w-5 h-5" icon={ListFilter} />
+        </div>
         <div className="bg-gallery mx-6 h-6 w-[1px]"></div>
         {theme === "light" ? (
           <IconButton icon={Moon} onClick={toggleTheme} />

@@ -115,7 +115,7 @@ const ForgotPassword = () => {
               color="blue"
               label="Send code"
               type="submit"
-              isLoading={isSend}
+              isProcessing={isSend}
             />
           </div>
         </form>

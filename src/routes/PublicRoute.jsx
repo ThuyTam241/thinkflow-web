@@ -9,7 +9,7 @@ const PublicRoute = () => {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <RingLoader color="#6368d1" size={100} />
+        <RingLoader color="var(--color-cornflower-blue)" size={100} />
       </div>
     );
   }

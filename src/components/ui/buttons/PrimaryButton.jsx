@@ -5,7 +5,7 @@ const PrimaryButton = ({
   label,
   type = "button",
   onClick,
-  isLoading,
+  isProcessing,
 }) => {
   const colorVariants = {
     white:
@@ -23,9 +23,9 @@ const PrimaryButton = ({
       type={type}
       onClick={onClick}
       className={`${colorVariants[color]} font-body mx-auto inline-flex cursor-pointer items-center rounded-md border-[1px] border-solid px-4 py-2 text-sm font-bold transition-all duration-300 ease-in-out disabled:cursor-not-allowed disabled:opacity-60 md:text-base/[22px]`}
-      disabled={isLoading}
+      disabled={isProcessing}
     >
-      {isLoading && (
+      {isProcessing && (
         <ClipLoader
           size={20}
           color={spinnercolorVariants[color]}

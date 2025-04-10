@@ -1,14 +1,18 @@
 import { Outlet } from "react-router";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { AuthContext } from "../../components/context/AuthContext";
 import Sidebar from "../../components/layout/Sidebar";
-import { WandSparkles, Notebook, Archive, Settings, CircleHelp } from "lucide-react";
+import {
+  WandSparkles,
+  Notebook,
+  Archive,
+  Settings,
+  CircleHelp,
+} from "lucide-react";
 import TopBar from "../../components/layout/TopBar";
 
 const Workspace = () => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const { user, setUser } = useContext(AuthContext);
   const [selectedLabel, setSelectedLabel] = useState("");
 
   const menuItems = [
@@ -28,7 +32,7 @@ const Workspace = () => {
     {
       to: "/workspace/archived",
       icon: Archive,
-      label: "Archive",
+      label: "Archived",
     },
   ];
 
@@ -42,8 +46,6 @@ const Workspace = () => {
       <Sidebar
         menuItems={menuItems}
         extraItems={extraItems}
-        user={user}
-        setUser={setUser}
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
         setSelectedLabel={setSelectedLabel}

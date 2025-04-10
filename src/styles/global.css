@@ -178,14 +178,16 @@
   h5,
   h6 {
     line-height: 1.1;
-    margin-top: 2.5rem;
+    margin-top: 1.5rem;
     text-wrap: pretty;
   }
 
   h1,
-  h2 {
-    margin-top: 3.5rem;
-    margin-bottom: 1.5rem;
+  h2,
+  h3 {
+    margin-top: 1.2rem;
+    margin-bottom: 0.8rem;
+    font-weight: bold;
   }
 
   h1 {
@@ -205,4 +207,37 @@
   h6 {
     font-size: 1rem;
   }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes jump {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.react-loading-skeleton {
+  --base-color: var(--color-gallery) !important;
+  animation: pulse 1.7s ease-in-out infinite, jump 1.7s ease-in-out infinite !important;
+}
+
+.react-loading-skeleton::after {
+   background-image: none !important;
 }

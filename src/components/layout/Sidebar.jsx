@@ -14,12 +14,11 @@ import notify from "../ui/CustomToast";
 import SidebarItem from "./menu/SidebarItem";
 import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
+import { AuthContext } from "../context/AuthContext";
 
 const Sidebar = ({
   menuItems,
   extraItems,
-  user,
-  setUser,
   isExpanded,
   setIsExpanded,
   setSelectedLabel,
@@ -28,6 +27,7 @@ const Sidebar = ({
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
+  const { user, setUser } = useContext(AuthContext);
   const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
@@ -133,12 +133,17 @@ const Sidebar = ({
         </div>
 
         <div className="border-t-gallery mt-auto flex cursor-pointer border-t py-6">
-          <Avatar className="mr-3 h-11 w-11 rounded-full" src={user.avatar.url} />
+          <Avatar
+            className="mr-3 h-11 w-11 rounded-full"
+            src={user?.avatar?.url}
+          />
           <div
-            className={`flex items-center justify-between overflow-hidden gap-5 transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-0"}`}
+            className={`flex items-center justify-between gap-5 overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-0"}`}
           >
             <div className="flex flex-col justify-between overflow-hidden">
-              <h4 className="font-body text-gravel text-sm">Welcome back 👋</h4>
+              <h4 className="font-body text-gravel text-sm whitespace-nowrap">
+                Welcome back 👋🏼
+              </h4>
               <span className="font-body text-ebony-clay text-base font-semibold whitespace-nowrap">
                 {user.first_name}
               </span>

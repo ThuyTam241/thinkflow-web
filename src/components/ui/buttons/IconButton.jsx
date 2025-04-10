@@ -7,7 +7,7 @@ const IconButton = ({
   src,
   label,
   onClick,
-  isLoading,
+  isProcessing,
   ...props
 }) => {
   return (
@@ -15,10 +15,10 @@ const IconButton = ({
       type={type}
       onClick={onClick}
       {...props}
-      disabled={isLoading}
+      disabled={isProcessing}
       className={`cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${label ? "group flex w-full items-center gap-2.5" : "rounded-full"}`}
     >
-      {isLoading ? (
+      {isProcessing ? (
         <ClipLoader size={20} color="var(--gallery)" />
       ) : Icon ? (
         <Icon
@@ -29,7 +29,7 @@ const IconButton = ({
       )}
       {label && (
         <span
-          className={`font-body text-gravel text-base whitespace-nowrap ${isLoading ? "" : "group-hover:text-indigo"}`}
+          className={`font-body text-gravel text-base whitespace-nowrap ${isProcessing ? "" : "group-hover:text-indigo"}`}
         >
           {label}
         </span>

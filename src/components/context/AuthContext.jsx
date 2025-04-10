@@ -29,16 +29,17 @@ export const AuthProvider = (props) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const getUserProfile = async () => {
+    setIsLoading(true);
     const user = await getUserProfileApi();
     if (user.data) {
       const { created_at, updated_at, ...profile } = user.data;
       setUser(profile);
     }
+    setIsLoading(false);
   };
 
   const checkAuth = async () => {
     await getUserProfile();
-    setIsLoading(false);
   };
 
   useEffect(() => {

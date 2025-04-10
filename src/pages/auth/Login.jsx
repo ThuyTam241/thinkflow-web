@@ -158,7 +158,7 @@ const LoginPage = () => {
               label="Sign In"
               type="submit"
               onClick={() => clearErrors()}
-              isLoading={isLogin}
+              isProcessing={isLogin}
             />
           </div>
         </form>

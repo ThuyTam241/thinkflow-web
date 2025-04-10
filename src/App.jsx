@@ -10,7 +10,7 @@ function App() {
     <>
       {isLoading ? (
         <div className="flex h-screen items-center justify-center">
-          <PuffLoader color="#6368d1" size={100} />
+          <PuffLoader color="var(--color-cornflower-blue)" size={100} />
         </div>
       ) : (
         <div>

@@ -173,7 +173,7 @@ const VerifyEmail = () => {
               label="Verify code"
               type="submit"
               onClick={() => clearErrors()}
-              isLoading={isVerify}
+              isProcessing={isVerify}
             />
           </div>
         </form>

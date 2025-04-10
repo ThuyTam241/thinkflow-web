@@ -183,7 +183,7 @@ const RegisterPage = () => {
               color="blue"
               label="Sign Up"
               type="submit"
-              isLoading={isRegister}
+              isProcessing={isRegister}
             />
           </div>
         </form>
