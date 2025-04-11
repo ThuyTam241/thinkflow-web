@@ -81,7 +81,6 @@ const ArchivedResources = () => {
   );
 
   const handleRestore = async (noteId) => {
-    console.log(noteId);
     const res = await unArchiveNoteApi(noteId);
     if (res.data) {
       notify("success", "Note restored!", "", "var(--color-silver-tree)");

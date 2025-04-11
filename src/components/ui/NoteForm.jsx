@@ -16,8 +16,12 @@ import {
   archiveNoteApi,
   createNewNoteApi,
   createNewTextNoteApi,
+  deleteAttachmentApi,
+  getAllNoteAttachmentsApi,
+  getAttachmentApi,
   updateNewNoteApi,
   updateNewTextNoteApi,
+  uploadAttachmentApi,
 } from "../../services/api.service";
 import notify from "../ui/CustomToast";
 
@@ -28,6 +32,12 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
     content: [],
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeletingFile, setIsDeletingFile] = useState(false);
+  const [pendingAttachments, setPendingAttachments] = useState([]);
+  const [attachmentsMarkedForDelete, setAttachmentsMarkedForDelete] = useState(
+    [],
+  );
   const [summary, setSummary] = useState(false);
   const [showSumary, setShowSumary] = useState(false);
 
@@ -54,43 +64,141 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
     }
   }, [activeNote, reset]);
 
-  const onSubmit = async (values) => {
-    if (activeNote) {
-      setIsProcessing(true);
-      const updatedNote = await updateNewNoteApi(
-        values.title,
-        activeNote.note_id,
-      );
-      if (updatedNote.data) {
-        const updatedNewTextNote = await updateNewTextNoteApi(
-          editorState,
-          activeNote.id,
+  const handleUploadFile = async (
+    attachment,
+    noteId,
+    currentEditorStateStr,
+  ) => {
+    const uploadFile = await uploadAttachmentApi(attachment.file, noteId);
+    if (uploadFile.data) {
+      const res = await getAttachmentApi(uploadFile.data);
+      if (res.data) {
+        const fileUrl = res.data.file_url;
+        const previewUrl = attachment.previewUrl;
+        currentEditorStateStr = currentEditorStateStr.replaceAll(
+          previewUrl,
+          fileUrl,
         );
-        setIsProcessing(false);
-        if (updatedNewTextNote.data) {
-          notify("success", "Note updated!", "", "var(--color-silver-tree)");
-          await loadNotesList(undefined, true);
-        }
-      } else {
-        notify("error", "Updated note failed", "", "var(--color-crimson-red)");
       }
     } else {
-      setIsProcessing(true);
-      const newNote = await createNewNoteApi(values.title);
-      if (newNote.data) {
-        const newTextNote = await createNewTextNoteApi(
-          editorState,
-          newNote.data,
+      notify("error", "Could not get file URL", "", "var(--color-crimson-red)");
+    }
+    return currentEditorStateStr;
+  };
+
+  const handleUploadAllFiles = async (
+    attachments,
+    noteId,
+    initialEditorState,
+  ) => {
+    let editorStateStr = JSON.stringify(initialEditorState);
+
+    for (const attachment of attachments) {
+      editorStateStr = await handleUploadFile(
+        attachment,
+        noteId,
+        editorStateStr,
+      );
+    }
+
+    const updatedEditorState = JSON.parse(editorStateStr);
+    setEditorState(updatedEditorState);
+    setPendingAttachments([]);
+    return updatedEditorState;
+  };
+
+  const unsetLink = async (editor) => {
+    const currentLink = editor.getAttributes("link")?.href;
+    if (!currentLink) return;
+    const isPreview = currentLink.startsWith("blob:");
+
+    if (!isPreview && activeNote?.note_id) {
+      const res = await getAllNoteAttachmentsApi(activeNote.note_id);
+      if (res.data?.length > 0) {
+        const attachments = res.data;
+        const attachment = attachments.find(
+          (attachment) => attachment.file_url === currentLink,
         );
-        setIsProcessing(false);
-        if (newTextNote.data) {
-          notify("success", "Note created!", "", "var(--color-silver-tree)");
-          await loadNotesList(undefined, true);
-          reset();
-          setEditorState({ type: "doc", content: [] });
+        if (attachment) {
+          setAttachmentsMarkedForDelete((prev) => [...prev, attachment.id]);
         }
-      } else {
-        notify("error", "Create note failed", "", "var(--color-crimson-red)");
+      }
+    }
+
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .unsetLink()
+      .run();
+  };
+
+  const onSubmit = async (values) => {
+    setIsProcessing(true);
+
+    const noteRes = activeNote
+      ? await updateNewNoteApi(values.title, activeNote.note_id)
+      : await createNewNoteApi(values.title);
+
+    if (!noteRes.data) {
+      notify(
+        "error",
+        activeNote ? "Updated note failed" : "Create note failed",
+        "",
+        "var(--color-crimson-red)",
+      );
+      setIsProcessing(false);
+      return;
+    }
+
+    const noteId = activeNote ? activeNote.note_id : noteRes.data;
+
+    // Upload files
+    setIsUploading(true);
+    let updatedEditorState = editorState;
+    if (pendingAttachments.length > 0) {
+      updatedEditorState = await handleUploadAllFiles(
+        pendingAttachments,
+        noteId,
+        editorState,
+      );
+    }
+    setIsUploading(false);
+
+    if (activeNote && attachmentsMarkedForDelete.length > 0) {
+      setIsDeletingFile(true);
+      for (const attachmentId of attachmentsMarkedForDelete) {
+        const res = await deleteAttachmentApi(attachmentId);
+        if (!res.data) {
+          notify(
+            "error",
+            "Delete attachment failed",
+            "",
+            "var(--color-crimson-red)",
+          );
+        }
+      }
+      setAttachmentsMarkedForDelete([]);
+      setIsDeletingFile(false);
+    }
+
+    const textNoteRes = activeNote
+      ? await updateNewTextNoteApi(updatedEditorState, activeNote.id)
+      : await createNewTextNoteApi(updatedEditorState, noteId);
+
+    setIsProcessing(false);
+
+    if (textNoteRes.data) {
+      notify(
+        "success",
+        activeNote ? "Note updated!" : "Note created!",
+        "",
+        "var(--color-silver-tree)",
+      );
+      await loadNotesList(undefined, true);
+      if (!activeNote) {
+        reset();
+        setEditorState({ type: "doc", content: [] });
       }
     }
   };
@@ -100,7 +208,7 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
     if (res.data) {
       notify("success", "Note archived!", "", "var(--color-silver-tree)");
       await loadNotesList(undefined, true);
-      reset();
+      reset({ title: "", date: today });
       setEditorState({ type: "doc", content: [] });
     } else {
       notify("error", "Archive note failed", "", "var(--color-crimson-red)");
@@ -154,7 +262,14 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
         />
       </div>
 
-      <Tiptap initialContent={editorState} setEditorState={setEditorState} />
+      <Tiptap
+        initialContent={editorState}
+        setEditorState={setEditorState}
+        setPendingAttachments={setPendingAttachments}
+        isUploading={isUploading}
+        isDeletingFile={isDeletingFile}
+        unsetLink={unsetLink}
+      />
 
       {summary && (
         <div className="mt-auto">

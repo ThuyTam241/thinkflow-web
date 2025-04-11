@@ -1,14 +1,12 @@
-import React from "react";
+import React, { useRef } from "react";
 import ToolbarButton from "../ui/Toolbar";
 import {
   MessageSquareQuote,
   List,
   ListOrdered,
-  Type,
   Heading1,
   Heading2,
   Heading3,
-  Pilcrow,
   Bold,
   Italic,
   Underline,
@@ -18,33 +16,54 @@ import {
   AlignJustify,
   Highlighter,
   Strikethrough,
-  Paperclip,
+  Link,
+  Unlink,
 } from "lucide-react";
+import EditAvatar from "../../assets/images/edit-avatar.png";
+import FileUploadInput from "../ui/inputs/FileUploadInput";
 
-const MenuBar = ({ editor }) => {
+const MenuBar = ({
+  editor,
+  setPendingAttachments,
+  isUploading,
+  isDeletingFile,
+  unsetLink,
+}) => {
   if (!editor) {
     return null;
   }
 
-  const options = [
-    { value: "paragraph", label: "Paragraph", icon: <Pilcrow size={16} /> },
-    { value: "1", label: "Heading 1", icon: <Heading1 size={16} /> },
-    { value: "2", label: "Heading 2", icon: <Heading2 size={16} /> },
-    { value: "3", label: "Heading 3", icon: <Heading3 size={16} /> },
-    { value: "text", label: "Text", icon: <Type size={16} /> },
-  ];
+  const fileInputRef = useRef(null);
 
-  const handleChange = (e) => {
-    const value = e.target.value;
-    editor.chain().focus();
-
-    if (value === "paragraph") {
-      editor.setParagraph().run();
-    } else if (value === "text") {
-      editor.clearNodes().run();
-    } else {
-      editor.toggleHeading({ level: Number(value) }).run();
+  const handlePreviewFile = async (event) => {
+    if (!event.target.files[0] || event.target.files.length === 0) {
+      return;
     }
+    const file = event.target.files[0];
+    const previewUrl = URL.createObjectURL(file);
+    setPendingAttachments((prev) => [...prev, { file, previewUrl }]);
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: file.name,
+            marks: [
+              {
+                type: "link",
+                attrs: {
+                  href: previewUrl,
+                  target: "_blank",
+                },
+              },
+            ],
+          },
+        ],
+      })
+      .run();
   };
 
   return (
@@ -141,11 +160,27 @@ const MenuBar = ({ editor }) => {
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
         />
       </div>
-      <ToolbarButton
-        isActive={editor.isActive("highlight")}
-        icon={Paperclip}
-        onClick={() => editor.chain().focus().toggleHighlight().run()}
-      />
+      <div className="flex items-center gap-4">
+        <FileUploadInput
+          src={EditAvatar}
+          ref={fileInputRef}
+          accept="*/*"
+          hidden={true}
+          onChange={handlePreviewFile}
+        />
+        <ToolbarButton
+          isActive={editor.isActive("link")}
+          icon={Link}
+          isProcessing={isUploading}
+          onClick={() => fileInputRef.current?.click()}
+        />
+        <ToolbarButton
+          isActive={editor.isActive("link")}
+          icon={Unlink}
+          onClick={() => unsetLink(editor)}
+          isProcessing={isDeletingFile}
+        />
+      </div>
       <ToolbarButton
         isActive={editor.isActive("highlight")}
         icon={Highlighter}

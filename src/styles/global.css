@@ -207,6 +207,29 @@
   h6 {
     font-size: 1rem;
   }
+
+  a {
+    color: var(--color-cornflower-blue);
+    cursor: pointer;
+    text-decoration: underline;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+.tiptap a[href^="blob:"] {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.8;
+  text-decoration: none !important;
+}
+
+.tiptap a[href^="blob:"]::after {
+  content: "   (Complete upload to access this file)";
+  font-size: 13px;
+  color: var(--color-crimson-red);
 }
 
 @keyframes pulse {
@@ -235,9 +258,11 @@
 
 .react-loading-skeleton {
   --base-color: var(--color-gallery) !important;
-  animation: pulse 1.7s ease-in-out infinite, jump 1.7s ease-in-out infinite !important;
+  animation:
+    pulse 1.7s ease-in-out infinite,
+    jump 1.7s ease-in-out infinite !important;
 }
 
 .react-loading-skeleton::after {
-   background-image: none !important;
+  background-image: none !important;
 }

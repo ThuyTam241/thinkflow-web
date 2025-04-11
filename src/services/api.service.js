@@ -131,6 +131,34 @@ const updateNewTextNoteApi = (text_content, text_noteId) => {
   return instance.patch(URL_BACKEND, data);
 };
 
+const uploadAttachmentApi = (file, noteId) => {
+  const URL_BACKEND = "/media/v1/media/attachments";
+  let config = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  };
+  const bodyFormData = new FormData();
+  bodyFormData.append("file", file);
+  bodyFormData.append("note-id", noteId);
+  return instance.post(URL_BACKEND, bodyFormData, config);
+};
+
+const deleteAttachmentApi = (attachmentId) => {
+  const URL_BACKEND = `media/v1/media/attachments/${attachmentId}`;
+  return instance.delete(URL_BACKEND);
+};
+
+const getAttachmentApi = (fileId) => {
+  const URL_BACKEND = `/media/v1/media/attachments/${fileId}`;
+  return instance.get(URL_BACKEND);
+};
+
+const getAllNoteAttachmentsApi = (noteId) => {
+  const URL_BACKEND = `/media/v1/media/attachments/notes/${noteId}`;
+  return instance.get(URL_BACKEND);
+};
+
 const getTextNoteApi = (noteId) => {
   const URL_BACKEND = `/note/v1/texts/note/${noteId}`;
   return instance.get(URL_BACKEND);
@@ -148,7 +176,7 @@ const unArchiveNoteApi = (noteId) => {
 
 const deleteNoteApi = (noteId) => {
   const URL_BACKEND = `/note/v1/notes/${noteId}`;
-  return instance.patch(URL_BACKEND);
+  return instance.delete(URL_BACKEND);
 };
 
 const getAllUserArchivedResources = (nextCursor, pageSize) => {
@@ -174,6 +202,10 @@ export {
   createNewTextNoteApi,
   updateNewNoteApi,
   updateNewTextNoteApi,
+  uploadAttachmentApi,
+  deleteAttachmentApi,
+  getAttachmentApi,
+  getAllNoteAttachmentsApi,
   getTextNoteApi,
   archiveNoteApi,
   unArchiveNoteApi,
