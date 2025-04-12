@@ -4,7 +4,10 @@ import IconButton from "../../components/ui/buttons/IconButton";
 import NoteForm from "../../components/ui/NoteForm";
 import { Tooltip } from "react-tooltip";
 import NoteCardSkeleton from "../../components/ui/skeleton/NoteCardSkeleton";
-import { getAllUserNotes, getTextNoteApi } from "../../services/api.service";
+import {
+  getAllUserNotes,
+  getTextNoteByNoteIdApi,
+} from "../../services/api.service";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { PulseLoader } from "react-spinners";
 
@@ -15,6 +18,7 @@ const MyNotes = () => {
   const [notesListData, setNotesListData] = useState([]);
   const [nextCursor, setNextCursor] = useState();
   const [totalNotes, setTotalNotes] = useState(0);
+  const [showSummary, setShowSummary] = useState(false);
 
   const loadNotesList = async (nextCursor, isInitial = false) => {
     if (isInitial) {
@@ -45,7 +49,7 @@ const MyNotes = () => {
   }, []);
 
   const handleActiveNote = async (note) => {
-    const res = await getTextNoteApi(note.id);
+    const res = await getTextNoteByNoteIdApi(note.id);
     if (res.data) {
       setActiveNote({
         id: res.data.id,
@@ -53,6 +57,7 @@ const MyNotes = () => {
         title: note.title,
         date: note.created_at,
         text_content: res.data.text_content,
+        summary: res.data.summary,
       });
     }
   };
@@ -66,7 +71,10 @@ const MyNotes = () => {
               All Notes
             </h2>
             <IconButton
-              onClick={() => setActiveNote(null)}
+              onClick={() => {
+                setShowSummary(false)
+                setActiveNote(null)}
+              }
               data-tooltip-id="add-note-tooltip"
               data-tooltip-content="Add New Note"
               size="w-6 h-6"
@@ -142,7 +150,13 @@ const MyNotes = () => {
 
       {/* Write note */}
       <div className="w-full rounded-md bg-white p-8 dark:bg-[#16163B]">
-        <NoteForm activeNote={activeNote} loadNotesList={loadNotesList} />
+        <NoteForm
+          activeNote={activeNote}
+          setActiveNote={setActiveNote}
+          loadNotesList={loadNotesList}
+          showSummary={showSummary}
+          setShowSummary={setShowSummary}
+        />
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ const Table = ({ data, columns, totalCount, pagination, setPagination }) => {
 
   return (
     <>
-      {data ? (
+      {data && data.length > 0 ? (
         <div className="space-y-10 h-full flex flex-col px-10">
           <table className="w-full border-collapse">
             <thead className="border-gallery border-b text-left">
@@ -35,7 +35,7 @@ const Table = ({ data, columns, totalCount, pagination, setPagination }) => {
                     <th
                       colSpan={header.colSpan}
                       key={header.id}
-                      className="text-ebony-clay font-body px-5 py-4 text-sm font-bold uppercase"
+                      className="text-ebony-clay font-body px-5 py-4 text-sm font-bold uppercase last:w-40"
                     >
                       {header.isPlaceholder
                         ? null

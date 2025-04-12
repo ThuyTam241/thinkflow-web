@@ -11,6 +11,7 @@ import Link from "@tiptap/extension-link";
 const Tiptap = ({
   initialContent,
   setEditorState,
+  getEditorInstance,
   setPendingAttachments,
   isUploading,
   isDeletingFile,
@@ -55,13 +56,13 @@ const Tiptap = ({
     },
   });
 
-  if (!editor) return null;
-
   useEffect(() => {
-    if (editor && initialContent) {
-      editor.commands.setContent(initialContent);
+    if (editor && getEditorInstance) {
+      getEditorInstance(editor);
     }
-  }, [editor, initialContent]);
+  }, [editor]);
+
+  if (!editor) return null;
 
   return (
     <div>
@@ -73,7 +74,7 @@ const Tiptap = ({
         unsetLink={() => unsetLink(editor)}
       />
       <EditorContent
-        className="no-scrollbar font-body text-ebony-clay flex max-h-[calc(100vh-666px)] overflow-y-auto"
+        className="no-scrollbar font-body text-ebony-clay flex max-h-[calc(100vh-654px)] overflow-y-auto"
         editor={editor}
       />
     </div>

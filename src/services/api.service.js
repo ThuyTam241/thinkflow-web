@@ -60,17 +60,17 @@ const loginGoogleApi = () => {
 const logoutApi = () => {
   const URL_BACKEND = "/auth/v1/logout";
   return instance.post(URL_BACKEND);
-}
+};
 
 const uploadImageApi = (file) => {
   const URL_BACKEND = "/media/v1/media/images";
   let config = {
     headers: {
-      "Content-Type": "multipart/form-data"
+      "Content-Type": "multipart/form-data",
     },
   };
   const bodyFormData = new FormData();
-  bodyFormData.append("file",file)
+  bodyFormData.append("file", file);
   return instance.post(URL_BACKEND, bodyFormData, config);
 };
 
@@ -101,9 +101,9 @@ const getAllUserNotes = (nextCursor) => {
 
 const createNewNoteApi = (title) => {
   const URL_BACKEND = "/note/v1/notes";
-   const data = {
-     title,
-   };
+  const data = {
+    title,
+  };
   return instance.post(URL_BACKEND, data);
 };
 
@@ -115,7 +115,7 @@ const createNewTextNoteApi = (text_content, noteId) => {
   return instance.post(URL_BACKEND, data);
 };
 
-const updateNewNoteApi = (title, noteId) => {
+const updateNoteApi = (title, noteId) => {
   const URL_BACKEND = `/note/v1/notes/${noteId}`;
   const data = {
     title,
@@ -123,12 +123,9 @@ const updateNewNoteApi = (title, noteId) => {
   return instance.patch(URL_BACKEND, data);
 };
 
-const updateNewTextNoteApi = (text_content, text_noteId) => {
+const updateTextNoteApi = (updateData, text_noteId) => {
   const URL_BACKEND = `/note/v1/texts/${text_noteId}`;
-  const data = {
-    text_content,
-  };
-  return instance.patch(URL_BACKEND, data);
+  return instance.patch(URL_BACKEND, updateData);
 };
 
 const uploadAttachmentApi = (file, noteId) => {
@@ -159,10 +156,16 @@ const getAllNoteAttachmentsApi = (noteId) => {
   return instance.get(URL_BACKEND);
 };
 
-const getTextNoteApi = (noteId) => {
+const getTextNoteByNoteIdApi = (noteId) => {
   const URL_BACKEND = `/note/v1/texts/note/${noteId}`;
   return instance.get(URL_BACKEND);
-}
+};
+
+const getTextNoteApi = (text_noteId) => {
+  const URL_BACKEND = `/note/v1/texts/${text_noteId}`;
+  return instance.get(URL_BACKEND);
+};
+
 
 const archiveNoteApi = (noteId) => {
   const URL_BACKEND = `/note/v1/notes/archive/${noteId}`;
@@ -179,9 +182,25 @@ const deleteNoteApi = (noteId) => {
   return instance.delete(URL_BACKEND);
 };
 
-const getAllUserArchivedResources = (nextCursor, pageSize) => {
+const getAllUserArchivedResourcesApi = (nextCursor, pageSize) => {
   const URL_BACKEND = `/note/v1/notes/archived?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=${pageSize}`;
   return instance.get(URL_BACKEND);
+};
+
+const createSummaryApi = (summary_text) => {
+  const URL_BACKEND = "gen/v1/gen/summaries";
+  const data = {
+    summary_text,
+  };
+  return instance.post(URL_BACKEND, data);
+};
+
+const updateSummaryApi = (summary_id, summary_text) => {
+  const URL_BACKEND = `/gen/v1/gen/summaries/${summary_id}`;
+  const data = {
+    summary_text,
+  };
+  return instance.patch(URL_BACKEND, data);
 };
 
 export {
@@ -200,15 +219,18 @@ export {
   getAllUserNotes,
   createNewNoteApi,
   createNewTextNoteApi,
-  updateNewNoteApi,
-  updateNewTextNoteApi,
+  updateNoteApi,
+  updateTextNoteApi,
   uploadAttachmentApi,
   deleteAttachmentApi,
   getAttachmentApi,
   getAllNoteAttachmentsApi,
+  getTextNoteByNoteIdApi,
   getTextNoteApi,
   archiveNoteApi,
   unArchiveNoteApi,
   deleteNoteApi,
-  getAllUserArchivedResources,
+  getAllUserArchivedResourcesApi,
+  createSummaryApi,
+  updateSummaryApi,
 };

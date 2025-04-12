@@ -6,7 +6,7 @@ import {
   FileText,
   Archive,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import IconButton from "./buttons/IconButton";
 import Tiptap from "../tiptap/TipTap";
 import { useForm } from "react-hook-form";
@@ -16,21 +16,32 @@ import {
   archiveNoteApi,
   createNewNoteApi,
   createNewTextNoteApi,
+  createSummaryApi,
   deleteAttachmentApi,
   getAllNoteAttachmentsApi,
   getAttachmentApi,
-  updateNewNoteApi,
-  updateNewTextNoteApi,
+  getTextNoteApi,
+  updateNoteApi,
+  updateSummaryApi,
+  updateTextNoteApi,
   uploadAttachmentApi,
 } from "../../services/api.service";
 import notify from "../ui/CustomToast";
+import TextArea from "./inputs/TextArea";
 
-const NoteForm = ({ activeNote, loadNotesList }) => {
+const NoteForm = ({
+  activeNote,
+  setActiveNote,
+  loadNotesList,
+  showSummary,
+  setShowSummary,
+}) => {
   const [showOption, setShowOption] = useState(false);
   const [editorState, setEditorState] = useState({
     type: "doc",
     content: [],
   });
+  const editorRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeletingFile, setIsDeletingFile] = useState(false);
@@ -38,8 +49,7 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
   const [attachmentsMarkedForDelete, setAttachmentsMarkedForDelete] = useState(
     [],
   );
-  const [summary, setSummary] = useState(false);
-  const [showSumary, setShowSumary] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -47,20 +57,36 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
     year: "numeric",
   });
 
-  const { register, handleSubmit, reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { dirtyFields },
+  } = useForm({
     defaultValues: {
       title: "",
       date: today,
+      summary: "",
     },
   });
 
   useEffect(() => {
     if (activeNote) {
-      reset({ title: activeNote.title, date: activeNote.date });
+      reset({
+        title: activeNote.title,
+        date: activeNote.date,
+        summary: activeNote.summary?.summary_text,
+      });
       setEditorState(activeNote.text_content);
+      if (editorRef.current) {
+        editorRef.current.commands.setContent(activeNote.text_content);
+      }
     } else {
-      reset({ title: "", date: today });
+      reset({ title: "", date: today, summary: "" });
       setEditorState({ type: "doc", content: [] });
+      if (editorRef.current) {
+        editorRef.current.commands.setContent({ type: "doc", content: [] });
+      }
     }
   }, [activeNote, reset]);
 
@@ -125,19 +151,14 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
       }
     }
 
-    editor
-      .chain()
-      .focus()
-      .extendMarkRange("link")
-      .unsetLink()
-      .run();
+    editor.chain().focus().extendMarkRange("link").unsetLink().run();
   };
 
   const onSubmit = async (values) => {
     setIsProcessing(true);
 
     const noteRes = activeNote
-      ? await updateNewNoteApi(values.title, activeNote.note_id)
+      ? await updateNoteApi(values.title, activeNote.note_id)
       : await createNewNoteApi(values.title);
 
     if (!noteRes.data) {
@@ -183,8 +204,16 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
     }
 
     const textNoteRes = activeNote
-      ? await updateNewTextNoteApi(updatedEditorState, activeNote.id)
+      ? await updateTextNoteApi(
+          { text_content: updatedEditorState },
+          activeNote.id,
+        )
       : await createNewTextNoteApi(updatedEditorState, noteId);
+
+    // Update summary
+    if (activeNote && dirtyFields.summary) {
+      await handleUpdateSummary(activeNote.summary.id, values.summary);
+    }
 
     setIsProcessing(false);
 
@@ -203,12 +232,53 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
     }
   };
 
+  const handleCancel = () => {
+    if (!activeNote || !editorRef.current) return;
+
+    reset({
+      title: activeNote.title,
+      date: activeNote.date,
+    });
+
+    editorRef.current.commands.setContent(activeNote.text_content);
+    setEditorState(activeNote.text_content);
+  };
+
+  const handleCreateSummary = async (text_content) => {
+    setIsSummarizing(true);
+    setShowSummary(true);
+    const summaryId = await createSummaryApi(text_content);
+    if (summaryId.data) {
+      const addSummary = await updateTextNoteApi(
+        { summary_id: summaryId.data },
+        activeNote?.id,
+      );
+      if (addSummary.data) {
+        notify("success", "Summary created!", "", "var(--color-silver-tree)");
+        const summaryRes = await getTextNoteApi(activeNote?.id);
+        if (summaryRes.data) {
+          reset({ summary: summaryRes.data.summary?.summary_text });
+        }
+      }
+    } else {
+      notify("error", "Create summary failed", "", "var(--color-crimson-red)");
+    }
+    setIsSummarizing(false);
+  };
+
+  const handleUpdateSummary = async (summary_id, summary_text) => {
+    const res = await updateSummaryApi(summary_id, summary_text);
+    if (!res.data)
+      notify("error", "Update summary failed", "", "var(--color-crimson-red)");
+  };
+
   const handleArchiveNote = async () => {
     const res = await archiveNoteApi(activeNote.note_id);
     if (res.data) {
       notify("success", "Note archived!", "", "var(--color-silver-tree)");
       await loadNotesList(undefined, true);
-      reset({ title: "", date: today });
+      setActiveNote(null);
+      reset({ title: "", date: today, summary: "" });
       setEditorState({ type: "doc", content: [] });
     } else {
       notify("error", "Archive note failed", "", "var(--color-crimson-red)");
@@ -236,8 +306,11 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
             {showOption && (
               <div className="border-gallery absolute top-0 right-8 z-20 space-y-3 rounded-md border bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:bg-[#16163B]">
                 <IconButton
+                  onClick={() =>
+                    handleCreateSummary(editorRef.current?.getText())
+                  }
                   icon={FileText}
-                  label={summary ? "Re-Summarize" : "Summarize"}
+                  label={activeNote.summary ? "Re-Summarize" : "Summarize"}
                 />
                 <IconButton
                   onClick={handleArchiveNote}
@@ -265,23 +338,26 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
       <Tiptap
         initialContent={editorState}
         setEditorState={setEditorState}
+        getEditorInstance={(editor) => (editorRef.current = editor)}
         setPendingAttachments={setPendingAttachments}
         isUploading={isUploading}
         isDeletingFile={isDeletingFile}
         unsetLink={unsetLink}
       />
 
-      {summary && (
-        <div className="mt-auto">
+      {(showSummary || isSummarizing || activeNote?.summary?.summary_text) && (
+        <div className="mt-2">
           <IconButton
-            onClick={() => setShowSumary(!showSumary)}
-            icon={showSumary ? ChevronUp : ChevronDown}
+            onClick={() => setShowSummary(!showSummary)}
+            icon={showSummary ? ChevronUp : ChevronDown}
             label="Summary"
+            isProcessing={isSummarizing}
           />
-          {showSumary && (
-            <TextInput
-              style="px-0! pb-0 outline-none mt-2 max-h-[200px] border-t pt-4 border-gallery focus:shadow-none"
+          {showSummary && (
+            <TextArea
+              style="px-0! pb-0 outline-none resize-none mt-2 border-t pt-4 border-gallery focus:shadow-none"
               {...register("summary")}
+              disabled={isSummarizing}
             />
           )}
         </div>
@@ -289,14 +365,7 @@ const NoteForm = ({ activeNote, loadNotesList }) => {
 
       {activeNote ? (
         <div className="mt-auto ml-auto flex gap-4">
-          <PrimaryButton
-            onClick={() => {
-              reset({ title: activeNote.title });
-              setEditorState(activeNote.text_content);
-            }}
-            color="white"
-            label="Cancel"
-          />
+          <PrimaryButton onClick={handleCancel} color="white" label="Cancel" />
           <PrimaryButton
             type="submit"
             color="blue"

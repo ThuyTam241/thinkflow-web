@@ -1,7 +1,7 @@
 import { ArchiveRestore, Trash2 } from "lucide-react";
 import {
   deleteNoteApi,
-  getAllUserArchivedResources,
+  getAllUserArchivedResourcesApi,
   unArchiveNoteApi,
 } from "../../services/api.service";
 import { useEffect, useMemo, useState } from "react";
@@ -16,13 +16,16 @@ const ArchivedResources = () => {
   const [cursorList, setCursorList] = useState([""]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 8,
   });
   const [totalResources, setTotalResources] = useState(0);
 
   const loadArchivedResourcesList = async (pageIndex, pageSize) => {
     const cursor = cursorList[pageIndex];
-    const res = await getAllUserArchivedResources(cursor, pagination.pageSize);
+    const res = await getAllUserArchivedResourcesApi(
+      cursor,
+      pagination.pageSize,
+    );
     if (res.data) {
       setArchivedResourcesListData(res.data);
       setTotalResources(res.paging.total);
@@ -50,7 +53,7 @@ const ArchivedResources = () => {
       },
       {
         accessorKey: "created_at",
-        header: "Date Created"
+        header: "Date Created",
       },
       {
         id: "actions",
