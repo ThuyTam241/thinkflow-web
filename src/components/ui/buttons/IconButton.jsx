@@ -2,6 +2,7 @@ import { ClipLoader } from "react-spinners";
 
 const IconButton = ({
   type = "button",
+  customStyle = "text-gravel stroke-[1.5]",
   size = "w-6 h-6",
   icon: Icon,
   src,
@@ -22,7 +23,7 @@ const IconButton = ({
         <ClipLoader size={20} color="var(--color-gallery)" />
       ) : Icon ? (
         <Icon
-          className={`text-gravel stroke-[1.5] ${label ? "group-hover:text-indigo h-5 w-5" : size}`}
+          className={`${customStyle} ${label ? "group-hover:text-indigo h-5 w-5" : size}`}
         />
       ) : (
         src && <img src={src} alt="icon" />

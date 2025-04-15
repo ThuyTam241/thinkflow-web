@@ -20,8 +20,8 @@ const Workspace = () => {
       icon: Notebook,
       label: "My Notes",
       children: [
-        { to: "/workspace/my-notes/text-notes", label: "Text Notes" },
-        { to: "/workspace/my-notes/audio-notes", label: "Audio Notes" },
+        { to: "/workspace/notes/my-notes", label: "Notes" },
+        { to: "/workspace/notes/shared-notes", label: "Shared with me" },
       ],
     },
     {

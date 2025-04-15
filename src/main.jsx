@@ -13,8 +13,8 @@ import VerifyEmail from "./pages/auth/VerifyEmail.jsx";
 import RoleBasedRoute from "./routes/RoleBasedRoute.jsx";
 import PublicRoute from "./routes/PublicRoute.jsx";
 import Workspace from "./pages/user/Workspace.jsx";
-import TextNotes from "./pages/user/TextNotes.jsx";
-import AudioNotes from "./pages/user/AudioNotes.jsx";
+import MyNotes from "./pages/user/MyNotes.jsx";
+import SharedNotes from "./pages/user/SharedNotes.jsx";
 import MindMaps from "./pages/user/MindMaps.jsx";
 import { useContext } from "react";
 import { ThemeContext } from "./components/context/ThemeContext.jsx";
@@ -37,8 +37,8 @@ const RootApp = () => {
         </Route>
         <Route element={<RoleBasedRoute isAllowed={["user"]} />}>
           <Route path="workspace" element={<Workspace />}>
-            <Route path="my-notes/text-notes" element={<TextNotes />} />
-            <Route path="my-notes/audio-notes" element={<AudioNotes />} />
+            <Route path="notes/my-notes" element={<MyNotes />} />
+            <Route path="notes/shared-notes" element={<SharedNotes />} />
             <Route path="ai-mind-maps" element={<MindMaps />} />
             <Route path="archived" element={<ArchivedResources />} />
             <Route path="settings" element={<Settings />} />
