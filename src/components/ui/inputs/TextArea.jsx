@@ -4,7 +4,7 @@ const TextArea = ({
   ...props
 }) => {
   return (
-    <div className="relative flex h-44 w-full flex-col items-start gap-1.5">
+    <div className="relative flex h-40 w-full flex-col items-start gap-1.5">
       <textarea
         placeholder={placeholder}
         {...props}

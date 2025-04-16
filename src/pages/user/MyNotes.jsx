@@ -31,6 +31,12 @@ const MyNotes = () => {
   const [nextCursor, setNextCursor] = useState();
   const [totalNotes, setTotalNotes] = useState(0);
 
+  const [activeTab, setActiveTab] = useState("text");
+  const tabs = [
+    { id: "text", label: "Text" },
+    { id: "audio", label: "Audio" },
+  ];
+
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "2-digit",
@@ -108,19 +114,29 @@ const MyNotes = () => {
   };
 
   useEffect(() => {
-    if (notesListData.length > 0) {
-      if (!activeNoteId) {
-        const firstId = notesListData[0]?.id;
-        sessionStorage.setItem("activeNoteId", firstId);
-        setActiveNoteId(firstId);
-        return;
-      }
-      sessionStorage.setItem("activeNoteId", activeNoteId);
-      getNoteDetail();
-    } else {
+    if (notesListData.length === 0) {
       sessionStorage.removeItem("activeNoteId");
       setNoteDetail(null);
+      return;
     }
+
+    const currentNote = notesListData.find((note) => note.id === activeNoteId);
+    if (!currentNote) return;
+
+    const hasLoadedSameNote = noteDetail?.id === currentNote.id;
+
+    if (!activeNoteId) {
+      const firstId = notesListData[0]?.id;
+      sessionStorage.setItem("activeNoteId", firstId);
+      setActiveNoteId(firstId);
+      return;
+    }
+
+    sessionStorage.setItem("activeNoteId", activeNoteId);
+
+    if (hasLoadedSameNote && noteDetail?.text_note) return;
+
+    getNoteDetail();
   }, [activeNoteId, notesListData]);
 
   useEffect(() => {
@@ -165,8 +181,21 @@ const MyNotes = () => {
     const res = await archiveNoteApi(activeNoteId);
     if (res.data) {
       notify("success", "Note archived!", "", "var(--color-silver-tree)");
-      setActiveNoteId(null);
-      await loadNotesList(undefined, true);
+      const updatedNotes = notesListData.filter(
+        (note) => note.id !== activeNoteId,
+      );
+      setNotesListData(updatedNotes);
+
+      const nextActiveNoteId = updatedNotes[0]?.id || null;
+
+      if (nextActiveNoteId) {
+        setActiveNoteId(nextActiveNoteId);
+        sessionStorage.setItem("activeNoteId", nextActiveNoteId);
+      } else {
+        setActiveNoteId(null);
+        setNoteDetail(null);
+        sessionStorage.removeItem("activeNoteId");
+      }
     } else {
       notify("error", "Archive note failed", "", "var(--color-crimson-red)");
     }
@@ -257,8 +286,8 @@ const MyNotes = () => {
         </div>
       </div>
 
-      <div className="w-full space-y-6 rounded-md bg-white p-8 dark:bg-[#16163B]">
-        <div className="relative flex cursor-pointer items-center justify-between gap-10">
+      <div className="flex w-full flex-col rounded-md bg-white p-8 dark:bg-[#16163B]">
+        <div className="relative mb-5 flex cursor-pointer items-center justify-between gap-10">
           {noteDetail ? (
             <>
               <TextInput
@@ -287,7 +316,7 @@ const MyNotes = () => {
           )}
         </div>
 
-        <div className="border-b-gallery flex items-center gap-10 border-b pb-2">
+        <div className="border-b-gallery flex items-center gap-10 border-b pb-1.5">
           <div className="font-body text-silver-chalice flex items-start text-base whitespace-nowrap">
             <CalendarDays className="mr-2 h-5 w-5 stroke-[1.8]" />
             <h3>Date created:</h3>
@@ -301,7 +330,25 @@ const MyNotes = () => {
           )}
         </div>
 
-        {noteDetail && <TextNotes noteDetail={noteDetail} />}
+        <div className="border-b-gallery mb-5 flex w-full border-b">
+          {tabs.map((tab, index) => (
+            <div
+              key={index}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex h-full w-1/2 cursor-pointer items-center justify-center rounded-tl-md rounded-bl-md ${activeTab === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
+            >
+              <span
+                className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeTab === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
+              >
+                {tab.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {noteDetail && activeTab === "text" && (
+          <TextNotes noteDetail={noteDetail} setNoteDetail={setNoteDetail} />
+        )}
       </div>
     </div>
   );

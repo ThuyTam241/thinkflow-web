@@ -18,16 +18,21 @@ import {
   Strikethrough,
   Link,
   Unlink,
+  FileText,
 } from "lucide-react";
 import EditAvatar from "../../assets/images/edit-avatar.png";
 import FileUploadInput from "../ui/inputs/FileUploadInput";
+import IconButton from "../ui/buttons/IconButton";
+import { Tooltip } from "react-tooltip";
 
 const MenuBar = ({
+  noteDetail,
   editor,
   setPendingAttachments,
   isUploading,
   isDeletingFile,
   unsetLink,
+  handleCreateSummary,
 }) => {
   if (!editor) {
     return null;
@@ -67,7 +72,7 @@ const MenuBar = ({
   };
 
   return (
-    <div className="border-gallery mb-4 flex items-center gap-8 border-b pb-2">
+    <div className="border-gallery mb-4 flex items-center gap-8 border-b pb-1.5">
       <div className="flex items-center gap-4">
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 1 })}
@@ -185,6 +190,38 @@ const MenuBar = ({
         isActive={editor.isActive("highlight")}
         icon={Highlighter}
         onClick={() => editor.chain().focus().toggleHighlight().run()}
+      />
+
+      <IconButton
+        onClick={handleCreateSummary}
+        customStyle="text-silver-chalice stroke-[1.5]"
+        size="w-5 h-5"
+        icon={FileText}
+        data-tooltip-id={
+          noteDetail?.text_note?.text_content?.summary
+            ? "resummarize-tooltip"
+            : "summarize-tooltip"
+        }
+        data-tooltip-content={
+          noteDetail?.text_note?.text_content?.summary
+            ? "Re-Summarize"
+            : "Summarize"
+        }
+      />
+      <Tooltip
+        id={
+          noteDetail?.text_note?.text_content?.summary
+            ? "resummarize-tooltip"
+            : "summarize-tooltip"
+        }
+        place="right"
+        style={{
+          backgroundColor: "#6368d1",
+          color: "white",
+          padding: "6px 12px",
+          borderRadius: "6px",
+        }}
+        className="font-body"
       />
     </div>
   );

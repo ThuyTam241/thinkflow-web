@@ -9,6 +9,7 @@ import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 
 const Tiptap = ({
+  noteDetail,
   initialContent,
   setEditorState,
   getEditorInstance,
@@ -16,6 +17,7 @@ const Tiptap = ({
   isUploading,
   isDeletingFile,
   unsetLink,
+  handleCreateSummary,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -67,14 +69,16 @@ const Tiptap = ({
   return (
     <div>
       <MenuBar
+        noteDetail={noteDetail}
         editor={editor}
         setPendingAttachments={setPendingAttachments}
         isUploading={isUploading}
         isDeletingFile={isDeletingFile}
         unsetLink={() => unsetLink(editor)}
+        handleCreateSummary={() => handleCreateSummary(editor.getText())}
       />
       <EditorContent
-        className="no-scrollbar font-body text-ebony-clay flex max-h-[calc(100vh-654px)] overflow-y-auto"
+        className="no-scrollbar font-body text-ebony-clay flex max-h-[calc(100vh-657px)] overflow-y-auto"
         editor={editor}
       />
     </div>

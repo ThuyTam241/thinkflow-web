@@ -18,7 +18,7 @@ import {
 import notify from "./CustomToast";
 import TextArea from "./inputs/TextArea";
 
-const TextNotes = ({ noteDetail }) => {
+const TextNotes = ({ noteDetail, setNoteDetail }) => {
   const [editorState, setEditorState] = useState({
     type: "doc",
     content: [],
@@ -38,7 +38,6 @@ const TextNotes = ({ noteDetail }) => {
     register,
     handleSubmit,
     reset,
-    getValues,
     formState: { dirtyFields },
   } = useForm({
     defaultValues: {
@@ -48,18 +47,12 @@ const TextNotes = ({ noteDetail }) => {
 
   useEffect(() => {
     if (noteDetail.text_note) {
-      const summary = noteDetail.text_note.text_content.summary?.summary_text;
-      const textContent = noteDetail.text_note.text_content;
-
-      if (summary !== getValues("summary")) {
-        reset({ summary });
-      }
-
-      if (textContent !== editorState) {
-        setEditorState(textContent);
-        if (editorRef.current) {
-          editorRef.current.commands.setContent(textContent);
-        }
+      reset({ summary: noteDetail.text_note.summary?.summary_text });
+      setEditorState(noteDetail.text_note.text_content);
+      if (editorRef.current) {
+        editorRef.current.commands.setContent(
+          noteDetail.text_note.text_content,
+        );
       }
     } else {
       reset({ summary: "" });
@@ -190,6 +183,17 @@ const TextNotes = ({ noteDetail }) => {
         "",
         "var(--color-silver-tree)",
       );
+      setNoteDetail((prev) => ({
+        ...prev,
+        text_note: {
+          ...prev.text_note,
+          text_content: updatedEditorState,
+          summary: {
+            ...prev.text_note.summary,
+            summary_text: values.summary,
+          },
+        },
+      }));
       if (!noteDetail.text_note) {
         reset();
         setEditorState({ type: "doc", content: [] });
@@ -208,16 +212,26 @@ const TextNotes = ({ noteDetail }) => {
     setIsSummarizing(true);
     setShowSummary(true);
     const summaryId = await createSummaryApi(text_content);
+    console.log("summaryId", summaryId);
     if (summaryId.data) {
       const addSummary = await updateTextNoteApi(
         { summary_id: summaryId.data },
         noteDetail?.text_note?.id,
       );
+      console.log("addSummary", addSummary);
       if (addSummary.data) {
         notify("success", "Summary created!", "", "var(--color-silver-tree)");
         const summaryRes = await getTextNoteApi(noteDetail?.text_note?.id);
+        console.log("addSummary", summaryRes);
         if (summaryRes.data) {
           reset({ summary: summaryRes.data.summary?.summary_text });
+          setNoteDetail((prev) => ({
+            ...prev,
+            text_note: {
+              ...prev.text_note,
+              summary: summaryRes.data.summary,
+            },
+          }));
         }
       }
     } else {
@@ -228,49 +242,24 @@ const TextNotes = ({ noteDetail }) => {
 
   const handleUpdateSummary = async (summary_id, summary_text) => {
     const res = await updateSummaryApi(summary_id, summary_text);
-    if (!res.data)
-      notify("error", "Update summary failed", "", "var(--color-crimson-red)");
+    if (!res.data) notify("error", "Update summary failed", "", "var(--color-crimson-red)");
+    setNoteDetail((prev) => ({
+      ...prev,
+      text_note: {
+        ...prev.text_note,
+        summary: summaryRes.data.summary,
+      },
+    }));
   };
 
   return (
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className="flex h-full w-full flex-col gap-6"
+      className="flex h-full w-full flex-col gap-5"
     >
-      {/* <div className="flex cursor-pointer items-center justify-between gap-10">
-        <TextInput
-          style="text-2xl px-0! font-body font-semibold outline-none focus:shadow-none"
-          placeholder="Title"
-          {...register("title")}
-        />
-        {noteDetail && (
-          <div
-            onClick={() => setShowOption(!showOption)}
-            className="border-silver-chalice relative h-7 w-7 rounded-full border p-1"
-          >
-            <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
-            {showOption && (
-              <div className="border-gallery absolute top-0 right-8 z-20 space-y-3 rounded-md border bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:bg-[#16163B]">
-                <IconButton
-                  onClick={() =>
-                    handleCreateSummary(editorRef.current?.getText())
-                  }
-                  icon={FileText}
-                  label={noteDetail.summary ? "Re-Summarize" : "Summarize"}
-                />
-                <IconButton
-                  onClick={handleArchiveNote}
-                  icon={Archive}
-                  label="Archive"
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div> */}
-
       <Tiptap
+        noteDetail={noteDetail}
         initialContent={editorState}
         setEditorState={setEditorState}
         getEditorInstance={(editor) => (editorRef.current = editor)}
@@ -278,11 +267,12 @@ const TextNotes = ({ noteDetail }) => {
         isUploading={isUploading}
         isDeletingFile={isDeletingFile}
         unsetLink={unsetLink}
+        handleCreateSummary={handleCreateSummary}
       />
 
       {(showSummary ||
         isSummarizing ||
-        noteDetail?.text_note?.text_content?.summary?.summary_text) && (
+        noteDetail?.text_note?.summary?.summary_text) && (
         <div className="mt-2">
           <IconButton
             onClick={() => setShowSummary(!showSummary)}
@@ -292,7 +282,7 @@ const TextNotes = ({ noteDetail }) => {
           />
           {showSummary && (
             <TextArea
-              style="px-0! pb-0 outline-none resize-none mt-2 border-t pt-4 border-gallery focus:shadow-none"
+              style="outline-none resize-none mt-2 border-t pt-4 border-gallery focus:shadow-none"
               {...register("summary")}
               disabled={isSummarizing}
               defaultValue={
@@ -304,7 +294,7 @@ const TextNotes = ({ noteDetail }) => {
       )}
 
       {noteDetail.text_note ? (
-        <div className="ml-auto flex gap-4">
+        <div className="mt-auto ml-auto flex gap-4">
           <PrimaryButton onClick={handleCancel} color="white" label="Cancel" />
           <PrimaryButton
             type="submit"
@@ -314,7 +304,7 @@ const TextNotes = ({ noteDetail }) => {
           />
         </div>
       ) : (
-        <div className="ml-auto">
+        <div className="mt-auto ml-auto">
           <PrimaryButton
             type="submit"
             color="blue"

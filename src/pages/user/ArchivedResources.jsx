@@ -63,15 +63,11 @@ const ArchivedResources = () => {
             <div className="flex gap-10">
               <IconButton
                 size="w-5 h-5"
-                data-tooltip-id="restore-tooltip"
-                data-tooltip-content="Restore"
                 onClick={() => handleRestore(row.original.id)}
                 icon={ArchiveRestore}
               />
               <IconButton
                 size="w-5 h-5"
-                data-tooltip-id="delete-tooltip"
-                data-tooltip-content="Delete"
                 onClick={() => handleDelete(row.original.id)}
                 icon={Trash2}
               />
