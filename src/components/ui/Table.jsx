@@ -13,20 +13,16 @@ const Table = ({ data, columns, totalCount, pagination, setPagination }) => {
     state: {
       pagination,
     },
-    onPaginationChange: (updater) => {
-      const next =
-        typeof updater === "function" ? updater(pagination) : updater;
-      setPagination(next);
-    },
-    manualPagination: true,
     getCoreRowModel: getCoreRowModel(),
-    pageCount: Math.ceil(totalCount / pagination.pageSize),
+    onPaginationChange: setPagination,
+    manualPagination: true,
+    pageCount: totalCount ? Math.ceil(totalCount / pagination.pageSize) : 0,
   });
 
   return (
     <>
       {data && data.length > 0 ? (
-        <div className="space-y-10 h-full flex flex-col px-10">
+        <div className="flex h-full flex-col space-y-10 px-10">
           <table className="w-full border-collapse">
             <thead className="border-gallery border-b text-left">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -35,7 +31,7 @@ const Table = ({ data, columns, totalCount, pagination, setPagination }) => {
                     <th
                       colSpan={header.colSpan}
                       key={header.id}
-                      className="text-ebony-clay font-body px-5 py-4 text-sm font-bold uppercase last:w-40"
+                      className="text-ebony-clay font-body px-5 py-4 text-sm font-bold uppercase first:w-[15%] last:w-[20%] nth-[2]:w-[35%] nth-[3]:w-[30%]"
                     >
                       {header.isPlaceholder
                         ? null
@@ -90,7 +86,7 @@ const Table = ({ data, columns, totalCount, pagination, setPagination }) => {
         </div>
       ) : (
         <p className="font-body text-ebony-clay text-center text-sm italic">
-          You don't have any archived resources yet.
+          You don't have any resources yet.
         </p>
       )}
     </>

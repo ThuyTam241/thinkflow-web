@@ -18,7 +18,7 @@ import {
   Strikethrough,
   Link,
   Unlink,
-  FileText,
+  Sparkles,
 } from "lucide-react";
 import EditAvatar from "../../assets/images/edit-avatar.png";
 import FileUploadInput from "../ui/inputs/FileUploadInput";
@@ -192,37 +192,39 @@ const MenuBar = ({
         onClick={() => editor.chain().focus().toggleHighlight().run()}
       />
 
-      <IconButton
-        onClick={handleCreateSummary}
-        customStyle="text-silver-chalice stroke-[1.5]"
-        size="w-5 h-5"
-        icon={FileText}
-        data-tooltip-id={
-          noteDetail?.text_note?.text_content?.summary
-            ? "resummarize-tooltip"
-            : "summarize-tooltip"
-        }
-        data-tooltip-content={
-          noteDetail?.text_note?.text_content?.summary
-            ? "Re-Summarize"
-            : "Summarize"
-        }
-      />
-      <Tooltip
-        id={
-          noteDetail?.text_note?.text_content?.summary
-            ? "resummarize-tooltip"
-            : "summarize-tooltip"
-        }
-        place="right"
-        style={{
-          backgroundColor: "#6368d1",
-          color: "white",
-          padding: "6px 12px",
-          borderRadius: "6px",
-        }}
-        className="font-body"
-      />
+      {noteDetail?.text_note?.text_content && (
+        <>
+          <IconButton
+            onClick={handleCreateSummary}
+            customStyle="text-silver-chalice stroke-[1.5]"
+            size="w-5 h-5"
+            icon={Sparkles}
+            data-tooltip-id={
+              noteDetail?.text_note?.summary
+                ? "resummarize-tooltip"
+                : "summarize-tooltip"
+            }
+            data-tooltip-content={
+              noteDetail?.text_note?.summary ? "Resummarize" : "Summarize"
+            }
+          />
+          <Tooltip
+            id={
+              noteDetail?.text_note?.summary
+                ? "resummarize-tooltip"
+                : "summarize-tooltip"
+            }
+            place="right"
+            style={{
+              backgroundColor: "#6368d1",
+              color: "white",
+              padding: "6px 12px",
+              borderRadius: "6px",
+            }}
+            className="font-body"
+          />
+        </>
+      )}
     </div>
   );
 };

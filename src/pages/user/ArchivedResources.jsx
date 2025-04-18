@@ -13,26 +13,19 @@ const ArchivedResources = () => {
   const [archivedResourcesListData, setArchivedResourcesListData] = useState(
     [],
   );
-  const [cursorList, setCursorList] = useState([""]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 8,
   });
   const [totalResources, setTotalResources] = useState(0);
 
-  const loadArchivedResourcesList = async (pageIndex, pageSize) => {
-    const cursor = cursorList[pageIndex];
-    const res = await getAllUserArchivedResourcesApi(
-      cursor,
-      pagination.pageSize,
-    );
+  const loadArchivedResourcesList = async (pageIndex) => {
+    const page = pageIndex + 1;
+    const res = await getAllUserArchivedResourcesApi(page, pagination.pageSize);
+
     if (res.data) {
       setArchivedResourcesListData(res.data);
       setTotalResources(res.paging.total);
-      const nextCursor = res.paging.next_cursor;
-      if (nextCursor && !cursorList.includes(nextCursor)) {
-        setCursorList((prev) => [...prev, nextCursor]);
-      }
     }
   };
 
@@ -40,12 +33,14 @@ const ArchivedResources = () => {
     loadArchivedResourcesList(pagination.pageIndex);
   }, [pagination.pageIndex]);
 
+  const startIndex = pagination.pageIndex * pagination.pageSize;
+
   const columns = useMemo(
     () => [
       {
         id: "no",
         header: "No.",
-        cell: ({ row }) => row.index + 1,
+        cell: ({ row }) => startIndex + row.index + 1,
       },
       {
         accessorKey: "title",
@@ -58,32 +53,48 @@ const ArchivedResources = () => {
       {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => {
-          return (
-            <div className="flex gap-10">
-              <IconButton
-                size="w-5 h-5"
-                onClick={() => handleRestore(row.original.id)}
-                icon={ArchiveRestore}
-              />
-              <IconButton
-                size="w-5 h-5"
-                onClick={() => handleDelete(row.original.id)}
-                icon={Trash2}
-              />
-            </div>
-          );
-        },
+        cell: ({ row }) => (
+          <div className="flex gap-10">
+            <IconButton
+              size="w-5 h-5"
+              onClick={() => handleRestore(row.original.id)}
+              icon={ArchiveRestore}
+            />
+            <IconButton
+              size="w-5 h-5"
+              onClick={() => handleDelete(row.original.id)}
+              icon={Trash2}
+            />
+          </div>
+        ),
       },
     ],
-    [],
+    [pagination.pageIndex],
   );
+
+  const refreshListAfterChange = async () => {
+    const totalAfter = totalResources - 1;
+    const maxPage = Math.ceil(totalAfter / pagination.pageSize);
+
+    let newPageIndex = pagination.pageIndex;
+
+    if (pagination.pageIndex >= maxPage && maxPage > 0) {
+      newPageIndex = Math.max(0, maxPage - 1);
+    }
+
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: newPageIndex,
+    }));
+
+    await loadArchivedResourcesList(newPageIndex);
+  };
 
   const handleRestore = async (noteId) => {
     const res = await unArchiveNoteApi(noteId);
     if (res.data) {
       notify("success", "Note restored!", "", "var(--color-silver-tree)");
-      await loadArchivedResourcesList();
+      await refreshListAfterChange();
     } else {
       notify("error", "Restore note failed", "", "var(--color-crimson-red)");
     }
@@ -93,7 +104,7 @@ const ArchivedResources = () => {
     const res = await deleteNoteApi(noteId);
     if (res.data) {
       notify("success", "Note deleted!", "", "var(--color-silver-tree)");
-      await loadArchivedResourcesList();
+      await refreshListAfterChange();
     } else {
       notify("error", "Delete note failed", "", "var(--color-crimson-red)");
     }

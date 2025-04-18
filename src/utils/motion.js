@@ -125,3 +125,22 @@ export const getTopbarStyles = (isExpanded) => ({
   left: isExpanded ? 281 : 101,
   transition: "left 0.3s ease-in-out",
 });
+
+export const audioExpandVariants = {
+  collapsed: {
+    height: 0,
+    opacity: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut",
+    },
+  },
+  expanded: {
+    height: "auto",
+    opacity: 1,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut",
+    },
+  },
+};

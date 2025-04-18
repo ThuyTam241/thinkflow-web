@@ -1,16 +1,14 @@
 const TextArea = ({
-  style = "text-sm md:text-base outline",
+  style = "text-ebony-clay h-full",
   placeholder,
   ...props
 }) => {
   return (
-    <div className="relative flex h-40 w-full flex-col items-start gap-1.5">
-      <textarea
-        placeholder={placeholder}
-        {...props}
-        className={`outline-gallery h-full peer no-scrollbar font-body text-ebony-clay w-full px-3 py-2 ${style} focus:outline-indigo focus:shadow-[0px_0px_8px_rgba(107,118,246,0.4)]`}
-      />
-    </div>
+    <textarea
+      placeholder={placeholder}
+      {...props}
+      className={`no-scrollbar font-body w-full resize-none text-sm outline-none md:text-base ${style}`}
+    />
   );
 };
 

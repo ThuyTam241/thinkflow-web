@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, FileText } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import IconButton from "./buttons/IconButton";
 import Tiptap from "../tiptap/TipTap";
@@ -39,11 +39,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     handleSubmit,
     reset,
     formState: { dirtyFields },
-  } = useForm({
-    defaultValues: {
-      summary: "",
-    },
-  });
+  } = useForm();
 
   useEffect(() => {
     if (noteDetail.text_note) {
@@ -169,7 +165,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     // Update summary
     if (noteDetail.text_note && dirtyFields.summary) {
       await handleUpdateSummary(
-        noteDetail.text_note.text_content.summary.id,
+        noteDetail.text_note.summary?.id,
         values.summary,
       );
     }
@@ -185,14 +181,16 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
       );
       setNoteDetail((prev) => ({
         ...prev,
-        text_note: {
-          ...prev.text_note,
-          text_content: updatedEditorState,
-          summary: {
-            ...prev.text_note.summary,
-            summary_text: values.summary,
-          },
-        },
+        text_note: noteDetail.text_note
+          ? {
+              ...prev.text_note,
+              text_content: updatedEditorState,
+            }
+          : {
+              id: textNoteRes.data,
+              text_content: updatedEditorState,
+              summary: null,
+            },
       }));
       if (!noteDetail.text_note) {
         reset();
@@ -212,17 +210,14 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     setIsSummarizing(true);
     setShowSummary(true);
     const summaryId = await createSummaryApi(text_content);
-    console.log("summaryId", summaryId);
     if (summaryId.data) {
       const addSummary = await updateTextNoteApi(
         { summary_id: summaryId.data },
         noteDetail?.text_note?.id,
       );
-      console.log("addSummary", addSummary);
       if (addSummary.data) {
         notify("success", "Summary created!", "", "var(--color-silver-tree)");
         const summaryRes = await getTextNoteApi(noteDetail?.text_note?.id);
-        console.log("addSummary", summaryRes);
         if (summaryRes.data) {
           reset({ summary: summaryRes.data.summary?.summary_text });
           setNoteDetail((prev) => ({
@@ -242,12 +237,16 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
 
   const handleUpdateSummary = async (summary_id, summary_text) => {
     const res = await updateSummaryApi(summary_id, summary_text);
-    if (!res.data) notify("error", "Update summary failed", "", "var(--color-crimson-red)");
+    if (!res.data)
+      notify("error", "Update summary failed", "", "var(--color-crimson-red)");
     setNoteDetail((prev) => ({
       ...prev,
       text_note: {
         ...prev.text_note,
-        summary: summaryRes.data.summary,
+        summary: {
+          id: summary_id,
+          summary_text: summary_text,
+        },
       },
     }));
   };
@@ -270,9 +269,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
         handleCreateSummary={handleCreateSummary}
       />
 
-      {(showSummary ||
-        isSummarizing ||
-        noteDetail?.text_note?.summary?.summary_text) && (
+      {(showSummary || isSummarizing || noteDetail?.text_note?.summary) && (
         <div className="mt-2">
           <IconButton
             onClick={() => setShowSummary(!showSummary)}
@@ -281,14 +278,9 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
             isProcessing={isSummarizing}
           />
           {showSummary && (
-            <TextArea
-              style="outline-none resize-none mt-2 border-t pt-4 border-gallery focus:shadow-none"
-              {...register("summary")}
-              disabled={isSummarizing}
-              defaultValue={
-                noteDetail.text_note?.text_content?.summary?.summary_text || ""
-              }
-            />
+            <div className="border-gallery mt-1.5 h-40 border-t py-4">
+              <TextArea {...register("summary")} disabled={isSummarizing} />
+            </div>
           )}
         </div>
       )}

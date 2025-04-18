@@ -7,6 +7,7 @@ import NoteCardSkeleton from "../../components/ui/skeleton/NoteCardSkeleton";
 import {
   archiveNoteApi,
   createNewNoteApi,
+  getAllAudioApi,
   getAllUserNotes,
   getTextNoteByNoteIdApi,
   updateNoteApi,
@@ -17,6 +18,7 @@ import TextInput from "../../components/ui/inputs/TextInput";
 import { useForm } from "react-hook-form";
 import notify from "../../components/ui/CustomToast";
 import Skeleton from "react-loading-skeleton";
+import AudioNotes from "../../components/ui/AudioNotes";
 
 const MyNotes = () => {
   const [activeNoteId, setActiveNoteId] = useState(
@@ -26,16 +28,23 @@ const MyNotes = () => {
 
   const [isInitialLoadingNotes, setIsInitialLoadingNotes] = useState(true);
   const [isLoadMoreNotes, setIsLoadMoreNotes] = useState(false);
+  const [isFetchingNote, setIsFetchingNote] = useState(false);
 
   const [notesListData, setNotesListData] = useState([]);
   const [nextCursor, setNextCursor] = useState();
   const [totalNotes, setTotalNotes] = useState(0);
 
-  const [activeTab, setActiveTab] = useState("text");
+  const [activeNoteType, setActiveNoteType] = useState(
+    sessionStorage.getItem("activeNoteType") || "text",
+  );
   const tabs = [
     { id: "text", label: "Text" },
     { id: "audio", label: "Audio" },
   ];
+
+  useEffect(() => {
+    sessionStorage.setItem("activeNoteType", activeNoteType);
+  }, [activeNoteType]);
 
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -82,22 +91,21 @@ const MyNotes = () => {
   }, []);
 
   const getNoteDetail = async () => {
+    if (isFetchingNote) return;
+    setIsFetchingNote(true);
+
     const note = notesListData.find((note) => note.id === activeNoteId);
-    if (!note) return;
+    if (!note) {
+      setIsFetchingNote(false);
+      return;
+    }
 
     setNoteDetail({
       id: note.id,
       title: note.title,
       date: note.created_at,
       text_note: null,
-      audio_note: [
-        {
-          id: "",
-          file_url: "",
-          transcript: null,
-          summary: null,
-        },
-      ],
+      audio_note: [],
     });
 
     const textContent = await getTextNoteByNoteIdApi(note.id);
@@ -111,7 +119,30 @@ const MyNotes = () => {
         },
       }));
     }
+
+    const audioContent = await getAllAudioApi(note.id);
+    if (audioContent.data) {
+      const mappedAudioData = audioContent.data.map((item) => ({
+        id: item.id,
+        file_url: item.file_url,
+        isPlaying: false,
+        isExpanded: false,
+        transcript: null,
+        summary: null,
+        duration: null,
+      }));
+      setNoteDetail((prev) => ({
+        ...prev,
+        audio_note: mappedAudioData,
+      }));
+    }
+
+    setIsFetchingNote(false);
   };
+
+  useEffect(() => {
+    loadNotesList(undefined, true);
+  }, []);
 
   useEffect(() => {
     if (notesListData.length === 0) {
@@ -120,22 +151,20 @@ const MyNotes = () => {
       return;
     }
 
-    const currentNote = notesListData.find((note) => note.id === activeNoteId);
-    if (!currentNote) return;
-
-    const hasLoadedSameNote = noteDetail?.id === currentNote.id;
-
     if (!activeNoteId) {
-      const firstId = notesListData[0]?.id;
-      sessionStorage.setItem("activeNoteId", firstId);
-      setActiveNoteId(firstId);
+      const firstNoteId = notesListData[0].id;
+      setActiveNoteId(firstNoteId);
+      sessionStorage.setItem("activeNoteId", firstNoteId);
       return;
     }
 
-    sessionStorage.setItem("activeNoteId", activeNoteId);
+    const note = notesListData.find((n) => n.id === activeNoteId);
+    if (!note) return;
 
+    const hasLoadedSameNote = noteDetail?.id === note.id;
     if (hasLoadedSameNote && noteDetail?.text_note) return;
 
+    sessionStorage.setItem("activeNoteId", activeNoteId);
     getNoteDetail();
   }, [activeNoteId, notesListData]);
 
@@ -185,6 +214,7 @@ const MyNotes = () => {
         (note) => note.id !== activeNoteId,
       );
       setNotesListData(updatedNotes);
+      setTotalNotes(updatedNotes.length);
 
       const nextActiveNoteId = updatedNotes[0]?.id || null;
 
@@ -261,6 +291,7 @@ const MyNotes = () => {
                 <div
                   key={note.id}
                   onClick={() => {
+                    if (isFetchingNote || note.id === activeNoteId) return;
                     setActiveNoteId(note.id);
                   }}
                   className={`mb-3 cursor-pointer rounded-md border px-4 py-3 ${note.id === activeNoteId ? "bg-hawkes-blue/30 border-indigo/10 dark:bg-[#0A0930]" : "border-gallery"}`}
@@ -312,7 +343,7 @@ const MyNotes = () => {
               </div>
             </>
           ) : (
-            <Skeleton height={24} containerClassName="flex-1" />
+            <Skeleton height={44} containerClassName="flex-1" />
           )}
         </div>
 
@@ -334,20 +365,27 @@ const MyNotes = () => {
           {tabs.map((tab, index) => (
             <div
               key={index}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex h-full w-1/2 cursor-pointer items-center justify-center rounded-tl-md rounded-bl-md ${activeTab === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
+              onClick={() => setActiveNoteType(tab.id)}
+              className={`flex h-full w-1/2 cursor-pointer items-center justify-center rounded-tl-md rounded-bl-md ${activeNoteType === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
             >
               <span
-                className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeTab === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
+                className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
               >
-                {tab.label}
+                {tab.label}{" "}
+                {tab.label === "Audio" && noteDetail
+                  ? ` (${noteDetail.audio_note?.length})`
+                  : ""}
               </span>
             </div>
           ))}
         </div>
 
-        {noteDetail && activeTab === "text" && (
+        {noteDetail && activeNoteType === "text" && (
           <TextNotes noteDetail={noteDetail} setNoteDetail={setNoteDetail} />
+        )}
+
+        {noteDetail && activeNoteType === "audio" && (
+          <AudioNotes noteDetail={noteDetail} setNoteDetail={setNoteDetail} />
         )}
       </div>
     </div>

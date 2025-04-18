@@ -182,8 +182,8 @@ const deleteNoteApi = (noteId) => {
   return instance.delete(URL_BACKEND);
 };
 
-const getAllUserArchivedResourcesApi = (nextCursor, pageSize) => {
-  const URL_BACKEND = `/note/v1/notes/archived?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=${pageSize}`;
+const getAllUserArchivedResourcesApi = (page, pageSize) => {
+  const URL_BACKEND = `/note/v1/notes/archived?${page ? `page=${page}&` : ""}limit=${pageSize}`;
   return instance.get(URL_BACKEND);
 };
 
@@ -201,6 +201,38 @@ const updateSummaryApi = (summary_id, summary_text) => {
     summary_text,
   };
   return instance.patch(URL_BACKEND, data);
+};
+
+const uploadAudioApi = (file, noteId) => {
+  const URL_BACKEND = `/media/v1/media/audios/${noteId}`;
+  let config = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  };
+  const bodyFormData = new FormData();
+  bodyFormData.append("file", file);
+  return instance.post(URL_BACKEND, bodyFormData, config);
+};
+
+const updateAudioApi = (updateData, noteId) => {
+  const URL_BACKEND = `/media/v1/media/audios/${noteId}`;
+  return instance.patch(URL_BACKEND, updateData);
+};
+
+const deleteAudioApi = (audioId) => {
+  const URL_BACKEND = `/media/v1/media/audios/${audioId}`;
+  return instance.delete(URL_BACKEND);
+};
+
+const getAudioApi = (audioId) => {
+  const URL_BACKEND = `/media/v1/media/audios/${audioId}`;
+  return instance.get(URL_BACKEND);
+};
+
+const getAllAudioApi = (noteId) => {
+  const URL_BACKEND = `/media/v1/media/audios?note-id=${noteId}&limit=100`;
+  return instance.get(URL_BACKEND);
 };
 
 export {
@@ -233,4 +265,9 @@ export {
   getAllUserArchivedResourcesApi,
   createSummaryApi,
   updateSummaryApi,
+  uploadAudioApi,
+  updateAudioApi,
+  deleteAudioApi,
+  getAudioApi,
+  getAllAudioApi,
 };
