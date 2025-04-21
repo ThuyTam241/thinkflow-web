@@ -35,8 +35,22 @@ const WaveformPlayer = ({ audioUrl, length, index }) => {
   }, [wavesurfer, audioUrl]);
 
   const onPlayPause = useCallback(() => {
-    wavesurfer && wavesurfer.playPause();
-  }, [wavesurfer]);
+    if (!wavesurfer) return;
+
+    if (
+      window.currentlyPlayingWave &&
+      window.currentlyPlayingWave !== wavesurfer
+    ) {
+      window.currentlyPlayingWave.pause();
+    }
+
+    if (isPlaying) {
+      wavesurfer.pause();
+    } else {
+      wavesurfer.play();
+      window.currentlyPlayingWave = wavesurfer;
+    }
+  }, [wavesurfer, isPlaying]);
 
   const formatTime = (sec) =>
     `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;
