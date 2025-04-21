@@ -25,8 +25,6 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
   });
   const editorRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDeletingFile, setIsDeletingFile] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const [attachmentsMarkedForDelete, setAttachmentsMarkedForDelete] = useState(
     [],
@@ -127,7 +125,6 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     setIsProcessing(true);
     const noteId = noteDetail?.id;
     // Upload files
-    setIsUploading(true);
     let updatedEditorState = editorState;
     if (pendingAttachments.length > 0) {
       updatedEditorState = await handleUploadAllFiles(
@@ -136,10 +133,8 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
         editorState,
       );
     }
-    setIsUploading(false);
 
     if (noteDetail.text_note && attachmentsMarkedForDelete.length > 0) {
-      setIsDeletingFile(true);
       for (const attachmentId of attachmentsMarkedForDelete) {
         const res = await deleteAttachmentApi(attachmentId);
         if (!res.data) {
@@ -152,7 +147,6 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
         }
       }
       setAttachmentsMarkedForDelete([]);
-      setIsDeletingFile(false);
     }
 
     const textNoteRes = noteDetail.text_note
@@ -255,7 +249,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className="flex h-full w-full flex-col gap-5"
+      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-5`}
     >
       <Tiptap
         noteDetail={noteDetail}
@@ -263,8 +257,6 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
         setEditorState={setEditorState}
         getEditorInstance={(editor) => (editorRef.current = editor)}
         setPendingAttachments={setPendingAttachments}
-        isUploading={isUploading}
-        isDeletingFile={isDeletingFile}
         unsetLink={unsetLink}
         handleCreateSummary={handleCreateSummary}
       />

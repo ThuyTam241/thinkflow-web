@@ -19,7 +19,7 @@ const IconButton = ({
       disabled={isProcessing}
       className={`cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${label ? "group flex w-full items-center gap-2.5" : "rounded-full"}`}
     >
-      {isProcessing ? (
+      {(isProcessing && label) ? (
         <ClipLoader size={20} color="var(--color-gallery)" />
       ) : Icon ? (
         <Icon

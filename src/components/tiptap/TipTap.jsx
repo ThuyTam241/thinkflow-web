@@ -14,8 +14,6 @@ const Tiptap = ({
   setEditorState,
   getEditorInstance,
   setPendingAttachments,
-  isUploading,
-  isDeletingFile,
   unsetLink,
   handleCreateSummary,
 }) => {
@@ -72,8 +70,6 @@ const Tiptap = ({
         noteDetail={noteDetail}
         editor={editor}
         setPendingAttachments={setPendingAttachments}
-        isUploading={isUploading}
-        isDeletingFile={isDeletingFile}
         unsetLink={() => unsetLink(editor)}
         handleCreateSummary={() => handleCreateSummary(editor.getText())}
       />

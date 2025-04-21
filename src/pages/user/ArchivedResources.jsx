@@ -18,8 +18,10 @@ const ArchivedResources = () => {
     pageSize: 8,
   });
   const [totalResources, setTotalResources] = useState(0);
+  const [isLoadingTable, setIsLoadingTable] = useState(false);
 
   const loadArchivedResourcesList = async (pageIndex) => {
+    setIsLoadingTable(true);
     const page = pageIndex + 1;
     const res = await getAllUserArchivedResourcesApi(page, pagination.pageSize);
 
@@ -27,6 +29,7 @@ const ArchivedResources = () => {
       setArchivedResourcesListData(res.data);
       setTotalResources(res.paging.total);
     }
+    setIsLoadingTable(false);
   };
 
   useEffect(() => {
@@ -118,6 +121,7 @@ const ArchivedResources = () => {
         totalCount={totalResources}
         pagination={pagination}
         setPagination={setPagination}
+        isLoadingTable={isLoadingTable}
       />
     </div>
   );

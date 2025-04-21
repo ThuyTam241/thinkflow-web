@@ -125,11 +125,8 @@ const MyNotes = () => {
       const mappedAudioData = audioContent.data.map((item) => ({
         id: item.id,
         file_url: item.file_url,
-        isPlaying: false,
-        isExpanded: false,
-        transcript: null,
-        summary: null,
-        duration: null,
+        transcript: item.transcript,
+        summary: item.summary,
       }));
       setNoteDetail((prev) => ({
         ...prev,

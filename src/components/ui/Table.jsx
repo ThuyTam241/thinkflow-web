@@ -5,8 +5,16 @@ import {
 } from "@tanstack/react-table";
 
 import PrimaryButton from "./buttons/PrimaryButton";
+import TableSkeleton from "./skeleton/TableSkeleton";
 
-const Table = ({ data, columns, totalCount, pagination, setPagination }) => {
+const Table = ({
+  data,
+  columns,
+  totalCount,
+  pagination,
+  setPagination,
+  isLoadingTable,
+}) => {
   const table = useReactTable({
     data,
     columns,
@@ -21,7 +29,9 @@ const Table = ({ data, columns, totalCount, pagination, setPagination }) => {
 
   return (
     <>
-      {data && data.length > 0 ? (
+      {isLoadingTable ? (
+        <TableSkeleton columnCount={columns.length} />
+      ) : data && data.length > 0 ? (
         <div className="flex h-full flex-col space-y-10 px-10">
           <table className="w-full border-collapse">
             <thead className="border-gallery border-b text-left">

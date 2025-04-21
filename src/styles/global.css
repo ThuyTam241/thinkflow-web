@@ -266,3 +266,22 @@
 .react-loading-skeleton::after {
   background-image: none !important;
 }
+
+@keyframes  pulse-multi {
+ 0% {
+    box-shadow:
+      0 0 0 0 rgba(107, 118, 246, 0.5),
+      0 0 0 0 rgba(107, 118, 246, 0.3),
+      0 0 0 0 rgba(107, 118, 246, 0.1);
+  }
+  100% {
+    box-shadow:
+      0 0 0 12px rgba(107, 118, 246, 0),
+      0 0 0 32px rgba(107, 118, 246, 0),
+      0 0 0 52px rgba(107, 118, 246, 0);
+  }
+}
+
+.animate-ping-multi {
+  animation:  pulse-multi 2s ease-out infinite;
+}

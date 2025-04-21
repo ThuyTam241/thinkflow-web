@@ -29,8 +29,6 @@ const MenuBar = ({
   noteDetail,
   editor,
   setPendingAttachments,
-  isUploading,
-  isDeletingFile,
   unsetLink,
   handleCreateSummary,
 }) => {
@@ -176,14 +174,12 @@ const MenuBar = ({
         <ToolbarButton
           isActive={editor.isActive("link")}
           icon={Link}
-          isProcessing={isUploading}
           onClick={() => fileInputRef.current?.click()}
         />
         <ToolbarButton
           isActive={editor.isActive("link")}
           icon={Unlink}
           onClick={() => unsetLink(editor)}
-          isProcessing={isDeletingFile}
         />
       </div>
       <ToolbarButton
