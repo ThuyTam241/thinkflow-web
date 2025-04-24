@@ -104,7 +104,7 @@ const AudioNotes = ({ noteDetail, setNoteDetail }) => {
 
   return (
     <div
-      className={`relative flex flex-col gap-5 ${isUploading || isDeleting ? "pointer-events-none opacity-50" : ""}`}
+      className={`relative flex flex-col gap-4 ${isUploading || isDeleting ? "pointer-events-none opacity-50" : ""}`}
     >
       {showRecorder && (
         <AudioRecorderModal
@@ -131,7 +131,7 @@ const AudioNotes = ({ noteDetail, setNoteDetail }) => {
         </div>
       )}
 
-      <div className="no-scrollbar relative flex max-h-[calc(100vh-402px)] flex-col gap-[18px] overflow-y-auto">
+      <div className="no-scrollbar relative flex max-h-[calc(100vh-433px)] flex-col gap-[18px] overflow-y-auto">
         {noteDetail.audio_note ? (
           <>
             {noteDetail.audio_note.map((audio, index) => (

@@ -8,7 +8,6 @@ const WaveformPlayer = ({ audioUrl, length, index }) => {
   const containerRef = useRef(null);
 
   const [duration, setDuration] = useState(0);
-  const [loadedDuration, setLoadedDuration] = useState(false);
 
   const { wavesurfer, isPlaying, currentTime } = useWavesurfer({
     container: containerRef,
@@ -17,8 +16,8 @@ const WaveformPlayer = ({ audioUrl, length, index }) => {
     progressColor: "#6b76f6",
     height: 40,
     cursorColor: "#6b76f680",
-    barWidth: 0.5,
-    barRadius: 2,
+    barWidth: 3,
+    barRadius: 4,
   });
 
   useEffect(() => {

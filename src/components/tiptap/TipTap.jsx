@@ -74,7 +74,7 @@ const Tiptap = ({
         handleCreateSummary={() => handleCreateSummary(editor.getText())}
       />
       <EditorContent
-        className="no-scrollbar font-body text-ebony-clay flex max-h-[calc(100vh-663px)] overflow-y-auto"
+        className="no-scrollbar font-body text-ebony-clay flex max-h-[calc(100vh-684px)] overflow-y-auto"
         editor={editor}
       />
     </div>

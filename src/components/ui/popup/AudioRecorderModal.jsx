@@ -41,8 +41,8 @@ const AudioRecorderModal = ({
     waveColor: "#dad7fc80",
     progressColor: "#6b76f6",
     cursorColor: "#6b76f680",
-    barWidth: 0.5,
-    barRadius: 2,
+    barWidth: 3,
+    barRadius: 4,
     plugins: useMemo(() => [], []),
   });
 

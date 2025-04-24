@@ -94,7 +94,7 @@ const updateUserProfileApi = (
   return instance.patch(URL_BACKEND, data);
 };
 
-const getAllUserNotes = (nextCursor) => {
+const getAllUserNotesApi = (nextCursor) => {
   const URL_BACKEND = `/note/v1/notes?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=8`;
   return instance.get(URL_BACKEND);
 };
@@ -166,7 +166,6 @@ const getTextNoteApi = (text_noteId) => {
   return instance.get(URL_BACKEND);
 };
 
-
 const archiveNoteApi = (noteId) => {
   const URL_BACKEND = `/note/v1/notes/archive/${noteId}`;
   return instance.patch(URL_BACKEND);
@@ -235,6 +234,51 @@ const getAllAudioApi = (noteId) => {
   return instance.get(URL_BACKEND);
 };
 
+const createNoteShareLinkApi = (noteId, permission) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}/share/link`;
+  const data = {
+    permission,
+  };
+  return instance.post(URL_BACKEND, data);
+};
+
+const shareLinkToEmailApi = (noteId, email, permission) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}/share/email`;
+  const data = {
+    email,
+    permission,
+  };
+  return instance.post(URL_BACKEND, data);
+};
+
+const getNoteMemberApi = (noteId) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}/members?limit=100`;
+  return instance.get(URL_BACKEND);
+};
+
+const acceptSharedNoteApi = (token) => {
+  const URL_BACKEND = `/note/v1/notes/accept/${token}`;
+  return instance.post(URL_BACKEND);
+};
+
+const getAllUserSharedNotesApi = (nextCursor) => {
+  const URL_BACKEND = `/note/v1/notes/shared-with-me?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=8`;
+  return instance.get(URL_BACKEND);
+};
+
+const updatePermissionApi = (noteId, userId, permission) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}/members/${userId}`;
+  const data = {
+    permission,
+  };
+  return instance.patch(URL_BACKEND, data);
+};
+
+const deletePermissionApi = (noteId, userId) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}/members/${userId}`;
+  return instance.delete(URL_BACKEND);
+};
+
 export {
   registerUserApi,
   loginApi,
@@ -248,7 +292,7 @@ export {
   logoutApi,
   uploadImageApi,
   updateUserProfileApi,
-  getAllUserNotes,
+  getAllUserNotesApi,
   createNewNoteApi,
   createNewTextNoteApi,
   updateNoteApi,
@@ -270,4 +314,11 @@ export {
   deleteAudioApi,
   getAudioApi,
   getAllAudioApi,
+  createNoteShareLinkApi,
+  shareLinkToEmailApi,
+  getNoteMemberApi,
+  acceptSharedNoteApi,
+  getAllUserSharedNotesApi,
+  updatePermissionApi,
+  deletePermissionApi,
 };

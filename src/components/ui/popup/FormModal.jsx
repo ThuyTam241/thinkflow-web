@@ -1,17 +1,8 @@
 import { useEffect, useRef } from "react";
 import IconButton from "../buttons/IconButton";
 import { X } from "lucide-react";
-import PrimaryButton from "../buttons/PrimaryButton";
 
-const FormModal = ({
-  isOpen,
-  setIsOpen,
-  title,
-  isProcessing,
-  children,
-  onSubmit,
-  confirmLabel = "Submit",
-}) => {
+const FormModal = ({ isOpen, setIsOpen, title, children }) => {
   const modalRef = useRef();
 
   useEffect(() => {
@@ -28,10 +19,9 @@ const FormModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <form
+      <div
         ref={modalRef}
-        onSubmit={onSubmit}
-        className="relative flex w-[90%] max-w-md flex-col items-center gap-6 rounded-lg bg-white p-6 text-center shadow-lg"
+        className="relative flex w-[90%] max-w-md flex-col items-center gap-6 rounded-lg bg-white p-8 shadow-lg dark:bg-[#16163B]"
       >
         <div className="absolute top-2 right-2">
           <IconButton
@@ -40,17 +30,13 @@ const FormModal = ({
             icon={X}
           />
         </div>
-        <h2 className="font-body text-ebony-clay text-xl font-bold">{title}</h2>
-        {children}
-        <div className="ml-auto">
-          <PrimaryButton
-            color="blue"
-            type="submit"
-            disabled={isProcessing}
-            label={confirmLabel}
-          />
-        </div>
-      </form>
+        <h2 className="font-body text-ebony-clay text-center text-xl font-bold">
+          {title}
+        </h2>
+        <form noValidate className="flex w-full flex-col gap-5">
+          {children}
+        </form>
+      </div>
     </div>
   );
 };

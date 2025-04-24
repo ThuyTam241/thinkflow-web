@@ -5,44 +5,55 @@ import Select, { components, DropdownIndicatorProps } from "react-select";
 const DropdownIndicator = (props: DropdownIndicatorProps) => {
   return (
     <components.DropdownIndicator {...props}>
-      <ChevronDown className="text-silver-chalice w-5 h-5 stroke-[1.5]" />
+      <ChevronDown className="text-ebony-clay h-4 w-4 stroke-[1.5]" />
     </components.DropdownIndicator>
   );
 };
 
-const customClassNames = {
+const customClassNames = (customStyle) => ({
   control: ({ isFocused }) =>
-    `rounded-md px-3 py-[6px] text-sm md:text-base font-body hover:cursor-pointer! ${
-      isFocused
-        ? "border border-indigo shadow-[0px_0px_8px_rgba(107,118,246,0.4)]"
-        : "border border-gallery"
+    `rounded-md ${customStyle.padding} font-body gap-1.5 hover:cursor-pointer! min-h-full! ${customStyle.text} ${
+      isFocused ? customStyle.borderFocused : customStyle.border
     }`,
 
   menu: () =>
-    "mt-1 rounded-md shadow-[0px_1px_8px_rgba(39,35,64,0.1)] z-50 border border-gallery bg-white dark:bg-[#16163B] text-sm md:text-base",
-
+    `mt-1 p-1 rounded-md ${customStyle.text} ${customStyle.borderMenu} bg-white dark:bg-[#16163B]`,
   option: ({ isFocused, isSelected }) =>
-    `hover:cursor-pointer! first:rounded-tl-md first:rounded-tr-md last:rounded-bl-md last:rounded-br-md transition-all duration-300 ease-in-out px-3 font-body py-2 ${
+    `hover:cursor-pointer! whitespace-nowrap rounded-sm transition-all duration-300 ease-in-out font-body ${customStyle.paddingOption} ${
       isSelected
-        ? "bg-cornflower-blue text-white font-semibold"
+        ? "text-indigo font-semibold"
         : isFocused
-          ? "text-indigo font-semibold"
+          ? "bg-cornflower-blue/10 text-ebony-clay"
           : "text-ebony-clay"
     }`,
 
   singleValue: () => "text-ebony-clay",
   placeholder: () => "text-silver-chalice",
-};
+});
 
-const CustomSelect = ({ ...props }) => {
+const CustomSelect = ({
+  customStyle = {
+    width: "w-full",
+    text: "text-sm md:text-base",
+    padding: "px-3 py-[6px]",
+    border: "border border-gallery",
+    borderFocused:
+      "border border-indigo shadow-[0px_0px_8px_rgba(107,118,246,0.4)]",
+    borderMenu: "border border-gallery",
+    paddingOption: "px-3 py-2",
+  },
+  ...props
+}) => {
   return (
     <Select
       {...props}
+      styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+      menuPortalTarget={document.body}
       unstyled
       isClearable={false}
       isSearchable={false}
-      className="w-full"
-      classNames={customClassNames}
+      className={`${customStyle.width}`}
+      classNames={customClassNames(customStyle)}
       components={{ DropdownIndicator }}
     />
   );

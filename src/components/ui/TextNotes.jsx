@@ -249,7 +249,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-5`}
+      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-4`}
     >
       <Tiptap
         noteDetail={noteDetail}
@@ -262,7 +262,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
       />
 
       {(showSummary || isSummarizing || noteDetail?.text_note?.summary) && (
-        <div className="mt-2">
+        <div>
           <IconButton
             onClick={() => setShowSummary(!showSummary)}
             icon={showSummary ? ChevronUp : ChevronDown}
@@ -270,7 +270,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
             isProcessing={isSummarizing}
           />
           {showSummary && (
-            <div className="border-gallery mt-1.5 h-40 border-t py-4">
+            <div className="border-gallery mt-1.5 h-40 border-t pt-4">
               <TextArea {...register("summary")} disabled={isSummarizing} />
             </div>
           )}

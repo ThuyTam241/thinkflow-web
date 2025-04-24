@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Archive, CalendarDays, CirclePlus } from "lucide-react";
+import { Archive, CirclePlus, Ellipsis, Share2 } from "lucide-react";
 import IconButton from "../../components/ui/buttons/IconButton";
 import TextNotes from "../../components/ui/TextNotes";
 import { Tooltip } from "react-tooltip";
@@ -8,17 +8,24 @@ import {
   archiveNoteApi,
   createNewNoteApi,
   getAllAudioApi,
-  getAllUserNotes,
+  getAllUserNotesApi,
+  getNoteMemberApi,
   getTextNoteByNoteIdApi,
   updateNoteApi,
 } from "../../services/api.service";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { PulseLoader } from "react-spinners";
-import TextInput from "../../components/ui/inputs/TextInput";
 import { useForm } from "react-hook-form";
 import notify from "../../components/ui/CustomToast";
 import Skeleton from "react-loading-skeleton";
 import AudioNotes from "../../components/ui/AudioNotes";
+import Avatar from "../../components/ui/Avatar";
+import TextArea from "../../components/ui/inputs/TextArea";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import ShareNoteModal from "../../components/ui/popup/ShareNoteModal";
+
+dayjs.extend(customParseFormat);
 
 const MyNotes = () => {
   const [activeNoteId, setActiveNoteId] = useState(
@@ -42,6 +49,9 @@ const MyNotes = () => {
     { id: "audio", label: "Audio" },
   ];
 
+  const [showOption, setShowOption] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+
   useEffect(() => {
     sessionStorage.setItem("activeNoteType", activeNoteType);
   }, [activeNoteType]);
@@ -52,7 +62,14 @@ const MyNotes = () => {
     year: "numeric",
   });
 
-  const { register, reset, getValues } = useForm({
+  const {
+    register,
+    reset,
+    getValues,
+    setValue,
+    control,
+    formState: { dirtyFields },
+  } = useForm({
     defaultValues: {
       title: "",
       date: today,
@@ -66,7 +83,7 @@ const MyNotes = () => {
       setIsLoadMoreNotes(true);
     }
 
-    const res = await getAllUserNotes(nextCursor);
+    const res = await getAllUserNotesApi(nextCursor);
 
     if (isInitial) {
       setIsInitialLoadingNotes(false);
@@ -104,9 +121,21 @@ const MyNotes = () => {
       id: note.id,
       title: note.title,
       date: note.created_at,
+      owner: note.user,
+      collaborators: [],
       text_note: null,
       audio_note: [],
     });
+
+    const noteCollaborators = await getNoteMemberApi(note.id);
+    if (noteCollaborators.data) {
+      setNoteDetail((prev) => ({
+        ...prev,
+        collaborators: noteCollaborators.data.filter(
+          (member) => member.role !== "owner",
+        ),
+      }));
+    }
 
     const textContent = await getTextNoteByNoteIdApi(note.id);
     if (textContent.data) {
@@ -136,10 +165,6 @@ const MyNotes = () => {
 
     setIsFetchingNote(false);
   };
-
-  useEffect(() => {
-    loadNotesList(undefined, true);
-  }, []);
 
   useEffect(() => {
     if (notesListData.length === 0) {
@@ -184,9 +209,8 @@ const MyNotes = () => {
     }
   };
 
-  const updateTitleNote = async () => {
-    const updatedTitle = getValues("title");
-    const res = await updateNoteApi(updatedTitle, activeNoteId);
+  const updateTitleNote = async (currentTitle) => {
+    const res = await updateNoteApi(currentTitle, activeNoteId);
     if (!res.data) {
       notify(
         "error",
@@ -198,7 +222,7 @@ const MyNotes = () => {
     }
     setNotesListData((prev) =>
       prev.map((note) =>
-        note.id === activeNoteId ? { ...note, title: updatedTitle } : note,
+        note.id === activeNoteId ? { ...note, title: currentTitle } : note,
       ),
     );
   };
@@ -230,49 +254,47 @@ const MyNotes = () => {
 
   return (
     <div className="flex h-full gap-6">
-      <div className="h-fit w-[280px] rounded-md bg-white p-6 dark:bg-[#16163B]">
-        <div className="mb-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-body text-ebony-clay text-lg font-semibold">
-              All Notes
-            </h2>
-            <IconButton
-              onClick={handleCreateNote}
-              data-tooltip-id="add-note-tooltip"
-              data-tooltip-content="Add New Note"
-              size="w-6 h-6"
-              icon={CirclePlus}
-            />
-            <Tooltip
-              id="add-note-tooltip"
-              place="top"
-              style={{
-                backgroundColor: "#6368d1",
-                color: "white",
-                padding: "6px 12px",
-                borderRadius: "6px",
-              }}
-              className="font-body"
-            />
+      {isInitialLoadingNotes ? (
+        <NoteCardSkeleton />
+      ) : notesListData.length > 0 ? (
+        <div className="h-fit w-[280px] flex-shrink-0 rounded-md bg-white p-6 dark:bg-[#16163B]">
+          <div className="mb-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-body text-ebony-clay text-lg font-semibold">
+                All Notes
+              </h2>
+              <IconButton
+                onClick={handleCreateNote}
+                data-tooltip-id="add-note-tooltip"
+                data-tooltip-content="Add New Note"
+                size="w-6 h-6"
+                icon={CirclePlus}
+              />
+              <Tooltip
+                id="add-note-tooltip"
+                place="top"
+                style={{
+                  backgroundColor: "#6368d1",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                }}
+                className="font-body"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-body text-silver-chalice text-sm/[20px]">
+                {notesListData.length}/{totalNotes} notes
+              </span>
+              {isLoadMoreNotes && (
+                <PulseLoader color="var(--color-cornflower-blue)" size={5} />
+              )}
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-body text-silver-chalice text-sm/[20px]">
-              {notesListData.length}/{totalNotes} notes
-            </span>
-            {isLoadMoreNotes && (
-              <PulseLoader color="var(--color-cornflower-blue)" size={5} />
-            )}
-          </div>
-        </div>
-        <div
-          id="scrollableDiv"
-          className="no-scrollbar max-h-[calc(100vh-232px)] space-y-3 overflow-y-auto"
-        >
-          {isInitialLoadingNotes ? (
-            Array(8)
-              .fill(0)
-              .map((_, index) => <NoteCardSkeleton key={index} />)
-          ) : notesListData.length > 0 ? (
+          <div
+            id="scrollableListNotes"
+            className="no-scrollbar max-h-[calc(100vh-232px)] space-y-3 overflow-y-auto"
+          >
             <InfiniteScroll
               dataLength={notesListData.length}
               next={handleLoadMoreNotes}
@@ -282,7 +304,7 @@ const MyNotes = () => {
                   No more notes.
                 </p>
               }
-              scrollableTarget="scrollableDiv"
+              scrollableTarget="scrollableListNotes"
             >
               {notesListData.map((note) => (
                 <div
@@ -306,85 +328,161 @@ const MyNotes = () => {
                 </div>
               ))}
             </InfiniteScroll>
-          ) : (
-            <p className="font-body text-ebony-clay text-center text-sm italic">
-              You don't have any notes yet.
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex w-full flex-col rounded-md bg-white p-8 dark:bg-[#16163B]">
-        <div className="relative mb-5 flex cursor-pointer items-center justify-between gap-10">
-          {noteDetail ? (
-            <>
-              <TextInput
-                style="text-2xl px-0! font-body font-semibold outline-none focus:shadow-none"
-                placeholder="Title"
-                {...register("title")}
-                onBlur={updateTitleNote}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    e.currentTarget.blur();
-                  }
-                }}
-              />
-              <div className="border-silver-chalice absolute top-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border p-1">
-                <IconButton
-                  customStyle="text-silver-chalice stroke-[1.5]"
-                  size="w-5 h-5"
-                  icon={Archive}
-                  onClick={handleArchiveNote}
-                />
-              </div>
-            </>
-          ) : (
-            <Skeleton height={44} containerClassName="flex-1" />
-          )}
-        </div>
-
-        <div className="border-b-gallery flex items-center gap-10 border-b pb-1.5">
-          <div className="font-body text-silver-chalice flex items-start text-base whitespace-nowrap">
-            <CalendarDays className="mr-2 h-5 w-5 stroke-[1.8]" />
-            <h3>Date created:</h3>
           </div>
-          {noteDetail ? (
-            <span className="font-body text-gravel text-base">
-              {noteDetail.date}
-            </span>
-          ) : (
-            <Skeleton height={16} width={120} />
-          )}
         </div>
+      ) : (
+        <p className="font-body text-ebony-clay w-full text-center text-sm italic">
+          You don't have any notes yet.
+        </p>
+      )}
 
-        <div className="border-b-gallery mb-5 flex w-full border-b">
-          {tabs.map((tab, index) => (
-            <div
-              key={index}
-              onClick={() => setActiveNoteType(tab.id)}
-              className={`flex h-full w-1/2 cursor-pointer items-center justify-center rounded-tl-md rounded-bl-md ${activeNoteType === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
-            >
-              <span
-                className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
-              >
-                {tab.label}{" "}
-                {tab.label === "Audio" && noteDetail
-                  ? ` (${noteDetail.audio_note?.length})`
-                  : ""}
-              </span>
+      {showShareModal && (
+        <ShareNoteModal
+          register={register}
+          control={control}
+          getValues={getValues}
+          dirtyFields={dirtyFields}
+          noteDetail={noteDetail}
+          setNoteDetail={setNoteDetail}
+          showShareModal={showShareModal}
+          setShowShareModal={setShowShareModal}
+        />
+      )}
+
+      {noteDetail && (
+        <div className="flex w-full flex-col gap-4 rounded-md bg-white p-8 dark:bg-[#16163B]">
+          <>
+            {/* Title */}
+            <div className="relative flex cursor-pointer items-start justify-between gap-10">
+              {noteDetail.title ? (
+                <>
+                  <TextArea
+                    style="text-2xl! text-ebony-clay font-semibold max-h-16"
+                    rows={1}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = "auto";
+                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                    }}
+                    placeholder="Title"
+                    {...register("title")}
+                    onBlur={(e) => {
+                      const currentTitle = getValues("title").trim();
+                      if (currentTitle === "") {
+                        setValue("title", noteDetail.title, {
+                          shouldDirty: false,
+                        });
+                        return;
+                      }
+                      if (dirtyFields.title) {
+                        updateTitleNote(currentTitle);
+                      }
+                      e.currentTarget.style.height = "auto";
+                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
+                    }}
+                  />
+
+                  <div
+                    onClick={() => setShowOption(!showOption)}
+                    className="border-silver-chalice relative h-7 w-7 rounded-full border p-1"
+                  >
+                    <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
+                    {showOption && (
+                      <div className="border-gallery absolute top-0 right-8 space-y-3 rounded-md border bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:bg-[#16163B]">
+                        <IconButton
+                          customStyle="text-silver-chalice stroke-[1.5]"
+                          size="w-5 h-5"
+                          icon={Share2}
+                          label="Share"
+                          onClick={() => setShowShareModal(true)}
+                        />
+                        <IconButton
+                          customStyle="text-silver-chalice stroke-[1.5]"
+                          size="w-5 h-5"
+                          icon={Archive}
+                          label="Archive"
+                          onClick={handleArchiveNote}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <Skeleton height={44} containerClassName="flex-1" />
+              )}
             </div>
-          ))}
+
+            <div className="divide-gallery flex items-center divide-x">
+              {/* Created Date */}
+              {noteDetail.date ? (
+                <span className="font-body text-silver-chalice pr-8 text-base">
+                  Created on{" "}
+                  {dayjs(noteDetail.date, "DD/MM/YYYY").format("MMM D")}
+                </span>
+              ) : (
+                <Skeleton height={16} width={40} />
+              )}
+
+              {/* Collaborators */}
+              {noteDetail.collaborators?.length > 0 && (
+                <div className="flex -space-x-1.5 pl-8">
+                  {noteDetail.collaborators.slice(0, 5).map((collaborator) => (
+                    <Avatar
+                      key={`avatar-${collaborator.id}`}
+                      src={collaborator.avatar?.url}
+                      className="h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#16163B]"
+                    />
+                  ))}
+                  {noteDetail.collaborators.length - 5 > 0 && (
+                    <div className="text-ebony-clay font-body bg-silver-chalice h-8 w-8 rounded-full text-center text-xs leading-8 font-semibold ring-2 ring-white dark:ring-[#16163B]">
+                      +{noteDetail.collaborators.length - 5}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="border-b-gallery mb-1 flex w-full border-b">
+              {tabs.map((tab, index) => (
+                <div
+                  key={index}
+                  onClick={() => setActiveNoteType(tab.id)}
+                  className={`flex h-full w-1/2 cursor-pointer items-center justify-center rounded-tl-md rounded-bl-md ${activeNoteType === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
+                >
+                  <span
+                    className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
+                  >
+                    {tab.label}{" "}
+                    {tab.label === "Audio" && noteDetail
+                      ? ` (${noteDetail.audio_note?.length})`
+                      : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {activeNoteType === "text" && (
+              <TextNotes
+                noteDetail={noteDetail}
+                setNoteDetail={setNoteDetail}
+              />
+            )}
+
+            {activeNoteType === "audio" && (
+              <AudioNotes
+                noteDetail={noteDetail}
+                setNoteDetail={setNoteDetail}
+              />
+            )}
+          </>
         </div>
-
-        {noteDetail && activeNoteType === "text" && (
-          <TextNotes noteDetail={noteDetail} setNoteDetail={setNoteDetail} />
-        )}
-
-        {noteDetail && activeNoteType === "audio" && (
-          <AudioNotes noteDetail={noteDetail} setNoteDetail={setNoteDetail} />
-        )}
-      </div>
+      )}
     </div>
   );
 };

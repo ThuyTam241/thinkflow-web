@@ -20,6 +20,7 @@ import { useContext } from "react";
 import { ThemeContext } from "./components/context/ThemeContext.jsx";
 import Settings from "./pages/Settings.jsx";
 import ArchivedResources from "./pages/user/ArchivedResources.jsx";
+import AcceptSharedNote from "./pages/user/AcceptSharedNote.jsx";
 
 const RootApp = () => {
   const { theme } = useContext(ThemeContext);
@@ -43,6 +44,7 @@ const RootApp = () => {
             <Route path="archived" element={<ArchivedResources />} />
             <Route path="settings" element={<Settings />} />
           </Route>
+          <Route path="share/:token" element={<AcceptSharedNote />} />
         </Route>
         <Route element={<RoleBasedRoute isAllowed={["admin"]} />}>
           <Route path="dashboard" element={<Dashboard />} />

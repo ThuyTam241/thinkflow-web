@@ -3,6 +3,7 @@ import { ClipLoader } from "react-spinners";
 const IconButton = ({
   type = "button",
   customStyle = "text-gravel stroke-[1.5]",
+  colorLoad = "var(--color-gallery)",
   size = "w-6 h-6",
   icon: Icon,
   src,
@@ -19,8 +20,8 @@ const IconButton = ({
       disabled={isProcessing}
       className={`cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${label ? "group flex w-full items-center gap-2.5" : "rounded-full"}`}
     >
-      {(isProcessing && label) ? (
-        <ClipLoader size={20} color="var(--color-gallery)" />
+      {isProcessing && label ? (
+        <ClipLoader size={20} color={colorLoad} />
       ) : Icon ? (
         <Icon
           className={`${customStyle} ${label ? "group-hover:text-indigo h-5 w-5" : size}`}
@@ -30,7 +31,7 @@ const IconButton = ({
       )}
       {label && (
         <span
-          className={`font-body text-gravel text-base whitespace-nowrap ${isProcessing ? "" : "group-hover:text-indigo"}`}
+          className={`font-body ${customStyle} text-base whitespace-nowrap ${isProcessing ? "" : "group-hover:text-indigo"}`}
         >
           {label}
         </span>
