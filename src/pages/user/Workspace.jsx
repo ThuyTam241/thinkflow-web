@@ -3,17 +3,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Sidebar from "../../components/layout/Sidebar";
 import {
-  WandSparkles,
   Notebook,
   Archive,
   Settings,
   CircleHelp,
 } from "lucide-react";
-import TopBar from "../../components/layout/TopBar";
 
 const Workspace = () => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [selectedLabel, setSelectedLabel] = useState("");
 
   const menuItems = [
     {
@@ -23,11 +20,6 @@ const Workspace = () => {
         { to: "/workspace/notes/my-notes", label: "Notes" },
         { to: "/workspace/notes/shared-notes", label: "Shared with me" },
       ],
-    },
-    {
-      to: "/workspace/ai-mind-maps",
-      icon: WandSparkles,
-      label: "AI Mind Maps",
     },
     {
       to: "/workspace/archived",
@@ -42,22 +34,19 @@ const Workspace = () => {
   ];
 
   return (
-    <div className="bg-hawkes-blue/30 flex h-screen w-screen overflow-hidden dark:bg-[#0A0930]">
+    <div className="flex h-screen w-screen overflow-hidden">
       <Sidebar
         menuItems={menuItems}
         extraItems={extraItems}
         isExpanded={isExpanded}
-        setIsExpanded={setIsExpanded}
-        setSelectedLabel={setSelectedLabel}
       />
       <motion.div
-        initial={{ marginLeft: 281 }}
-        animate={{ marginLeft: isExpanded ? 281 : 101 }}
+        initial={{ marginLeft: 261 }}
+        animate={{ marginLeft: isExpanded ? 261 : 101 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="mt-16 flex flex-1 flex-col p-6"
+        className="flex flex-1 flex-col"
       >
-        <TopBar isExpanded={isExpanded} title={selectedLabel} />
-        <Outlet />
+        <Outlet context={{isExpanded, setIsExpanded}} />
       </motion.div>
     </div>
   );

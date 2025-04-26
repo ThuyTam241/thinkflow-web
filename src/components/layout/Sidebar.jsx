@@ -1,13 +1,9 @@
 import logo from "../../assets/images/logo.svg";
-import chevronLeft from "../../assets/icons/chevron-left.svg";
-import chevronRight from "../../assets/icons/chevron-right.svg";
-import chevronLeftDark from "../../assets/icons/chevron-left-dark.svg";
-import chevronRightDark from "../../assets/icons/chevron-right-dark.svg";
 import IconButton from "../ui/buttons/IconButton";
 import { motion } from "framer-motion";
-import { getSidebarStyles, slideIn } from "../../utils/motion";
+import { getSidebarStyles } from "../../utils/motion";
 import { Link, useLocation } from "react-router";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import Avatar from "../ui/Avatar";
 import { logoutApi } from "../../services/api.service";
 import notify from "../ui/CustomToast";
@@ -16,19 +12,13 @@ import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { AuthContext } from "../context/AuthContext";
 
-const Sidebar = ({
-  menuItems,
-  extraItems,
-  isExpanded,
-  setIsExpanded,
-  setSelectedLabel,
-}) => {
+const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
   const { user, setUser } = useContext(AuthContext);
-  const { theme } = useContext(ThemeContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   useEffect(() => {
     if (openSubmenu !== null) {
@@ -74,35 +64,18 @@ const Sidebar = ({
 
   return (
     <motion.aside
-      variants={slideIn("left", "spring", 0.2, 1)}
       initial="hidden"
       animate="show"
       style={getSidebarStyles(isExpanded)}
-      className="fixed top-0 left-0 z-10 h-screen bg-white dark:bg-[#16163B]"
+      className="bg-hawkes-blue/30 fixed top-0 left-0 z-10 h-screen dark:bg-[#16163B]"
     >
-      <nav className="border-r-gallery flex h-full flex-col border-r px-6">
-        <div className="relative flex py-6">
-          <Link
-            to="/"
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-12"}`}
-          >
-            <img src={logo} alt="logo" className="h-10 max-w-none" />
-          </Link>
-          <div className="absolute top-12 -right-10 flex items-center justify-center rounded-full shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:shadow-[0px_1px_8px_rgba(233,233,233,0.05)]">
-            <IconButton
-              onClick={() => setIsExpanded(!isExpanded)}
-              src={
-                theme === "light"
-                  ? isExpanded
-                    ? chevronLeft
-                    : chevronRight
-                  : isExpanded
-                    ? chevronLeftDark
-                    : chevronRightDark
-              }
-            />
-          </div>
-        </div>
+      <nav className="border-r-silver-chalice/20 flex h-full flex-col border-r px-6">
+        <Link
+          to="/"
+          className={`mt-6 overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-12"}`}
+        >
+          <img src={logo} alt="logo" className="h-10 max-w-none" />
+        </Link>
 
         <div className="flex flex-col gap-2 py-6">
           {menuItems.map((menuItem, index) => (
@@ -113,12 +86,11 @@ const Sidebar = ({
               isExpanded={isExpanded}
               openSubmenu={openSubmenu}
               setOpenSubmenu={setOpenSubmenu}
-              setSelectedLabel={setSelectedLabel}
             />
           ))}
         </div>
 
-        <div className="border-t-gallery flex flex-col gap-2 border-t py-6">
+        <div className="border-t-silver-chalice/20 flex flex-col gap-2 border-t py-6">
           {extraItems.map((extraItem, index) => (
             <SidebarItem
               key={index}
@@ -127,32 +99,90 @@ const Sidebar = ({
               isExpanded={isExpanded}
               openSubmenu={openSubmenu}
               setOpenSubmenu={setOpenSubmenu}
-              setSelectedLabel={setSelectedLabel}
             />
           ))}
         </div>
 
-        <div className="border-t-gallery mt-auto flex cursor-pointer border-t py-6">
-          <Avatar
-            className="mr-3 h-11 w-11 rounded-full"
-            src={user?.avatar?.url}
-          />
+        <div className="mt-auto flex flex-col items-center justify-center">
           <div
-            className={`flex items-center justify-between gap-5 overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-0"}`}
+            className={`flex h-10 cursor-pointer justify-between ${isExpanded ? "w-20" : "w-fit"} bg-cornflower-blue/15 items-center rounded-full p-1 transition-all duration-300 ease-in-out`}
+            onClick={toggleTheme}
           >
-            <div className="flex flex-col justify-between overflow-hidden">
-              <h4 className="font-body text-gravel text-sm whitespace-nowrap">
-                Welcome back 👋🏼
-              </h4>
-              <span className="font-body text-ebony-clay text-base font-semibold whitespace-nowrap">
-                {user.first_name}
-              </span>
-            </div>
-            <LogOut
-              size={20}
-              onClick={handleLogout}
-              className="text-ebony-clay cursor-pointer stroke-[1.5]"
+            {isExpanded ? (
+              <>
+                <div className="relative z-10 flex h-8 w-8 items-center justify-center">
+                  <IconButton
+                    customStyle={
+                      theme === "light"
+                        ? "text-white stroke-2"
+                        : "text-silver-chalice  stroke-1"
+                    }
+                    size="w-5 h-5"
+                    icon={Sun}
+                    onClick={toggleTheme}
+                  />
+                </div>
+
+                <div className="relative z-10 flex h-8 w-8 items-center justify-center">
+                  <IconButton
+                    customStyle={
+                      theme === "dark"
+                        ? "text-white stroke-2"
+                        : "text-silver-chalice  stroke-1"
+                    }
+                    size="w-5 h-5"
+                    icon={Moon}
+                    onClick={toggleTheme}
+                  />
+                </div>
+
+                <div
+                  className={`bg-cornflower-blue/80 absolute h-8 w-8 rounded-full transition-transform duration-300 ease-in-out ${
+                    theme === "dark" && isExpanded
+                      ? "translate-x-10"
+                      : "translate-x-0"
+                  }`}
+                />
+              </>
+            ) : (
+              <>
+                <div className="relative z-10 flex h-8 w-8 items-center justify-center">
+                  <IconButton
+                    customStyle="text-white stroke-[1.5]"
+                    size="w-5 h-5"
+                    icon={theme === "dark" ? Moon : Sun}
+                    onClick={toggleTheme}
+                  />
+                </div>
+
+                <div className="bg-cornflower-blue/80 absolute h-8 w-8 rounded-full" />
+              </>
+            )}
+          </div>
+
+          <div className="border-t-silver-chalice/20 mt-6 w-full flex cursor-pointer overflow-hidden border-t py-6">
+            <Avatar
+              className="mr-3 h-11 w-11 rounded-full"
+              src={user?.avatar?.url}
             />
+            <div
+              className={`flex items-center justify-between transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-0"}`}
+            >
+              <div className="flex flex-col justify-between">
+                <h4 className="font-body text-gravel text-sm whitespace-nowrap">
+                  Welcome back 👋🏼
+                </h4>
+                <span className="font-body text-ebony-clay text-base font-semibold whitespace-nowrap">
+                  {user.first_name}
+                </span>
+              </div>
+              <IconButton
+                customStyle="text-ebony-clay stroke-[1.5]"
+                size="w-5 h-5"
+                icon={LogOut}
+                onClick={handleLogout}
+              />
+            </div>
           </div>
         </div>
       </nav>

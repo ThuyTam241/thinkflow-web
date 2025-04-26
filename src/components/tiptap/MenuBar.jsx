@@ -31,6 +31,7 @@ const MenuBar = ({
   setPendingAttachments,
   unsetLink,
   handleCreateSummary,
+  permission,
 }) => {
   if (!editor) {
     return null;
@@ -70,14 +71,15 @@ const MenuBar = ({
   };
 
   return (
-    <div className="border-gallery mb-4 flex items-center gap-8 border-b pb-1.5">
-      <div className="flex items-center gap-4">
+    <div className="border-gallery divide-gallery mb-4 flex items-center divide-x rounded-xl border p-3 shadow">
+      <div className="flex items-center gap-4 pr-4">
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 1 })}
           icon={Heading1}
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 1 }).run()
           }
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 2 })}
@@ -85,6 +87,7 @@ const MenuBar = ({
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 2 }).run()
           }
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 3 })}
@@ -92,15 +95,17 @@ const MenuBar = ({
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 3 }).run()
           }
+          disabled={permission === "read"}
         />
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 px-4">
         <ToolbarButton
           isActive={editor.isActive("bold")}
           icon={Bold}
           onClick={() => {
             editor.chain().focus().toggleBold().run();
           }}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("italic")}
@@ -108,6 +113,7 @@ const MenuBar = ({
           onClick={() => {
             editor.chain().focus().toggleItalic().run();
           }}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("underline")}
@@ -115,6 +121,7 @@ const MenuBar = ({
           onClick={() => {
             editor.chain().focus().toggleUnderline().run();
           }}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("strike")}
@@ -122,74 +129,88 @@ const MenuBar = ({
           onClick={() => {
             editor.chain().focus().toggleStrike().run();
           }}
+          disabled={permission === "read"}
         />
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 px-4">
         <ToolbarButton
           isActive={editor.isActive({ textAlign: "left" })}
           icon={AlignLeft}
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive({ textAlign: "right" })}
           icon={AlignRight}
           onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive({ textAlign: "center" })}
           icon={AlignCenter}
           onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive({ textAlign: "justify" })}
           icon={AlignJustify}
           onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+          disabled={permission === "read"}
         />
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 px-4">
         <ToolbarButton
           isActive={editor.isActive("bulletList")}
           icon={List}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("orderedList")}
           icon={ListOrdered}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("blockquote")}
           icon={MessageSquareQuote}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          disabled={permission === "read"}
         />
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 px-4">
         <FileUploadInput
           src={EditAvatar}
           ref={fileInputRef}
           accept="*/*"
           hidden={true}
           onChange={handlePreviewFile}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("link")}
           icon={Link}
           onClick={() => fileInputRef.current?.click()}
+          disabled={permission === "read"}
         />
         <ToolbarButton
           isActive={editor.isActive("link")}
           icon={Unlink}
           onClick={() => unsetLink(editor)}
+          disabled={permission === "read"}
         />
       </div>
-      <ToolbarButton
-        isActive={editor.isActive("highlight")}
-        icon={Highlighter}
-        onClick={() => editor.chain().focus().toggleHighlight().run()}
-      />
+      <div className="flex items-center px-4">
+        <ToolbarButton
+          isActive={editor.isActive("highlight")}
+          icon={Highlighter}
+          onClick={() => editor.chain().focus().toggleHighlight().run()}
+          disabled={permission === "read"}
+        />
+      </div>
 
       {noteDetail?.text_note?.text_content && (
-        <>
+        <div className="flex items-center pl-4">
           <IconButton
             onClick={handleCreateSummary}
             customStyle="text-silver-chalice stroke-[1.5]"
@@ -201,8 +222,13 @@ const MenuBar = ({
                 : "summarize-tooltip"
             }
             data-tooltip-content={
-              noteDetail?.text_note?.summary ? "Resummarize" : "Summarize"
+              permission === "read"
+                ? "You cannot edit this note"
+                : noteDetail?.text_note?.summary
+                  ? "Resummarize"
+                  : "Summarize"
             }
+            disabled={permission === "read"}
           />
           <Tooltip
             id={
@@ -219,7 +245,7 @@ const MenuBar = ({
             }}
             className="font-body"
           />
-        </>
+        </div>
       )}
     </div>
   );

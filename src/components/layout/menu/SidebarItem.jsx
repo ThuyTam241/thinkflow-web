@@ -14,22 +14,11 @@ const SidebarItem = ({
   isExpanded,
   openSubmenu,
   setOpenSubmenu,
-  setSelectedLabel,
 }) => {
   const isCurrentPage = item.to && location.pathname === item.to;
   const isChildActive = item.children?.find((child) =>
     location.pathname.startsWith(child.to),
   );
-
-  useEffect(() => {
-    if (item.to && location.pathname === item.to) {
-      setSelectedLabel(item.label);
-    } else if (item.children) {
-      if (isChildActive) {
-        setSelectedLabel(isChildActive.label);
-      }
-    }
-  }, [location.pathname]);
 
   const { theme } = useContext(ThemeContext);
 
@@ -51,13 +40,13 @@ const SidebarItem = ({
             ? ({ isActive }) => {
                 return `group flex items-center rounded-xl px-4 py-3 transition-all duration-300 ease-in-out ${
                   isActive || isChildActive || openSubmenu === index
-                    ? "bg-cornflower-blue/10"
+                    ? "bg-cornflower-blue/15"
                     : ""
                 }`;
               }
             : `group flex cursor-pointer items-center rounded-xl px-4 py-3 transition-all duration-300 ease-in-out ${
                 isChildActive || openSubmenu === index
-                  ? "bg-cornflower-blue/10"
+                  ? "bg-cornflower-blue/15"
                   : ""
               }`
         }
@@ -100,7 +89,7 @@ const SidebarItem = ({
           <img
             src={theme === "light" ? union : unionDark}
             alt="union"
-            className="mb-7 h-[84px]"
+            className="mb-7 h-[88px]"
           />
 
           {isExpanded ? (
@@ -112,7 +101,7 @@ const SidebarItem = ({
                   className={({ isActive }) => {
                     return `font-body hover:text-indigo cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold dark:hover:text-white ${
                       isActive
-                        ? "bg-cornflower-blue/10 text-indigo font-semibold dark:text-white"
+                        ? "bg-cornflower-blue/15 text-indigo font-semibold dark:text-white"
                         : "text-gravel"
                     }`;
                   }}

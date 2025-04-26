@@ -16,6 +16,7 @@ const Tiptap = ({
   setPendingAttachments,
   unsetLink,
   handleCreateSummary,
+  permission,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -50,6 +51,7 @@ const Tiptap = ({
       }),
     ],
     content: initialContent || { type: "doc", content: [] },
+    editable: permission !== "read",
     onUpdate: ({ editor }) => {
       const json = editor.getJSON();
       setEditorState(json);
@@ -65,16 +67,17 @@ const Tiptap = ({
   if (!editor) return null;
 
   return (
-    <div>
+    <div className="max-w-[calc(100vw-645px)]">
       <MenuBar
         noteDetail={noteDetail}
         editor={editor}
         setPendingAttachments={setPendingAttachments}
         unsetLink={() => unsetLink(editor)}
         handleCreateSummary={() => handleCreateSummary(editor.getText())}
+        permission={permission}
       />
       <EditorContent
-        className="no-scrollbar font-body text-ebony-clay flex max-h-[calc(100vh-684px)] overflow-y-auto"
+        className="font-body text-ebony-clay break-words"
         editor={editor}
       />
     </div>

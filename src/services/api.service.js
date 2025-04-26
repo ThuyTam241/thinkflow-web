@@ -95,7 +95,7 @@ const updateUserProfileApi = (
 };
 
 const getAllUserNotesApi = (nextCursor) => {
-  const URL_BACKEND = `/note/v1/notes?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=8`;
+  const URL_BACKEND = `/note/v1/notes?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=10`;
   return instance.get(URL_BACKEND);
 };
 
@@ -262,7 +262,7 @@ const acceptSharedNoteApi = (token) => {
 };
 
 const getAllUserSharedNotesApi = (nextCursor) => {
-  const URL_BACKEND = `/note/v1/notes/shared-with-me?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=8`;
+  const URL_BACKEND = `/note/v1/notes/shared-with-me?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=10`;
   return instance.get(URL_BACKEND);
 };
 

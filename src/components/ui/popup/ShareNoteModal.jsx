@@ -48,6 +48,7 @@ const ShareNoteModal = ({
     const res = await createNoteShareLinkApi(noteDetail.id, permission);
     if (!res.data) {
       notify("error", "Share note failed", "", "var(--color-crimson-red)");
+      return;
     }
     const sharedlink = res.data.url;
     await navigator.clipboard.writeText(sharedlink);
@@ -65,6 +66,7 @@ const ShareNoteModal = ({
     const res = await shareLinkToEmailApi(noteDetail.id, email, permission);
     if (!res.data) {
       notify("error", "Share note failed", "", "var(--color-crimson-red)");
+      return;
     }
     notify("success", "Note shared!", "", "var(--color-silver-tree)");
 

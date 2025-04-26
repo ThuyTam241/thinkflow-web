@@ -68,27 +68,6 @@ export const textVariant = (delay) => {
   };
 };
 
-export const slideIn = (direction, type, delay, duration) => {
-  return {
-    hidden: {
-      opacity: 0,
-      x: direction === "left" ? "-50px" : direction === "right" ? "50px" : 0,
-      y: direction === "up" ? "50px" : direction === "down" ? "-50px" : 0,
-    },
-    show: {
-      opacity: 1,
-      x: 0,
-      y: 0,
-      transition: {
-        type,
-        delay,
-        duration,
-        ease: "easeOut",
-      },
-    },
-  };
-};
-
 export const scale = (delay) => {
   return {
     hidden: {
@@ -108,7 +87,7 @@ export const scale = (delay) => {
 };
 
 export const getSidebarStyles = (isExpanded) => ({
-  width: isExpanded ? "281px" : "101px",
+  width: isExpanded ? "261px" : "101px",
   transition: "width 0.3s ease-in-out",
 });
 
@@ -120,11 +99,6 @@ export const submenuVariants = {
     transition: { duration: 0.3, ease: "easeInOut" },
   },
 };
-
-export const getTopbarStyles = (isExpanded) => ({
-  left: isExpanded ? 281 : 101,
-  transition: "left 0.3s ease-in-out",
-});
 
 export const audioExpandVariants = {
   collapsed: {

@@ -6,6 +6,7 @@ const PrimaryButton = ({
   type = "button",
   onClick,
   isProcessing,
+  ...props
 }) => {
   const colorVariants = {
     white:
@@ -23,7 +24,8 @@ const PrimaryButton = ({
       type={type}
       onClick={onClick}
       className={`${colorVariants[color]} font-body inline-flex cursor-pointer items-center rounded-md border-[1px] border-solid px-4 py-2 text-sm font-bold transition-all duration-300 ease-in-out disabled:cursor-not-allowed disabled:opacity-60 md:text-base`}
-      disabled={isProcessing}
+      {...props}
+      disabled={isProcessing || props.disabled}
     >
       {isProcessing && (
         <ClipLoader

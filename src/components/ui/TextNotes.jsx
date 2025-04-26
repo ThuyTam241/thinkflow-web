@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { BrainCircuit, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import IconButton from "./buttons/IconButton";
 import Tiptap from "../tiptap/TipTap";
@@ -17,8 +17,10 @@ import {
 } from "../../services/api.service";
 import notify from "./CustomToast";
 import TextArea from "./inputs/TextArea";
+import { Tooltip } from "react-tooltip";
+import MindMapIcon from "../../assets/icons/mindmap-icon.svg";
 
-const TextNotes = ({ noteDetail, setNoteDetail }) => {
+const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const [editorState, setEditorState] = useState({
     type: "doc",
     content: [],
@@ -31,6 +33,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
   );
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
 
   const {
     register,
@@ -43,6 +46,9 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     if (noteDetail.text_note) {
       reset({ summary: noteDetail.text_note.summary?.summary_text });
       setEditorState(noteDetail.text_note.text_content);
+      if (noteDetail.text_note.summary?.summary_text) {
+        setShowSummary(true);
+      }
       if (editorRef.current) {
         editorRef.current.commands.setContent(
           noteDetail.text_note.text_content,
@@ -51,6 +57,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     } else {
       reset({ summary: "" });
       setEditorState({ type: "doc", content: [] });
+      setShowSummary(false);
       if (editorRef.current) {
         editorRef.current.commands.setContent({ type: "doc", content: [] });
       }
@@ -144,6 +151,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
             "",
             "var(--color-crimson-red)",
           );
+          return;
         }
       }
       setAttachmentsMarkedForDelete([]);
@@ -166,30 +174,38 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
 
     setIsProcessing(false);
 
-    if (textNoteRes.data) {
+    if (!textNoteRes.data) {
       notify(
-        "success",
-        noteDetail.text_note ? "Note updated!" : "Note created!",
+        "error",
+        noteDetail.text_note ? "Updated note failed" : "Create note failed",
         "",
-        "var(--color-silver-tree)",
+        "var(--color-crimson-red)",
       );
-      setNoteDetail((prev) => ({
-        ...prev,
-        text_note: noteDetail.text_note
-          ? {
-              ...prev.text_note,
-              text_content: updatedEditorState,
-            }
-          : {
-              id: textNoteRes.data,
-              text_content: updatedEditorState,
-              summary: null,
-            },
-      }));
-      if (!noteDetail.text_note) {
-        reset();
-        setEditorState({ type: "doc", content: [] });
-      }
+      return;
+    }
+
+    notify(
+      "success",
+      noteDetail.text_note ? "Note updated!" : "Note created!",
+      "",
+      "var(--color-silver-tree)",
+    );
+    setNoteDetail((prev) => ({
+      ...prev,
+      text_note: noteDetail.text_note
+        ? {
+            ...prev.text_note,
+            text_content: updatedEditorState,
+          }
+        : {
+            id: textNoteRes.data,
+            text_content: updatedEditorState,
+            summary: null,
+          },
+    }));
+    if (!noteDetail.text_note) {
+      reset();
+      setEditorState({ type: "doc", content: [] });
     }
   };
 
@@ -231,8 +247,10 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
 
   const handleUpdateSummary = async (summary_id, summary_text) => {
     const res = await updateSummaryApi(summary_id, summary_text);
-    if (!res.data)
+    if (!res.data) {
       notify("error", "Update summary failed", "", "var(--color-crimson-red)");
+      return;
+    }
     setNoteDetail((prev) => ({
       ...prev,
       text_note: {
@@ -245,21 +263,24 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
     }));
   };
 
+  const handleGenerateMindmap = async () => {};
+
   return (
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
       className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-4`}
     >
-      <Tiptap
-        noteDetail={noteDetail}
-        initialContent={editorState}
-        setEditorState={setEditorState}
-        getEditorInstance={(editor) => (editorRef.current = editor)}
-        setPendingAttachments={setPendingAttachments}
-        unsetLink={unsetLink}
-        handleCreateSummary={handleCreateSummary}
-      />
+        <Tiptap
+          noteDetail={noteDetail}
+          initialContent={editorState}
+          setEditorState={setEditorState}
+          getEditorInstance={(editor) => (editorRef.current = editor)}
+          setPendingAttachments={setPendingAttachments}
+          unsetLink={unsetLink}
+          handleCreateSummary={handleCreateSummary}
+          permission={permission}
+        />
 
       {(showSummary || isSummarizing || noteDetail?.text_note?.summary) && (
         <div>
@@ -269,6 +290,7 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
             label="Summary"
             isProcessing={isSummarizing}
           />
+
           {showSummary && (
             <div className="border-gallery mt-1.5 h-40 border-t pt-4">
               <TextArea {...register("summary")} disabled={isSummarizing} />
@@ -277,26 +299,76 @@ const TextNotes = ({ noteDetail, setNoteDetail }) => {
         </div>
       )}
 
-      {noteDetail.text_note ? (
-        <div className="mt-auto ml-auto flex gap-4">
-          <PrimaryButton onClick={handleCancel} color="white" label="Cancel" />
-          <PrimaryButton
-            type="submit"
-            color="blue"
-            label="Save"
-            isProcessing={isProcessing}
+      <div className="mt-auto ml-auto flex gap-4">
+        {noteDetail.text_note &&
+        (dirtyFields.summary ||
+          JSON.stringify(editorState) !==
+            JSON.stringify(noteDetail.text_note.text_content)) ? (
+          <>
+            <PrimaryButton
+              data-tooltip-id="disable-cancel"
+              data-tooltip-content="You cannot edit this note"
+              onClick={handleCancel}
+              color="white"
+              label="Cancel"
+              disabled={permission === "read"}
+            />
+            {permission === "read" && (
+              <Tooltip
+                id="disable-cancel"
+                place="top"
+                style={{
+                  backgroundColor: "#6368d1",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                }}
+                className="font-body"
+              />
+            )}
+            <PrimaryButton
+              data-tooltip-id="disable-button"
+              data-tooltip-content="You cannot edit this note"
+              type="submit"
+              color="blue"
+              label="Save"
+              isProcessing={isProcessing}
+              disabled={permission === "read"}
+            />
+          </>
+        ) : (
+          //   <IconButton
+          //     onClick={handleGenerateMindmap}
+          //     icon={MindMapIcon}
+          //     label="Generate MindMap"
+          //     isProcessing={isGeneratingMindMap}
+          //   />
+          !noteDetail.text_note && (
+            <PrimaryButton
+              data-tooltip-id="disable-button"
+              data-tooltip-content="You cannot edit this note"
+              type="submit"
+              color="blue"
+              label="Create"
+              isProcessing={isProcessing}
+              disabled={permission === "read"}
+            />
+          )
+        )}
+        {permission === "read" && (
+          <Tooltip
+            id="disable-button"
+            place="top"
+            style={{
+              backgroundColor: "#6368d1",
+              color: "white",
+              padding: "6px 12px",
+              borderRadius: "6px",
+            }}
+            className="font-body"
           />
-        </div>
-      ) : (
-        <div className="mt-auto ml-auto">
-          <PrimaryButton
-            type="submit"
-            color="blue"
-            label="Create"
-            isProcessing={isProcessing}
-          />
-        </div>
-      )}
+        )}
+      </div>
     </form>
   );
 };

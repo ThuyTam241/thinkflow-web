@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { Archive, CirclePlus, Ellipsis, Share2 } from "lucide-react";
+import { Archive, Ellipsis, Share2 } from "lucide-react";
 import IconButton from "../../components/ui/buttons/IconButton";
 import TextNotes from "../../components/ui/TextNotes";
-import { Tooltip } from "react-tooltip";
-import NoteCardSkeleton from "../../components/ui/skeleton/NoteCardSkeleton";
 import {
   archiveNoteApi,
   createNewNoteApi,
@@ -13,8 +11,6 @@ import {
   getTextNoteByNoteIdApi,
   updateNoteApi,
 } from "../../services/api.service";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { PulseLoader } from "react-spinners";
 import { useForm } from "react-hook-form";
 import notify from "../../components/ui/CustomToast";
 import Skeleton from "react-loading-skeleton";
@@ -24,10 +20,13 @@ import TextArea from "../../components/ui/inputs/TextArea";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import ShareNoteModal from "../../components/ui/popup/ShareNoteModal";
+import ListNotes from "../../components/ui/ListNotes";
+import { useOutletContext } from "react-router";
 
 dayjs.extend(customParseFormat);
 
 const MyNotes = () => {
+  const {isExpanded, setIsExpanded} = useOutletContext();
   const [activeNoteId, setActiveNoteId] = useState(
     sessionStorage.getItem("activeNoteId") || null,
   );
@@ -122,6 +121,7 @@ const MyNotes = () => {
       title: note.title,
       date: note.created_at,
       owner: note.user,
+      permission: "all",
       collaborators: [],
       text_note: null,
       audio_note: [],
@@ -253,88 +253,21 @@ const MyNotes = () => {
   };
 
   return (
-    <div className="flex h-full gap-6">
-      {isInitialLoadingNotes ? (
-        <NoteCardSkeleton />
-      ) : notesListData.length > 0 ? (
-        <div className="h-fit w-[280px] flex-shrink-0 rounded-md bg-white p-6 dark:bg-[#16163B]">
-          <div className="mb-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-body text-ebony-clay text-lg font-semibold">
-                All Notes
-              </h2>
-              <IconButton
-                onClick={handleCreateNote}
-                data-tooltip-id="add-note-tooltip"
-                data-tooltip-content="Add New Note"
-                size="w-6 h-6"
-                icon={CirclePlus}
-              />
-              <Tooltip
-                id="add-note-tooltip"
-                place="top"
-                style={{
-                  backgroundColor: "#6368d1",
-                  color: "white",
-                  padding: "6px 12px",
-                  borderRadius: "6px",
-                }}
-                className="font-body"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-body text-silver-chalice text-sm/[20px]">
-                {notesListData.length}/{totalNotes} notes
-              </span>
-              {isLoadMoreNotes && (
-                <PulseLoader color="var(--color-cornflower-blue)" size={5} />
-              )}
-            </div>
-          </div>
-          <div
-            id="scrollableListNotes"
-            className="no-scrollbar max-h-[calc(100vh-232px)] space-y-3 overflow-y-auto"
-          >
-            <InfiniteScroll
-              dataLength={notesListData.length}
-              next={handleLoadMoreNotes}
-              hasMore={!!nextCursor}
-              endMessage={
-                <p className="font-body text-ebony-clay text-center text-sm italic">
-                  No more notes.
-                </p>
-              }
-              scrollableTarget="scrollableListNotes"
-            >
-              {notesListData.map((note) => (
-                <div
-                  key={note.id}
-                  onClick={() => {
-                    if (isFetchingNote || note.id === activeNoteId) return;
-                    setActiveNoteId(note.id);
-                  }}
-                  className={`mb-3 cursor-pointer rounded-md border px-4 py-3 ${note.id === activeNoteId ? "bg-hawkes-blue/30 border-indigo/10 dark:bg-[#0A0930]" : "border-gallery"}`}
-                >
-                  <h3
-                    className={`font-body line-clamp-1 text-base font-medium transition-all duration-300 ease-in-out ${note.id === activeNoteId ? "text-indigo dark:text-white" : "text-ebony-clay"}`}
-                  >
-                    {note.title}
-                  </h3>
-                  <span
-                    className={`font-body mt-1.5 text-xs transition-all duration-300 ease-in-out ${note.id === activeNoteId ? "text-indigo dark:text-white" : "text-silver-chalice"}`}
-                  >
-                    {note.created_at}
-                  </span>
-                </div>
-              ))}
-            </InfiniteScroll>
-          </div>
-        </div>
-      ) : (
-        <p className="font-body text-ebony-clay w-full text-center text-sm italic">
-          You don't have any notes yet.
-        </p>
-      )}
+    <div className="flex h-full">
+      <ListNotes
+        isExpanded={isExpanded}
+        setIsExpanded={setIsExpanded}
+        isInitialLoadingNotes={isInitialLoadingNotes}
+        notesListData={notesListData}
+        totalNotes={totalNotes}
+        handleCreateNote={handleCreateNote}
+        isLoadMoreNotes={isLoadMoreNotes}
+        handleLoadMoreNotes={handleLoadMoreNotes}
+        nextCursor={nextCursor}
+        isFetchingNote={isFetchingNote}
+        activeNoteId={activeNoteId}
+        setActiveNoteId={setActiveNoteId}
+      />
 
       {showShareModal && (
         <ShareNoteModal
@@ -350,10 +283,10 @@ const MyNotes = () => {
       )}
 
       {noteDetail && (
-        <div className="flex w-full flex-col gap-4 rounded-md bg-white p-8 dark:bg-[#16163B]">
+        <div className="flex w-full flex-col gap-4 rounded-md p-8">
           <>
             {/* Title */}
-            <div className="relative flex cursor-pointer items-start justify-between gap-10">
+            <div className="relative flex cursor-pointer items-start justify-between gap-8">
               {noteDetail.title ? (
                 <>
                   <TextArea
@@ -389,7 +322,7 @@ const MyNotes = () => {
 
                   <div
                     onClick={() => setShowOption(!showOption)}
-                    className="border-silver-chalice relative h-7 w-7 rounded-full border p-1"
+                    className="border-silver-chalice relative shrink-0 h-7 w-7 rounded-full border p-1"
                   >
                     <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
                     {showOption && (
@@ -453,7 +386,7 @@ const MyNotes = () => {
                 <div
                   key={index}
                   onClick={() => setActiveNoteType(tab.id)}
-                  className={`flex h-full w-1/2 cursor-pointer items-center justify-center rounded-tl-md rounded-bl-md ${activeNoteType === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
+                  className="flex h-full w-1/2 cursor-pointer items-center justify-center"
                 >
                   <span
                     className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
@@ -471,6 +404,7 @@ const MyNotes = () => {
               <TextNotes
                 noteDetail={noteDetail}
                 setNoteDetail={setNoteDetail}
+                permission={noteDetail.permission}
               />
             )}
 
@@ -478,6 +412,7 @@ const MyNotes = () => {
               <AudioNotes
                 noteDetail={noteDetail}
                 setNoteDetail={setNoteDetail}
+                permission={noteDetail.permission}
               />
             )}
           </>

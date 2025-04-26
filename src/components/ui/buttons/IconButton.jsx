@@ -17,21 +17,21 @@ const IconButton = ({
       type={type}
       onClick={onClick}
       {...props}
-      disabled={isProcessing}
+      disabled={isProcessing || props.disabled}
       className={`cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${label ? "group flex w-full items-center gap-2.5" : "rounded-full"}`}
     >
       {isProcessing && label ? (
         <ClipLoader size={20} color={colorLoad} />
       ) : Icon ? (
         <Icon
-          className={`${customStyle} ${label ? "group-hover:text-indigo h-5 w-5" : size}`}
+          className={`${customStyle} ${label && !props.disabled ? "group-hover:text-indigo h-5 w-5" : size}`}
         />
       ) : (
         src && <img src={src} alt="icon" />
       )}
       {label && (
         <span
-          className={`font-body ${customStyle} text-base whitespace-nowrap ${isProcessing ? "" : "group-hover:text-indigo"}`}
+          className={`font-body ${customStyle} text-base whitespace-nowrap ${isProcessing || props.disabled ? "" : "group-hover:text-indigo"}`}
         >
           {label}
         </span>

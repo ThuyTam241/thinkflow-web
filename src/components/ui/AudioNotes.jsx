@@ -14,8 +14,9 @@ import notify from "./CustomToast";
 import { MoonLoader } from "react-spinners";
 import AudioItem from "../layout/menu/AudioItem";
 import AudioRecorderModal from "./popup/AudioRecorderModal";
+import { Tooltip } from "react-tooltip";
 
-const AudioNotes = ({ noteDetail, setNoteDetail }) => {
+const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const [showRecorder, setShowRecorder] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -117,11 +118,32 @@ const AudioNotes = ({ noteDetail, setNoteDetail }) => {
       )}
 
       <div className="ml-auto flex items-end gap-5">
-        <IconButton src={RecordIcon} onClick={() => setShowRecorder(true)} />
+        <IconButton
+          src={RecordIcon}
+          onClick={() => setShowRecorder(true)}
+          disabled={permission === "read"}
+          data-tooltip-id="disable-record"
+          data-tooltip-content="You cannot edit this note"
+        />
+        {permission === "read" && (
+          <Tooltip
+            id="disable-record"
+            place="top"
+            style={{
+              backgroundColor: "#6368d1",
+              color: "white",
+              padding: "6px 12px",
+              borderRadius: "6px",
+            }}
+            className="font-body"
+          />
+        )}
+
         <FileUploadInput
           src={UploadIcon}
           onChange={handleUploadAudio}
           accept="audio/*"
+          disabled={permission === "read"}
         />
       </div>
 
@@ -131,7 +153,7 @@ const AudioNotes = ({ noteDetail, setNoteDetail }) => {
         </div>
       )}
 
-      <div className="no-scrollbar relative flex max-h-[calc(100vh-433px)] flex-col gap-[18px] overflow-y-auto">
+      <div className="no-scrollbar relative flex max-h-[642px] flex-col gap-[18px] overflow-y-auto">
         {noteDetail.audio_note ? (
           <>
             {noteDetail.audio_note.map((audio, index) => (
@@ -146,6 +168,7 @@ const AudioNotes = ({ noteDetail, setNoteDetail }) => {
                 generateSummary={generateSummary}
                 isTranscripting={isTranscripting}
                 isSummarizing={isSummarizing}
+                permission={permission}
               />
             ))}
           </>

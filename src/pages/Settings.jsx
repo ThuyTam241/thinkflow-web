@@ -13,14 +13,17 @@ const Settings = () => {
   ];
 
   return (
-    <div className="flex h-full justify-center">
-      <div className="flex h-fit w-52 flex-col">
+    <div className="my-auto flex justify-center">
+      <div className="flex w-52 flex-col">
         {tabs.map((tab, index) => (
           <div
             key={index}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex cursor-pointer items-center gap-2.5 rounded-tl-md rounded-bl-md px-6 py-5 ${activeTab === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
+            className="relative flex cursor-pointer items-center gap-2.5 px-6 py-4"
           >
+            <div
+              className={`absolute top-0 bottom-0 left-0 h-full w-1 rounded-xs transition-colors duration-300 ease-in-out ${activeTab === tab.id ? "bg-cornflower-blue/80" : "bg-transparent"}`}
+            ></div>
             <tab.icon
               className={`h-5 w-5 transition-all duration-300 ease-in-out ${activeTab === tab.id ? "text-indigo stroke-2 dark:text-white" : "text-gravel stroke-[1.5]"}`}
             />
@@ -33,7 +36,7 @@ const Settings = () => {
         ))}
       </div>
 
-      <div className="w-3xl items-center px-20 flex justify-center rounded-tr-md rounded-br-md bg-white dark:bg-[#16163B]">
+      <div className="flex w-3xl items-center justify-center px-20">
         {activeTab === "personal" && <Profile />}
       </div>
     </div>

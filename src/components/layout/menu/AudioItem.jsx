@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { audioExpandVariants } from "../../../utils/motion";
 import IconButton from "../../ui/buttons/IconButton";
 import WaveformPlayer from "../../ui/WaveformPlayer";
+import { Tooltip } from "react-tooltip";
 
 const AudioItem = ({
   audio,
@@ -22,6 +23,7 @@ const AudioItem = ({
   generateSummary,
   isTranscripting,
   isSummarizing,
+  permission,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
@@ -30,7 +32,11 @@ const AudioItem = ({
   return (
     <div key={audio.id}>
       <div className="flex items-center gap-10">
-        <WaveformPlayer audioUrl={audio.file_url} length={length} index={index} />
+        <WaveformPlayer
+          audioUrl={audio.file_url}
+          length={length}
+          index={index}
+        />
 
         <div className="ml-auto flex items-center gap-5">
           <IconButton
@@ -38,11 +44,13 @@ const AudioItem = ({
             icon={isExpanded ? ChevronUp : ChevronDown}
             onClick={() => setIsExpanded(!isExpanded)}
           />
-          <IconButton
-            size="w-5 h-5"
-            icon={Trash2}
-            onClick={() => handleDelete(audio.id)}
-          />
+          {permission === "all" && (
+            <IconButton
+              size="w-5 h-5"
+              icon={Trash2}
+              onClick={() => handleDelete(audio.id)}
+            />
+          )}
         </div>
       </div>
 
@@ -90,17 +98,35 @@ const AudioItem = ({
 
           <div className="mt-2 flex h-max w-max gap-5">
             {!audio.transcript && (
-              <IconButton
-                onClick={() => generateTranscript(index)}
-                size="w-5 h-5"
-                icon={FileText}
-                label={
-                  audio.transcript
-                    ? "Regenerate transcript"
-                    : "Generate transcript"
-                }
-                isProcessing={isTranscripting}
-              />
+              <>
+                <IconButton
+                  onClick={() => generateTranscript(index)}
+                  size="w-5 h-5"
+                  icon={FileText}
+                  label={
+                    audio.transcript
+                      ? "Regenerate transcript"
+                      : "Generate transcript"
+                  }
+                  isProcessing={isTranscripting}
+                  disabled={permission === "read"}
+                  data-tooltip-id="disable-transcript"
+                  data-tooltip-content="You cannot edit this note"
+                />
+                {permission === "read" && (
+                  <Tooltip
+                    id="disable-transcript"
+                    place="top"
+                    style={{
+                      backgroundColor: "#6368d1",
+                      color: "white",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                    }}
+                    className="font-body"
+                  />
+                )}
+              </>
             )}
             <IconButton
               onClick={() => generateSummary(index)}
@@ -108,7 +134,23 @@ const AudioItem = ({
               icon={Sparkles}
               label={audio.summary ? "Regenerate summary" : "Generate summary"}
               isProcessing={isSummarizing}
+              disabled={permission === "read"}
+              data-tooltip-id="disable-summary"
+              data-tooltip-content="You cannot edit this note"
             />
+            {permission === "read" && (
+              <Tooltip
+                id="disable-summary"
+                place="top"
+                style={{
+                  backgroundColor: "#6368d1",
+                  color: "white",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                }}
+                className="font-body"
+              />
+            )}
           </div>
         </div>
       </motion.div>

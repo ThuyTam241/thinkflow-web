@@ -15,7 +15,6 @@ import PublicRoute from "./routes/PublicRoute.jsx";
 import Workspace from "./pages/user/Workspace.jsx";
 import MyNotes from "./pages/user/MyNotes.jsx";
 import SharedNotes from "./pages/user/SharedNotes.jsx";
-import MindMaps from "./pages/user/MindMaps.jsx";
 import { useContext } from "react";
 import { ThemeContext } from "./components/context/ThemeContext.jsx";
 import Settings from "./pages/Settings.jsx";
@@ -40,7 +39,6 @@ const RootApp = () => {
           <Route path="workspace" element={<Workspace />}>
             <Route path="notes/my-notes" element={<MyNotes />} />
             <Route path="notes/shared-notes" element={<SharedNotes />} />
-            <Route path="ai-mind-maps" element={<MindMaps />} />
             <Route path="archived" element={<ArchivedResources />} />
             <Route path="settings" element={<Settings />} />
           </Route>
