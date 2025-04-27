@@ -283,7 +283,7 @@ const MyNotes = () => {
       )}
 
       {noteDetail && (
-        <div className="flex w-full flex-col gap-4 rounded-md p-8">
+        <div className="flex flex-1 flex-col gap-4 rounded-md p-8">
           <>
             {/* Title */}
             <div className="relative flex cursor-pointer items-start justify-between gap-8">

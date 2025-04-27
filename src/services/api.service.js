@@ -1,4 +1,5 @@
 import instance from "./axios.customize";
+import { mockMindmapData } from "./mock-data";
 
 const registerUserApi = (email, password, first_name, last_name) => {
   const URL_BACKEND = "/auth/v1/register";
@@ -279,6 +280,19 @@ const deletePermissionApi = (noteId, userId) => {
   return instance.delete(URL_BACKEND);
 };
 
+const getMindmapApi = async (noteId) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}/mindmaps`;
+    const response = await instance.get(URL_BACKEND);
+    if (response.status === 200) {
+      return response;
+    } else {
+      // Return mock data if endpoint is not available
+      return {
+        data: mockMindmapData
+      };
+    }
+};
+
 export {
   registerUserApi,
   loginApi,
@@ -321,4 +335,5 @@ export {
   getAllUserSharedNotesApi,
   updatePermissionApi,
   deletePermissionApi,
+  getMindmapApi,
 };
