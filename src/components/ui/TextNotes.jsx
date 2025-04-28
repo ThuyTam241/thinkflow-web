@@ -15,6 +15,7 @@ import {
   updateTextNoteApi,
   uploadAttachmentApi,
   getMindmapApi,
+  updateMindmapApi,
 } from "../../services/api.service";
 import notify from "./CustomToast";
 import TextArea from "./inputs/TextArea";
@@ -75,7 +76,6 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const fetchMindmapData = async () => {
     if (!noteDetail?.id) return;
     const res = await getMindmapApi(noteDetail.id);
-    console.log("🚀 ~ fetchMindmapData ~ res:", res);
     if (res.data) {
       setMindmapData(res.data);
     }
@@ -286,11 +286,35 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
     }));
   };
 
-  const handleGenerateMindmap = async () => {
-    setIsGeneratingMindMap(true);
-    await fetchMindmapData();
-    setShowMindmap(true);
-    setIsGeneratingMindMap(false);
+  function updateNodeRecursive(node, updatedNode) {
+    if (node.branch === updatedNode.branch) {
+      return { ...node, ...updatedNode };
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: node.children.map(child => updateNodeRecursive(child, updatedNode))
+      };
+    }
+    return node;
+  }
+
+  const handleNodeUpdate = async (updatedNode) => {
+    const updateSuccess = await updateMindmapApi(noteDetail.id, mindmapData);
+
+    // TODO: After BE completed, add logic only update mindmap when updateSuccess is true
+    setMindmapData(prev => {
+      if (Array.isArray(prev.parent_content)) {
+        return {
+          ...prev,
+          parent_content: prev.parent_content.map(rootNode =>
+            updateNodeRecursive(rootNode, updatedNode)
+          )
+        };
+      } else {
+        return updateNodeRecursive(prev, updatedNode);
+      }
+    });
   };
 
   return (
@@ -341,11 +365,17 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
               {Array.isArray(mindmapData.parent_content) ? (
                 mindmapData.parent_content.map((rootNode, idx) => (
                   <div key={idx} className="mb-8">
-                    <MindMap data={rootNode} />
+                    <MindMap 
+                      data={rootNode} 
+                      onNodeUpdate={handleNodeUpdate}
+                    />
                   </div>
                 ))
               ) : (
-                <MindMap data={mindmapData} />
+                <MindMap 
+                  data={mindmapData} 
+                  onNodeUpdate={handleNodeUpdate}
+                />
               )}
             </div>
           )}

@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { Edit2 } from "lucide-react";
+import PrimaryButton from "./buttons/PrimaryButton";
 
 const wrapText = (text, maxWidth = 228, font = "16px sans-serif") => {
   if (!text) return [];
@@ -89,7 +91,38 @@ const layoutTreeDynamic = (
   return { nodes, links, width, height };
 }
 
-const MindMap = ({ data, style }) => {
+const MindMap = ({ data, style, onNodeUpdate }) => {
+  const [editingNode, setEditingNode] = useState(null);
+  const [editContent, setEditContent] = useState("");
+  const [originalContent, setOriginalContent] = useState("");
+  const dialogRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dialogRef.current && !dialogRef.current.contains(event.target)) {
+        setEditingNode(null);
+        setEditContent("");
+        setOriginalContent("");
+      }
+    };
+
+    if (editingNode) {
+      document.addEventListener('mousedown', handleClickOutside);
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          const len = textareaRef.current.value.length;
+          textareaRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editingNode]);
+
   if (!data)
     return (
       <div style={{ color: "#aaa", textAlign: "center" }}>No mind map data</div>
@@ -103,8 +136,29 @@ const MindMap = ({ data, style }) => {
   const width = maxX - minX + NODE_WIDTH + PADDING * 2;
   const height = maxY - minY + PADDING * 2;
 
-
   const nodeMap = Object.fromEntries(nodes.map((n) => [n.branch, n]));
+
+  const handleEditClick = (node) => {
+    setEditingNode(node);
+    setEditContent(node.content || node.topic);
+    setOriginalContent(node.content || node.topic);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingNode) return;
+    
+    const updatedNode = { ...editingNode, content: editContent };
+    onNodeUpdate(updatedNode);
+    setEditingNode(null);
+    setEditContent("");
+    setOriginalContent("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingNode(null);
+    setEditContent("");
+    setOriginalContent("");
+  };
 
   return (
     <div
@@ -137,7 +191,17 @@ const MindMap = ({ data, style }) => {
 
         {nodes.map((node, i) => {
           return (
-            <g key={node.branch}>
+            <g 
+              key={node.branch}
+              onMouseEnter={(e) => {
+                const editButton = e.currentTarget.querySelector('.edit-button');
+                if (editButton) editButton.style.opacity = 1;
+              }}
+              onMouseLeave={(e) => {
+                const editButton = e.currentTarget.querySelector('.edit-button');
+                if (editButton) editButton.style.opacity = 0;
+              }}
+            >
               <rect
                 x={node.x - minX + PADDING}
                 y={node.y - minY + PADDING}
@@ -168,10 +232,74 @@ const MindMap = ({ data, style }) => {
                   </tspan>
                 ))}
               </text>
+              <g
+                transform={`translate(${node.x - minX + NODE_WIDTH - 40 + PADDING}, ${node.y - minY + PADDING + 8})`}
+                style={{ opacity: 0, transition: 'opacity 0.2s' }}
+                className="edit-button cursor-pointer"
+                onClick={() => handleEditClick(node)}
+              >
+                <circle 
+                  cx="16" 
+                  cy="16" 
+                  r="16" 
+                  fill="white" 
+                  filter="drop-shadow(0 2px 4px rgba(99, 104, 209, 0.3))"
+                />
+                <g transform="translate(6, 6)">
+                  <Edit2
+                    size={20}
+                    className="text-cornflower-blue hover:text-cornflower-blue/80"
+                  />
+                </g>
+              </g>
             </g>
           );
         })}
       </svg>
+
+      {/* Edit Dialog */}
+      {editingNode && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+          <div ref={dialogRef} className="w-[500px] min-h-[320px] rounded-lg bg-white p-6 flex flex-col">
+            <h3 className="mb-4 text-lg font-semibold">Edit Node Content</h3>
+            <div className="mb-4 border border-gray-200 rounded-lg focus-within:border-cornflower-blue focus-within:ring-1 focus-within:ring-cornflower-blue p-3 flex-1 flex flex-col min-h-0">
+              <textarea
+                ref={textareaRef}
+                value={editContent}
+                onChange={(e) => {
+                  setEditContent(e.target.value);
+                  if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && editContent !== originalContent) {
+                    e.preventDefault();
+                    handleSaveEdit();
+                  }
+                }}
+                className="w-full h-full border-0 outline-none bg-transparent focus:ring-0 resize-none overflow-auto flex-1 min-h-0"
+                style={{ minHeight: 32 }}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleCancelEdit}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 mr-2"
+              >
+                Cancel
+              </button>
+              <PrimaryButton
+                onClick={handleSaveEdit}
+                label="Save"
+                color="blue"
+                disabled={editContent === originalContent}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
