@@ -281,6 +281,7 @@ const deletePermissionApi = (noteId, userId) => {
 };
 
 const getMindmapApi = async (noteId) => {
+  // TODO: Update URL when BE completed
   const URL_BACKEND = `/note/v1/notes/${noteId}/mindmaps`;
     const response = await instance.get(URL_BACKEND);
     if (response.status === 200) {
@@ -291,6 +292,13 @@ const getMindmapApi = async (noteId) => {
         data: mockMindmapData
       };
     }
+};
+
+const updateMindmapApi = async (noteId, mindmapData) => {
+  // TODO: Update URL when BE completed
+  const URL_BACKEND = `/note/v1/notes/${noteId}/mindmaps`;
+  const response = await instance.patch(URL_BACKEND, mindmapData);
+  return response.status === 200;
 };
 
 export {
@@ -336,4 +344,5 @@ export {
   updatePermissionApi,
   deletePermissionApi,
   getMindmapApi,
+  updateMindmapApi,
 };
