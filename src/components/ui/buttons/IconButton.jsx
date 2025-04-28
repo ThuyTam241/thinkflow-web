@@ -3,7 +3,7 @@ import { ClipLoader } from "react-spinners";
 const IconButton = ({
   type = "button",
   customStyle = "text-gravel stroke-[1.5]",
-  colorLoad = "var(--color-gallery)",
+  colorLoad = "var(--color-gray-400)",
   size = "w-6 h-6",
   icon: Icon,
   src,

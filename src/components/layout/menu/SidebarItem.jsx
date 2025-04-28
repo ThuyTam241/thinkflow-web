@@ -40,28 +40,28 @@ const SidebarItem = ({
             ? ({ isActive }) => {
                 return `group flex items-center rounded-xl px-4 py-3 transition-all duration-300 ease-in-out ${
                   isActive || isChildActive || openSubmenu === index
-                    ? "bg-cornflower-blue/15"
+                    ? "bg-cornflower-blue/10"
                     : ""
                 }`;
               }
             : `group flex cursor-pointer items-center rounded-xl px-4 py-3 transition-all duration-300 ease-in-out ${
                 isChildActive || openSubmenu === index
-                  ? "bg-cornflower-blue/15"
+                  ? "bg-cornflower-blue/10"
                   : ""
               }`
         }
       >
         <item.icon
-          className={`group-hover:text-indigo mr-4 h-5 w-5 min-w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "text-indigo stroke-2 dark:text-white" : "text-gravel stroke-[1.5]"}`}
+          className={`group-hover:text-white mr-4 h-5 w-5 min-w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "text-white stroke-2 " : "text-white stroke-[1.5]"}`}
         />
         <span
-          className={`font-body group-hover:text-indigo overflow-hidden text-base whitespace-nowrap transition-all duration-300 ease-in-out group-hover:font-semibold dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "text-indigo font-semibold dark:text-white" : "text-gravel"} ${isExpanded ? "w-32" : "w-0"}`}
+          className={`font-body group-hover:text-white overflow-hidden text-base whitespace-nowrap transition-all duration-300 ease-in-out group-hover:font-semibold dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "text-white font-semibold " : "text-white"} ${isExpanded ? "w-32" : "w-0"}`}
         >
           {item.label}
         </span>
         {item.children && isExpanded && (
           <ChevronDown
-            className={`group-hover:text-indigo ml-auto h-5 w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 dark:group-hover:text-white ${isChildActive || isCurrentPage ? (openSubmenu === index ? "text-indigo rotate-180 stroke-2 dark:text-white" : "text-indigo rotate-0 stroke-2 dark:text-white") : openSubmenu === index ? "text-indigo rotate-180 stroke-2 dark:text-white" : "text-gravel rotate-0 stroke-[1.5]"}`}
+            className={`group-hover:text-white ml-auto h-5 w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 dark:group-hover:text-white ${isChildActive || isCurrentPage ? (openSubmenu === index ? "text-white rotate-180 stroke-2 " : "text-white rotate-0 stroke-2 ") : openSubmenu === index ? "text-white rotate-180 stroke-2 " : "text-white rotate-0 stroke-[1.5]"}`}
           />
         )}
         {!isExpanded && (
@@ -99,10 +99,10 @@ const SidebarItem = ({
                   key={childIndex}
                   to={child.to}
                   className={({ isActive }) => {
-                    return `font-body hover:text-indigo cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold dark:hover:text-white ${
+                    return `font-body hover:text-white cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold dark:hover:text-white ${
                       isActive
-                        ? "bg-cornflower-blue/15 text-indigo font-semibold dark:text-white"
-                        : "text-gravel"
+                        ? "bg-cornflower-blue/10 text-white font-semibold "
+                        : "text-white"
                     }`;
                   }}
                 >
@@ -115,17 +115,17 @@ const SidebarItem = ({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="border-gallery absolute top-12 left-14 flex w-40 flex-col gap-1 rounded-xl border bg-white p-2 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:bg-[#16163B]"
+              className="absolute top-12 left-14 flex w-40 flex-col gap-1 rounded-xl border border-gray-200 bg-white p-2 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]"
             >
               {item.children.map((child, childIndex) => (
                 <NavLink
                   key={childIndex}
                   to={child.to}
                   className={({ isActive }) => {
-                    return `font-body hover:text-indigo cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold dark:hover:text-white ${
+                    return `font-body hover:text-white cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold dark:hover:text-white ${
                       isActive
-                        ? "bg-cornflower-blue/10 text-indigo font-semibold dark:text-white"
-                        : "text-gravel"
+                        ? "bg-cornflower-blue/10 text-white font-semibold "
+                        : "text-white"
                     }`;
                   }}
                 >

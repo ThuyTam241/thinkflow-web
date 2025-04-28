@@ -60,7 +60,7 @@ const AudioItem = ({
         animate={isExpanded ? "expanded" : "collapsed"}
         className="overflow-hidden"
       >
-        <div className="border-t-gallery mt-4 border-t px-3 py-2">
+        <div className="mt-4 border-t border-t-gray-200 px-3 py-2 dark:border-gray-100/20">
           {audio.transcript && (
             <div className="py-2">
               <IconButton

@@ -134,9 +134,9 @@ const ShareNoteModal = ({
                 width: "w-fit",
                 text: "text-sm",
                 padding: "px-2.5 py-[6px]",
-                border: "border border-gallery",
-                borderFocused: "border border-gallery",
-                borderMenu: "border border-gallery",
+                border: "border border-gray-200 dark:border-gray-100/20",
+                borderFocused: "border border-gray-200 dark:border-gray-100/20",
+                borderMenu: "border border-gray-200 dark:border-gray-100/20",
                 paddingOption: "px-2 py-1.5",
               }}
               options={permissionOptions}
@@ -215,7 +215,8 @@ const ShareNoteModal = ({
                           text: "text-sm",
                           border: "border-none",
                           borderFocused: "border-none",
-                          borderMenu: "border border-gallery",
+                          borderMenu:
+                            "border border-gray-200 dark:border-gray-100/20",
                           paddingOption: "px-2 py-1.5",
                         }}
                         options={collaboratorPermissionOptions}

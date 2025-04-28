@@ -75,7 +75,7 @@ const TestimonialsSection = () => {
             <motion.div
               key={index}
               variants={scale(0.3 + index * 0.1)}
-              className={`border-gallery mb-6 max-w-[340px] rounded-[10px] border p-5 bg-[#FFF] dark:bg-[#0A0930]/50`}
+              className={`mb-6 max-w-[340px] rounded-[10px] border border-gray-200 bg-[#FFF] p-5 dark:border-gray-100/20 dark:bg-[#0A0930]/50`}
             >
               <div className="flex items-center gap-2.5 md:gap-3">
                 <Avatar

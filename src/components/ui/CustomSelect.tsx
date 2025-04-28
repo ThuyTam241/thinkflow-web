@@ -36,10 +36,10 @@ const CustomSelect = ({
     width: "w-full",
     text: "text-sm md:text-base",
     padding: "px-3 py-[6px]",
-    border: "border border-gallery",
+    border: "border border-gray-200 dark:border-gray-100/20",
     borderFocused:
       "border border-indigo shadow-[0px_0px_8px_rgba(107,118,246,0.4)]",
-    borderMenu: "border border-gallery",
+    borderMenu: "border border-gray-200 dark:border-gray-100/20",
     paddingOption: "px-3 py-2",
   },
   ...props

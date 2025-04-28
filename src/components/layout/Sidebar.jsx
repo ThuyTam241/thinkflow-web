@@ -67,9 +67,9 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
       initial="hidden"
       animate="show"
       style={getSidebarStyles(isExpanded)}
-      className="bg-hawkes-blue/30 fixed top-0 left-0 z-10 h-screen dark:bg-[#16163B]"
+      className="bg-ebony-clay fixed top-0 left-0 z-10 h-screen dark:bg-[#16163B]"
     >
-      <nav className="border-r-silver-chalice/20 flex h-full flex-col border-r px-6">
+      <nav className="border-r-gray-200/20 flex h-full flex-col border-r px-6">
         <Link
           to="/"
           className={`mt-6 overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-12"}`}
@@ -90,7 +90,7 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
           ))}
         </div>
 
-        <div className="border-t-silver-chalice/20 flex flex-col gap-2 border-t py-6">
+        <div className="border-t-gray-200/20 flex flex-col gap-2 border-t py-6">
           {extraItems.map((extraItem, index) => (
             <SidebarItem
               key={index}
@@ -105,7 +105,7 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
 
         <div className="mt-auto flex flex-col items-center justify-center">
           <div
-            className={`flex h-10 cursor-pointer justify-between ${isExpanded ? "w-20" : "w-fit"} bg-cornflower-blue/15 items-center rounded-full p-1 transition-all duration-300 ease-in-out`}
+            className={`flex h-10 cursor-pointer justify-between ${isExpanded ? "w-20" : "w-fit"} bg-cornflower-blue/10 items-center rounded-full p-1 transition-all duration-300 ease-in-out`}
             onClick={toggleTheme}
           >
             {isExpanded ? (
@@ -160,7 +160,7 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
             )}
           </div>
 
-          <div className="border-t-silver-chalice/20 mt-6 w-full flex cursor-pointer overflow-hidden border-t py-6">
+          <div className="border-t-gray-200/20 mt-6 w-full flex cursor-pointer overflow-hidden border-t py-6">
             <Avatar
               className="mr-3 h-11 w-11 rounded-full"
               src={user?.avatar?.url}
@@ -169,15 +169,15 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
               className={`flex items-center justify-between transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-0"}`}
             >
               <div className="flex flex-col justify-between">
-                <h4 className="font-body text-gravel text-sm whitespace-nowrap">
+                <h4 className="font-body text-white text-sm whitespace-nowrap">
                   Welcome back 👋🏼
                 </h4>
-                <span className="font-body text-ebony-clay text-base font-semibold whitespace-nowrap">
+                <span className="font-body text-white text-base font-semibold whitespace-nowrap">
                   {user.first_name}
                 </span>
               </div>
               <IconButton
-                customStyle="text-ebony-clay stroke-[1.5]"
+                customStyle="text-white stroke-[1.5]"
                 size="w-5 h-5"
                 icon={LogOut}
                 onClick={handleLogout}

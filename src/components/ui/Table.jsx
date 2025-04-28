@@ -32,9 +32,9 @@ const Table = ({
       {isLoadingTable ? (
         <TableSkeleton columnCount={columns.length} />
       ) : data && data.length > 0 ? (
-        <div className="flex h-full flex-col space-y-10 px-10">
+        <div className="flex h-[calc(100vh-100px)] flex-col space-y-10 px-10">
           <table className="w-full border-collapse">
-            <thead className="border-gallery border-b text-left">
+            <thead className="border-b border-gray-200 text-left dark:border-gray-100/20">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -54,7 +54,7 @@ const Table = ({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-gallery divide-y">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-100/20">
               {table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className="odd:bg-hawkes-blue/15">
                   {row.getVisibleCells().map((cell) => (

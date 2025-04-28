@@ -3,7 +3,7 @@ import Skeleton from "react-loading-skeleton";
 const TableSkeleton = ({ columnCount }) => (
   <div className="flex h-full flex-col space-y-10 px-10">
     <table className="w-full border-collapse">
-      <thead className="border-gallery border-b text-left">
+      <thead className="border-b border-gray-200 text-left dark:border-gray-100/20">
         <tr>
           {[...Array(columnCount)].map((_, index) => (
             <th
@@ -15,7 +15,7 @@ const TableSkeleton = ({ columnCount }) => (
           ))}
         </tr>
       </thead>
-      <tbody className="divide-gallery divide-y">
+      <tbody className="divide-y divide-gray-200 dark:divide-gray-100/20">
         {[...Array(5)].map((_, rowIndex) => (
           <tr key={rowIndex} className="odd:bg-hawkes-blue/15">
             {[...Array(columnCount)].map((_, cellIndex) => (

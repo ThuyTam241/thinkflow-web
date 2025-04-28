@@ -135,7 +135,7 @@ const VerifyEmail = () => {
                   key={index}
                   type="text"
                   maxLength={1}
-                  className={`text-ebony-clay outline-gallery font-body h-10 max-w-10 rounded-lg text-center text-xl font-semibold outline md:h-12 md:max-w-12 ${errors[`code${index}`] ? "focus:outline-crimson-red outline-crimson-red! focus:shadow-[0px_0px_8px_rgba(230,57,70,0.4)]" : "focus:outline-indigo focus:shadow-[0px_0px_8px_rgba(107,118,246,0.4)]"}`}
+                  className={`text-ebony-clay font-body h-10 max-w-10 rounded-lg text-center text-xl font-semibold outline outline-gray-200 md:h-12 md:max-w-12 dark:outline-gray-100/20 ${errors[`code${index}`] ? "focus:outline-crimson-red outline-crimson-red! focus:shadow-[0px_0px_8px_rgba(230,57,70,0.4)]" : "focus:outline-indigo focus:shadow-[0px_0px_8px_rgba(107,118,246,0.4)]"}`}
                   {...register(`code${index}`, { required: true })}
                   onInput={(e) => {
                     e.target.value = e.target.value.replace(/\D/g, "");

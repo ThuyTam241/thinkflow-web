@@ -248,7 +248,7 @@ const SharedNotes = () => {
             </div>
 
             {/* Created Date */}
-            <div className="divide-gallery flex items-center divide-x">
+            <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-100/20">
               {/* Created Date */}
               {sharedNoteDetail.date ? (
                 <span className="font-body text-silver-chalice pr-8 text-base">
@@ -277,7 +277,7 @@ const SharedNotes = () => {
             </div>
 
             {/* Content */}
-            <div className="border-b-gallery mb-1 flex w-full border-b">
+            <div className="mb-1 flex w-full border-b border-b-gray-200 dark:border-gray-100/20">
               {tabs.map((tab, index) => (
                 <div
                   key={index}

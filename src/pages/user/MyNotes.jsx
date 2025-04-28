@@ -26,7 +26,7 @@ import { useOutletContext } from "react-router";
 dayjs.extend(customParseFormat);
 
 const MyNotes = () => {
-  const {isExpanded, setIsExpanded} = useOutletContext();
+  const { isExpanded, setIsExpanded } = useOutletContext();
   const [activeNoteId, setActiveNoteId] = useState(
     sessionStorage.getItem("activeNoteId") || null,
   );
@@ -283,7 +283,7 @@ const MyNotes = () => {
       )}
 
       {noteDetail && (
-        <div className="flex w-full flex-col gap-4 rounded-md p-8">
+        <div className="flex flex-1 flex-col gap-4 rounded-md p-8">
           <>
             {/* Title */}
             <div className="relative flex cursor-pointer items-start justify-between gap-8">
@@ -322,11 +322,11 @@ const MyNotes = () => {
 
                   <div
                     onClick={() => setShowOption(!showOption)}
-                    className="border-silver-chalice relative shrink-0 h-7 w-7 rounded-full border p-1"
+                    className="border-silver-chalice relative h-7 w-7 shrink-0 rounded-full border p-1"
                   >
                     <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
                     {showOption && (
-                      <div className="border-gallery absolute top-0 right-8 space-y-3 rounded-md border bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:bg-[#16163B]">
+                      <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
                         <IconButton
                           customStyle="text-silver-chalice stroke-[1.5]"
                           size="w-5 h-5"
@@ -350,7 +350,7 @@ const MyNotes = () => {
               )}
             </div>
 
-            <div className="divide-gallery flex items-center divide-x">
+            <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-100/20">
               {/* Created Date */}
               {noteDetail.date ? (
                 <span className="font-body text-silver-chalice pr-8 text-base">
@@ -381,7 +381,7 @@ const MyNotes = () => {
             </div>
 
             {/* Content */}
-            <div className="border-b-gallery mb-1 flex w-full border-b">
+            <div className="mb-1 flex w-full border-b border-b-gray-200 dark:border-gray-100/20">
               {tabs.map((tab, index) => (
                 <div
                   key={index}

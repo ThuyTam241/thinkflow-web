@@ -27,7 +27,7 @@ const ListNotes = ({
       {isInitialLoadingNotes ? (
         <NoteCardSkeleton />
       ) : (
-        <div className="h-screen w-80 border-r border-gallery shrink-0 rounded-md">
+        <div className="h-screen w-80 shrink-0 border-r border-gray-200 bg-slate-50 dark:bg-[#16163B]/25 dark:border-gray-100/20 ">
           <div className="space-y-3 p-6 pb-3">
             <div className="flex items-center justify-between">
               <div className="flex gap-2.5">
@@ -77,7 +77,7 @@ const ListNotes = ({
           {notesListData.length > 0 ? (
             <div
               id="scrollableListNotes"
-              className="no-scrollbar border-gallery max-h-[730px] space-y-3 overflow-y-auto border-y"
+              className="no-scrollbar max-h-[730px] space-y-3 overflow-y-auto border-y border-gray-200 dark:border-gray-100/20"
             >
               <InfiniteScroll
                 dataLength={notesListData.length}
@@ -115,7 +115,7 @@ const ListNotes = ({
                     </div>
                     {index !== notesListData.length - 1 && (
                       <div className="flex justify-center">
-                        <div className="bg-gallery h-px w-[272px]"></div>
+                        <div className="h-px w-[272px] bg-gray-200 dark:bg-gray-100/20"></div>
                       </div>
                     )}
                   </Fragment>

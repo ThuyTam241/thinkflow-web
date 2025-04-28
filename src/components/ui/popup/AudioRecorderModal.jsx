@@ -168,7 +168,7 @@ const AudioRecorderModal = ({
         </h2>
         <div ref={micContainerRef} className="w-full"></div>
         {recordings && recordings.length > 0 && (
-          <div className="no-scrollbar divide-gallery flex max-h-[153px] w-full flex-col divide-y overflow-hidden overflow-y-auto">
+          <div className="no-scrollbar flex max-h-[153px] w-full flex-col divide-y divide-gray-200 overflow-hidden overflow-y-auto dark:divide-gray-100/20">
             {recordings.map((recording, index) => (
               <div key={index} className="flex items-center gap-6 py-3.5">
                 <WaveformPlayer

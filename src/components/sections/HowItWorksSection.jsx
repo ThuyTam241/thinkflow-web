@@ -28,7 +28,7 @@ const HowItWorksSection = () => {
           <motion.div
             variants={scale(index * 0.2)}
             key={index}
-            className="border-gallery flex h-[120px] flex-col justify-center rounded-[10px] border p-4 text-center"
+            className="flex h-[120px] flex-col justify-center rounded-[10px] border border-gray-200 p-4 text-center dark:border-gray-100/20"
           >
             <h3 className="font-body text-ebony-clay text-base font-semibold md:text-lg/[25px]">
               Step {index + 1}

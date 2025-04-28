@@ -48,12 +48,12 @@ const Footer = () => {
           <ul className="flex gap-2.5">
             {socialLinks.map((socialLink, index) => (
               <Link key={index} to={socialLink.to}>
-                <socialLink.icon className="text-ebony-clay w-5 h-5 stroke-[1.5]"/>
+                <socialLink.icon className="text-ebony-clay h-5 w-5 stroke-[1.5]" />
               </Link>
             ))}
           </ul>
         </div>
-        <div className="border-gallery text-ebony-clay mt-6 flex flex-col items-center border-t py-5 text-xs md:flex-row md:justify-between md:text-sm">
+        <div className="text-ebony-clay mt-6 flex flex-col items-center border-t border-gray-200 py-5 text-xs md:flex-row md:justify-between md:text-sm dark:border-gray-100/20">
           <p>© 2024 ThinkFlow. All rights reserved.</p>
 
           {/* legal links */}

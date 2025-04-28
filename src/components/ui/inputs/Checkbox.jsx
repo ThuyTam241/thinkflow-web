@@ -2,7 +2,7 @@ const Checkbox = ({ label, ...props }) => {
   return (
     <label className="font-body text-ebony-clay flex cursor-pointer items-center gap-1 text-xs md:text-sm">
       <input type="checkbox" {...props} className="peer hidden" />
-      <div className="border-gallery h-4 w-4 rounded-sm border peer-checked:invisible"></div>
+      <div className="h-4 w-4 rounded-sm border border-gray-200 peer-checked:invisible dark:border-gray-100/20"></div>
       <svg
         width="16"
         height="16"

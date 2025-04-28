@@ -57,7 +57,7 @@ const FeaturesSection = () => {
           <motion.div
             variants={scale(index * 0.2)}
             key={index}
-            className="border-gallery flex flex-col items-center gap-3.5 px-5 py-8 text-center not-last:border-b md:gap-7 md:px-8 md:not-last:border-r md:nth-[2]:border-r-0 md:nth-[3]:border-b-0 xl:py-0 xl:first:border-b-0 xl:nth-[2]:border-r xl:nth-[2]:border-b-0"
+            className="flex flex-col items-center gap-3.5 border-gray-200 px-5 py-8 text-center not-last:border-b md:gap-7 md:px-8 md:not-last:border-r md:nth-[2]:border-r-0 md:nth-[3]:border-b-0 xl:py-0 xl:first:border-b-0 xl:nth-[2]:border-r xl:nth-[2]:border-b-0 dark:border-gray-100/20"
           >
             <img
               src={featureCard.icon}

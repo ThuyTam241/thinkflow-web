@@ -1,4 +1,4 @@
-import { ArchiveRestore, Trash2 } from "lucide-react";
+import { ArchiveRestore, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import {
   deleteNoteApi,
   getAllUserArchivedResourcesApi,
@@ -8,8 +8,10 @@ import { useEffect, useMemo, useState } from "react";
 import IconButton from "../../components/ui/buttons/IconButton";
 import notify from "../../components/ui/CustomToast";
 import Table from "../../components/ui/Table";
+import { useOutletContext } from "react-router";
 
 const ArchivedResources = () => {
+  const { isExpanded, setIsExpanded } = useOutletContext();
   const [archivedResourcesListData, setArchivedResourcesListData] = useState(
     [],
   );
@@ -114,7 +116,20 @@ const ArchivedResources = () => {
   };
 
   return (
-    <div className="h-full rounded-md bg-white px-10 py-8 dark:bg-[#16163B]">
+    <div className="h-full rounded-md p-6 ">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex gap-2.5">
+          <IconButton
+            customStyle="text-ebony-clay stroke-2"
+            size="w-5 h-5"
+            onClick={() => setIsExpanded(!isExpanded)}
+            icon={isExpanded ? ChevronLeft : ChevronRight}
+          />
+          <h2 className="font-body text-ebony-clay text-xl font-semibold">
+            Archived Notes
+          </h2>
+        </div>
+      </div>
       <Table
         data={archivedResourcesListData}
         columns={columns}

@@ -24,7 +24,7 @@ const TextInput = ({
         placeholder={placeholder}
         {...props}
         autoComplete="on"
-        className={`outline-gallery peer font-body text-ebony-clay w-full rounded-md ${type === "password" ? "pr-10 pl-3" : "px-3"} py-[6px] ${style} ${errorMessage ? "focus:outline-crimson-red outline-crimson-red! focus:shadow-[0px_0px_8px_rgba(230,57,70,0.4)]" : "focus:outline-indigo focus:shadow-[0px_0px_8px_rgba(107,118,246,0.4)]"}`}
+        className={`peer font-body text-ebony-clay w-full rounded-md outline-gray-200 dark:outline-gray-100/20 ${type === "password" ? "pr-10 pl-3" : "px-3"} py-[6px] ${style} ${errorMessage ? "focus:outline-crimson-red outline-crimson-red! focus:shadow-[0px_0px_8px_rgba(230,57,70,0.4)]" : "focus:outline-indigo focus:shadow-[0px_0px_8px_rgba(107,118,246,0.4)]"}`}
       />
       {type === "password" && (
         <img

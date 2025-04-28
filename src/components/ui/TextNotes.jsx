@@ -1,4 +1,4 @@
-import { BrainCircuit, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import IconButton from "./buttons/IconButton";
 import Tiptap from "../tiptap/TipTap";
@@ -14,11 +14,13 @@ import {
   updateSummaryApi,
   updateTextNoteApi,
   uploadAttachmentApi,
+  getMindmapApi,
 } from "../../services/api.service";
 import notify from "./CustomToast";
 import TextArea from "./inputs/TextArea";
 import { Tooltip } from "react-tooltip";
 import MindMapIcon from "../../assets/icons/mindmap-icon.svg";
+import MindMap from "./MindMap";
 
 const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const [editorState, setEditorState] = useState({
@@ -34,6 +36,8 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
+  const [mindmapData, setMindmapData] = useState(null);
+  const [showMindmap, setShowMindmap] = useState(false);
 
   const {
     register,
@@ -54,15 +58,28 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
           noteDetail.text_note.text_content,
         );
       }
+      // Fetch mindmap data
+      fetchMindmapData();
     } else {
       reset({ summary: "" });
       setEditorState({ type: "doc", content: [] });
       setShowSummary(false);
+      setMindmapData(null);
+      setShowMindmap(false);
       if (editorRef.current) {
         editorRef.current.commands.setContent({ type: "doc", content: [] });
       }
     }
   }, [noteDetail.text_note, reset]);
+
+  const fetchMindmapData = async () => {
+    if (!noteDetail?.id) return;
+    const res = await getMindmapApi(noteDetail.id);
+    console.log("🚀 ~ fetchMindmapData ~ res:", res);
+    if (res.data) {
+      setMindmapData(res.data);
+    }
+  };
 
   const handleUploadFile = async (
     attachment,
@@ -125,7 +142,13 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
       }
     }
 
-    editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .deleteSelection()
+      .unsetLink()
+      .run();
   };
 
   const onSubmit = async (values) => {
@@ -263,24 +286,29 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
     }));
   };
 
-  const handleGenerateMindmap = async () => {};
+  const handleGenerateMindmap = async () => {
+    setIsGeneratingMindMap(true);
+    await fetchMindmapData();
+    setShowMindmap(true);
+    setIsGeneratingMindMap(false);
+  };
 
   return (
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-4`}
+      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-4 overflow-y-auto`}
     >
-        <Tiptap
-          noteDetail={noteDetail}
-          initialContent={editorState}
-          setEditorState={setEditorState}
-          getEditorInstance={(editor) => (editorRef.current = editor)}
-          setPendingAttachments={setPendingAttachments}
-          unsetLink={unsetLink}
-          handleCreateSummary={handleCreateSummary}
-          permission={permission}
-        />
+      <Tiptap
+        noteDetail={noteDetail}
+        initialContent={editorState}
+        setEditorState={setEditorState}
+        getEditorInstance={(editor) => (editorRef.current = editor)}
+        setPendingAttachments={setPendingAttachments}
+        unsetLink={unsetLink}
+        handleCreateSummary={handleCreateSummary}
+        permission={permission}
+      />
 
       {(showSummary || isSummarizing || noteDetail?.text_note?.summary) && (
         <div>
@@ -292,8 +320,33 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
           />
 
           {showSummary && (
-            <div className="border-gallery mt-1.5 h-40 border-t pt-4">
+            <div className="mt-1.5 h-40 border-t border-gray-200 pt-4 dark:border-gray-100/20">
               <TextArea {...register("summary")} disabled={isSummarizing} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {noteDetail?.text_note && (
+        <div className="max-w-[calc(100vw-645px)]">
+          <IconButton
+            onClick={() => setShowMindmap(!showMindmap)}
+            icon={showMindmap ? ChevronUp : ChevronDown}
+            label="Mindmap"
+            isProcessing={isGeneratingMindMap}
+          />
+
+          {showMindmap && mindmapData && (
+            <div className="mt-1.5 border-t border-gray-200 pt-4 dark:border-gray-100/20">
+              {Array.isArray(mindmapData.parent_content) ? (
+                mindmapData.parent_content.map((rootNode, idx) => (
+                  <div key={idx} className="mb-8">
+                    <MindMap data={rootNode} />
+                  </div>
+                ))
+              ) : (
+                <MindMap data={mindmapData} />
+              )}
             </div>
           )}
         </div>
@@ -337,12 +390,6 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
             />
           </>
         ) : (
-          //   <IconButton
-          //     onClick={handleGenerateMindmap}
-          //     icon={MindMapIcon}
-          //     label="Generate MindMap"
-          //     isProcessing={isGeneratingMindMap}
-          //   />
           !noteDetail.text_note && (
             <PrimaryButton
               data-tooltip-id="disable-button"
