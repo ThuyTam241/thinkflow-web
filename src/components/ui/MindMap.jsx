@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Edit2 } from "lucide-react";
 import PrimaryButton from "./buttons/PrimaryButton";
+import EditNode from "../../assets/images/edit-avatar.png";
+import IconButton from "./buttons/IconButton";
 
 const wrapText = (text, maxWidth = 228, font = "16px sans-serif") => {
   if (!text) return [];
@@ -22,7 +24,7 @@ const wrapText = (text, maxWidth = 228, font = "16px sans-serif") => {
   }
   if (currentLine) lines.push(currentLine);
   return lines;
-}
+};
 
 const NODE_WIDTH = 260;
 const LINE_HEIGHT = 22;
@@ -89,7 +91,7 @@ const layoutTreeDynamic = (
       (childHeights.length > 0 ? Math.max(...childHeights) : 0);
   }
   return { nodes, links, width, height };
-}
+};
 
 const MindMap = ({ data, style, onNodeUpdate }) => {
   const [editingNode, setEditingNode] = useState(null);
@@ -108,7 +110,7 @@ const MindMap = ({ data, style, onNodeUpdate }) => {
     };
 
     if (editingNode) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.focus();
@@ -119,7 +121,7 @@ const MindMap = ({ data, style, onNodeUpdate }) => {
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [editingNode]);
 
@@ -146,7 +148,7 @@ const MindMap = ({ data, style, onNodeUpdate }) => {
 
   const handleSaveEdit = async () => {
     if (!editingNode) return;
-    
+
     const updatedNode = { ...editingNode, content: editContent };
     onNodeUpdate(updatedNode);
     setEditingNode(null);
@@ -191,14 +193,16 @@ const MindMap = ({ data, style, onNodeUpdate }) => {
 
         {nodes.map((node, i) => {
           return (
-            <g 
+            <g
               key={node.branch}
               onMouseEnter={(e) => {
-                const editButton = e.currentTarget.querySelector('.edit-button');
+                const editButton =
+                  e.currentTarget.querySelector(".edit-button");
                 if (editButton) editButton.style.opacity = 1;
               }}
               onMouseLeave={(e) => {
-                const editButton = e.currentTarget.querySelector('.edit-button');
+                const editButton =
+                  e.currentTarget.querySelector(".edit-button");
                 if (editButton) editButton.style.opacity = 0;
               }}
             >
@@ -232,24 +236,35 @@ const MindMap = ({ data, style, onNodeUpdate }) => {
                   </tspan>
                 ))}
               </text>
+
               <g
                 transform={`translate(${node.x - minX + NODE_WIDTH - 40 + PADDING}, ${node.y - minY + PADDING + 8})`}
-                style={{ opacity: 0, transition: 'opacity 0.2s' }}
-                className="edit-button cursor-pointer"
+                className="edit-button bg-cornflower-blue/10 cursor-pointer opacity-0 transition-opacity duration-300 ease-in-out"
                 onClick={() => handleEditClick(node)}
               >
-                <circle 
-                  cx="16" 
-                  cy="16" 
-                  r="16" 
-                  fill="white" 
+                <circle
+                  cx="16"
+                  cy="16"
+                  r="16"
+                  fill="#f1f2ff"
                   filter="drop-shadow(0 2px 4px rgba(99, 104, 209, 0.3))"
                 />
-                <g transform="translate(6, 6)">
-                  <Edit2
-                    size={20}
-                    className="text-cornflower-blue hover:text-cornflower-blue/80"
-                  />
+                <g transform="translate(7.5, 8)">
+                  <svg
+                    width="17"
+                    height="16"
+                    viewBox="0 0 17 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8.49958 15H16M10.9997 2.64687L13.4999 5.11749M12.1465 1.51202C12.4782 1.18418 12.9282 1 13.3974 1C13.8665 1 14.3165 1.18418 14.6483 1.51202C14.98 1.83987 15.1664 2.28452 15.1664 2.74816C15.1664 3.2118 14.98 3.65645 14.6483 3.9843L4.63937 13.8759C4.4411 14.0718 4.19603 14.2151 3.92683 14.2926L1.53336 14.9827C1.46165 15.0034 1.38564 15.0046 1.31328 14.9863C1.24091 14.968 1.17487 14.9308 1.12205 14.8786C1.06923 14.8264 1.03158 14.7611 1.01304 14.6896C0.994498 14.6181 0.995752 14.543 1.01667 14.4721L1.71504 12.1069C1.79356 11.8412 1.93859 11.5993 2.13673 11.4036L12.1465 1.51202Z"
+                      stroke="#6368D1"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
                 </g>
               </g>
             </g>
@@ -260,36 +275,43 @@ const MindMap = ({ data, style, onNodeUpdate }) => {
       {/* Edit Dialog */}
       {editingNode && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-          <div ref={dialogRef} className="w-[500px] min-h-[320px] rounded-lg bg-white p-6 flex flex-col">
+          <div
+            ref={dialogRef}
+            className="flex min-h-[320px] w-[500px] flex-col rounded-lg bg-white p-6"
+          >
             <h3 className="mb-4 text-lg font-semibold">Edit Node Content</h3>
-            <div className="mb-4 border border-gray-200 rounded-lg focus-within:border-cornflower-blue focus-within:ring-1 focus-within:ring-cornflower-blue p-3 flex-1 flex flex-col min-h-0">
+            <div className="focus-within:border-cornflower-blue focus-within:ring-cornflower-blue mb-4 flex min-h-0 flex-1 flex-col rounded-lg border border-gray-200 p-3 focus-within:ring-1">
               <textarea
                 ref={textareaRef}
                 value={editContent}
                 onChange={(e) => {
                   setEditContent(e.target.value);
                   if (textareaRef.current) {
-                    textareaRef.current.style.height = 'auto';
-                    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+                    textareaRef.current.style.height = "auto";
+                    textareaRef.current.style.height =
+                      textareaRef.current.scrollHeight + "px";
                   }
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && editContent !== originalContent) {
+                  if (
+                    e.key === "Enter" &&
+                    !e.shiftKey &&
+                    editContent !== originalContent
+                  ) {
                     e.preventDefault();
                     handleSaveEdit();
                   }
                 }}
-                className="w-full h-full border-0 outline-none bg-transparent focus:ring-0 resize-none overflow-auto flex-1 min-h-0"
+                className="h-full min-h-0 w-full flex-1 resize-none overflow-auto border-0 bg-transparent outline-none focus:ring-0"
                 style={{ minHeight: 32 }}
               />
             </div>
             <div className="flex justify-end gap-2">
-              <button
+              <PrimaryButton
                 onClick={handleCancelEdit}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 mr-2"
-              >
-                Cancel
-              </button>
+                label="Cancel"
+                color="white"
+              />
               <PrimaryButton
                 onClick={handleSaveEdit}
                 label="Save"

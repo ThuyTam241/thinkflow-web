@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Archive, Ellipsis, Share2 } from "lucide-react";
+import {
+  Archive,
+  ChevronDown,
+  ChevronUp,
+  Ellipsis,
+  Share2,
+} from "lucide-react";
 import IconButton from "../../components/ui/buttons/IconButton";
 import TextNotes from "../../components/ui/TextNotes";
 import {
@@ -7,8 +13,10 @@ import {
   createNewNoteApi,
   getAllAudioApi,
   getAllUserNotesApi,
+  getMindmapApi,
   getNoteMemberApi,
   getTextNoteByNoteIdApi,
+  updateMindmapApi,
   updateNoteApi,
 } from "../../services/api.service";
 import { useForm } from "react-hook-form";
@@ -22,6 +30,8 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import ShareNoteModal from "../../components/ui/popup/ShareNoteModal";
 import ListNotes from "../../components/ui/ListNotes";
 import { useOutletContext } from "react-router";
+import MindMapIcon from "../../assets/icons/mindmap-icon.svg";
+import MindMap from "../../components/ui/MindMap";
 
 dayjs.extend(customParseFormat);
 
@@ -40,6 +50,8 @@ const MyNotes = () => {
   const [nextCursor, setNextCursor] = useState();
   const [totalNotes, setTotalNotes] = useState(0);
 
+  const [isCreatingNote, setIsCreatingNote] = useState(false);
+
   const [activeNoteType, setActiveNoteType] = useState(
     sessionStorage.getItem("activeNoteType") || "text",
   );
@@ -50,6 +62,10 @@ const MyNotes = () => {
 
   const [showOption, setShowOption] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
+  const [mindmapData, setMindmapData] = useState(null);
+  const [showMindmap, setShowMindmap] = useState(false);
 
   useEffect(() => {
     sessionStorage.setItem("activeNoteType", activeNoteType);
@@ -99,7 +115,7 @@ const MyNotes = () => {
 
   const handleLoadMoreNotes = async () => {
     if (!nextCursor) return;
-    loadNotesList(nextCursor);
+    await loadNotesList(nextCursor);
   };
 
   useEffect(() => {
@@ -123,9 +139,16 @@ const MyNotes = () => {
       owner: note.user,
       permission: "all",
       collaborators: [],
+      mindmap: null,
       text_note: null,
       audio_note: [],
     });
+
+    //Mindmap
+    const res = await getMindmapApi(note.id);
+    if (res.data) {
+      setMindmapData(res.data);
+    }
 
     const noteCollaborators = await getNoteMemberApi(note.id);
     if (noteCollaborators.data) {
@@ -143,7 +166,7 @@ const MyNotes = () => {
         ...prev,
         text_note: {
           id: textContent.data.id,
-          text_content: textContent.data.text_content,
+          text_content: textContent.data.text_content[0].body,
           summary: textContent.data.summary,
         },
       }));
@@ -199,6 +222,8 @@ const MyNotes = () => {
   }, [noteDetail]);
 
   const handleCreateNote = async () => {
+    if (isCreatingNote) return;
+    setIsCreatingNote(true);
     const res = await createNewNoteApi();
     if (res.data) {
       notify("success", "Note created!", "", "var(--color-silver-tree)");
@@ -207,6 +232,7 @@ const MyNotes = () => {
     } else {
       notify("error", "Create note failed", "", "var(--color-crimson-red)");
     }
+    setIsCreatingNote(false);
   };
 
   const updateTitleNote = async (currentTitle) => {
@@ -231,25 +257,45 @@ const MyNotes = () => {
     const res = await archiveNoteApi(activeNoteId);
     if (res.data) {
       notify("success", "Note archived!", "", "var(--color-silver-tree)");
-      const updatedNotes = notesListData.filter(
-        (note) => note.id !== activeNoteId,
-      );
-      setNotesListData(updatedNotes);
-      setTotalNotes(updatedNotes.length);
+      await loadNotesList(undefined, true);
 
-      const nextActiveNoteId = updatedNotes[0]?.id || null;
-
-      if (nextActiveNoteId) {
-        setActiveNoteId(nextActiveNoteId);
-        sessionStorage.setItem("activeNoteId", nextActiveNoteId);
-      } else {
-        setActiveNoteId(null);
-        setNoteDetail(null);
-        sessionStorage.removeItem("activeNoteId");
-      }
+      setActiveNoteId(null);
+      sessionStorage.removeItem("activeNoteId");
     } else {
       notify("error", "Archive note failed", "", "var(--color-crimson-red)");
     }
+  };
+
+  const updateNodeRecursive = (node, updatedNode) => {
+    if (node.branch === updatedNode.branch) {
+      return { ...node, ...updatedNode };
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: node.children.map((child) =>
+          updateNodeRecursive(child, updatedNode),
+        ),
+      };
+    }
+    return node;
+  };
+
+  const handleNodeUpdate = async (updatedNode) => {
+    const updateSuccess = await updateMindmapApi(noteDetail.id, mindmapData);
+
+    setMindmapData((prev) => {
+      if (Array.isArray(prev.parent_content)) {
+        return {
+          ...prev,
+          parent_content: prev.parent_content.map((rootNode) =>
+            updateNodeRecursive(rootNode, updatedNode),
+          ),
+        };
+      } else {
+        return updateNodeRecursive(prev, updatedNode);
+      }
+    });
   };
 
   return (
@@ -261,6 +307,7 @@ const MyNotes = () => {
         notesListData={notesListData}
         totalNotes={totalNotes}
         handleCreateNote={handleCreateNote}
+        isCreatingNote={isCreatingNote}
         isLoadMoreNotes={isLoadMoreNotes}
         handleLoadMoreNotes={handleLoadMoreNotes}
         nextCursor={nextCursor}
@@ -283,139 +330,163 @@ const MyNotes = () => {
       )}
 
       {noteDetail && (
-        <div className="flex flex-1 flex-col gap-4 rounded-md p-8">
-          <>
-            {/* Title */}
-            <div className="relative flex cursor-pointer items-start justify-between gap-8">
-              {noteDetail.title ? (
-                <>
-                  <TextArea
-                    style="text-2xl! text-ebony-clay font-semibold max-h-16"
-                    rows={1}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
-                    placeholder="Title"
-                    {...register("title")}
-                    onBlur={(e) => {
-                      const currentTitle = getValues("title").trim();
-                      if (currentTitle === "") {
-                        setValue("title", noteDetail.title, {
-                          shouldDirty: false,
-                        });
-                        return;
-                      }
-                      if (dirtyFields.title) {
-                        updateTitleNote(currentTitle);
-                      }
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        e.currentTarget.blur();
-                      }
-                    }}
-                  />
+        <div className="no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto rounded-md p-8">
+          {/* Title */}
+          <div className="relative flex cursor-pointer items-start justify-between gap-8">
+            {noteDetail.title ? (
+              <>
+                <TextArea
+                  style="text-2xl! text-ebony-clay font-semibold max-h-16"
+                  rows={1}
+                  onInput={(e) => {
+                    e.currentTarget.style.height = "auto";
+                    e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                  }}
+                  placeholder="Title"
+                  {...register("title")}
+                  onBlur={(e) => {
+                    const currentTitle = getValues("title").trim();
+                    if (currentTitle === "") {
+                      setValue("title", noteDetail.title, {
+                        shouldDirty: false,
+                      });
+                      return;
+                    }
+                    if (dirtyFields.title) {
+                      updateTitleNote(currentTitle);
+                    }
+                    e.currentTarget.style.height = "auto";
+                    e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      e.currentTarget.blur();
+                    }
+                  }}
+                />
 
-                  <div
-                    onClick={() => setShowOption(!showOption)}
-                    className="border-silver-chalice relative h-7 w-7 shrink-0 rounded-full border p-1"
-                  >
-                    <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
-                    {showOption && (
-                      <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
-                        <IconButton
-                          customStyle="text-silver-chalice stroke-[1.5]"
-                          size="w-5 h-5"
-                          icon={Share2}
-                          label="Share"
-                          onClick={() => setShowShareModal(true)}
-                        />
-                        <IconButton
-                          customStyle="text-silver-chalice stroke-[1.5]"
-                          size="w-5 h-5"
-                          icon={Archive}
-                          label="Archive"
-                          onClick={handleArchiveNote}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <Skeleton height={44} containerClassName="flex-1" />
-              )}
-            </div>
-
-            <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-100/20">
-              {/* Created Date */}
-              {noteDetail.date ? (
-                <span className="font-body text-silver-chalice pr-8 text-base">
-                  Created on{" "}
-                  {dayjs(noteDetail.date, "DD/MM/YYYY").format("MMM D")}
-                </span>
-              ) : (
-                <Skeleton height={16} width={40} />
-              )}
-
-              {/* Collaborators */}
-              {noteDetail.collaborators?.length > 0 && (
-                <div className="flex -space-x-1.5 pl-8">
-                  {noteDetail.collaborators.slice(0, 5).map((collaborator) => (
-                    <Avatar
-                      key={`avatar-${collaborator.id}`}
-                      src={collaborator.avatar?.url}
-                      className="h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#16163B]"
-                    />
-                  ))}
-                  {noteDetail.collaborators.length - 5 > 0 && (
-                    <div className="text-ebony-clay font-body bg-silver-chalice h-8 w-8 rounded-full text-center text-xs leading-8 font-semibold ring-2 ring-white dark:ring-[#16163B]">
-                      +{noteDetail.collaborators.length - 5}
+                <div
+                  onClick={() => setShowOption(!showOption)}
+                  className="border-silver-chalice relative h-7 w-7 shrink-0 rounded-full border p-1"
+                >
+                  <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
+                  {showOption && (
+                    <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
+                      <IconButton
+                        customStyle="text-silver-chalice stroke-[1.5]"
+                        size="w-5 h-5"
+                        icon={Share2}
+                        label="Share"
+                        onClick={() => setShowShareModal(true)}
+                      />
+                      <IconButton
+                        customStyle="text-silver-chalice stroke-[1.5]"
+                        size="w-5 h-5"
+                        icon={Archive}
+                        label="Archive"
+                        onClick={handleArchiveNote}
+                      />
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <Skeleton height={44} containerClassName="flex-1" />
+            )}
+          </div>
 
-            {/* Content */}
-            <div className="mb-1 flex w-full border-b border-b-gray-200 dark:border-gray-100/20">
-              {tabs.map((tab, index) => (
-                <div
-                  key={index}
-                  onClick={() => setActiveNoteType(tab.id)}
-                  className="flex h-full w-1/2 cursor-pointer items-center justify-center"
+          <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-100/20">
+            {/* Created Date */}
+            {noteDetail.date ? (
+              <span className="font-body text-silver-chalice pr-8 text-base">
+                Created on{" "}
+                {dayjs(noteDetail.date, "DD/MM/YYYY").format("MMM D")}
+              </span>
+            ) : (
+              <Skeleton height={16} width={40} />
+            )}
+
+            {/* Collaborators */}
+            {noteDetail.collaborators?.length > 0 && (
+              <div className="flex -space-x-1.5 pl-8">
+                {noteDetail.collaborators.slice(0, 5).map((collaborator) => (
+                  <Avatar
+                    key={`avatar-${collaborator.id}`}
+                    src={collaborator.avatar?.url}
+                    className="h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#16163B]"
+                  />
+                ))}
+                {noteDetail.collaborators.length - 5 > 0 && (
+                  <div className="text-ebony-clay font-body bg-silver-chalice h-8 w-8 rounded-full text-center text-xs leading-8 font-semibold ring-2 ring-white dark:ring-[#16163B]">
+                    +{noteDetail.collaborators.length - 5}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="mb-1 flex w-full border-b border-b-gray-200 dark:border-gray-100/20">
+            {tabs.map((tab, index) => (
+              <div
+                key={index}
+                onClick={() => setActiveNoteType(tab.id)}
+                className="flex h-full w-1/2 cursor-pointer items-center justify-center"
+              >
+                <span
+                  className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
                 >
-                  <span
-                    className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
-                  >
-                    {tab.label}{" "}
-                    {tab.label === "Audio" && noteDetail
-                      ? ` (${noteDetail.audio_note?.length})`
-                      : ""}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  {tab.label}{" "}
+                  {tab.label === "Audio" && noteDetail
+                    ? ` (${noteDetail.audio_note?.length})`
+                    : ""}
+                </span>
+              </div>
+            ))}
+          </div>
 
-            {activeNoteType === "text" && (
-              <TextNotes
-                noteDetail={noteDetail}
-                setNoteDetail={setNoteDetail}
-                permission={noteDetail.permission}
-              />
-            )}
+          {activeNoteType === "text" && (
+            <TextNotes
+              noteDetail={noteDetail}
+              setNoteDetail={setNoteDetail}
+              permission={noteDetail.permission}
+            />
+          )}
 
-            {activeNoteType === "audio" && (
-              <AudioNotes
-                noteDetail={noteDetail}
-                setNoteDetail={setNoteDetail}
-                permission={noteDetail.permission}
-              />
+          {activeNoteType === "audio" && (
+            <AudioNotes
+              noteDetail={noteDetail}
+              setNoteDetail={setNoteDetail}
+              permission={noteDetail.permission}
+            />
+          )}
+
+          <div className="max-w-[calc(100vw-645px)] mt-8">
+            <IconButton
+              onClick={() => setShowMindmap(!showMindmap)}
+              icon={showMindmap ? ChevronUp : ChevronDown}
+              label="Mindmap"
+              isProcessing={isGeneratingMindMap}
+            />
+
+            {showMindmap && mindmapData && (
+              <div className="mt-1.5 border-t border-gray-200 pt-4 dark:border-gray-100/20">
+                {Array.isArray(mindmapData.parent_content) ? (
+                  mindmapData.parent_content.map((rootNode, idx) => (
+                    <div key={idx} className="mb-8">
+                      <MindMap
+                        data={rootNode}
+                        onNodeUpdate={handleNodeUpdate}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <MindMap data={mindmapData} onNodeUpdate={handleNodeUpdate} />
+                )}
+              </div>
             )}
-          </>
+          </div>
         </div>
       )}
     </div>

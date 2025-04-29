@@ -1,14 +1,15 @@
 import { Search } from "lucide-react";
 
-const SearchBar = () => {
+const SearchBar = ({ register }) => {
   return (
-    <div className="flex items-center w-48">
-      <Search className="text-gravel min-w-4 h-4 w-4" />
+    <div className="flex w-48 items-center">
+      <Search className="text-gravel h-4 w-4 min-w-4" />
       <input
         type="search"
         name="search"
+        {...register("searchTitle")}
         placeholder="Search"
-        className="font-body text-ebony-clay py-[6px] px-3 outline-none text-sm md:text-base"
+        className="font-body text-ebony-clay px-3 py-[6px] text-sm outline-none md:text-base"
       />
     </div>
   );

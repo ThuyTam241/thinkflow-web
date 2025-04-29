@@ -71,7 +71,7 @@ const MenuBar = ({
   };
 
   return (
-    <div className="mb-4 flex items-center divide-x divide-gray-200 dark:divide-gray-100/20 rounded-xl border border-gray-200 p-3 shadow dark:border-gray-100/20">
+    <div className="mb-4 flex items-center divide-x divide-gray-200 rounded-xl border border-gray-200 bg-slate-50 p-3 dark:divide-gray-100/20 dark:border-gray-100/20 shadow-xs dark:bg-[#16163B]/25">
       <div className="flex items-center gap-4 pr-4">
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 1 })}

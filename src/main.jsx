@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./styles/global.css";
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import LoginPage from "./pages/auth/Login.jsx";
 import RegisterPage from "./pages/auth/Register.jsx";
 import { Bounce, ToastContainer } from "react-toastify";
@@ -37,6 +37,7 @@ const RootApp = () => {
         </Route>
         <Route element={<RoleBasedRoute isAllowed={["user"]} />}>
           <Route path="workspace" element={<Workspace />}>
+            <Route index element={<Navigate to="notes/my-notes" replace />} />
             <Route path="notes/my-notes" element={<MyNotes />} />
             <Route path="notes/shared-notes" element={<SharedNotes />} />
             <Route path="archived" element={<ArchivedResources />} />

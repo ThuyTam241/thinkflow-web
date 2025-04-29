@@ -14,14 +14,10 @@ import {
   updateSummaryApi,
   updateTextNoteApi,
   uploadAttachmentApi,
-  getMindmapApi,
-  updateMindmapApi,
 } from "../../services/api.service";
 import notify from "./CustomToast";
 import TextArea from "./inputs/TextArea";
 import { Tooltip } from "react-tooltip";
-import MindMapIcon from "../../assets/icons/mindmap-icon.svg";
-import MindMap from "./MindMap";
 
 const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const [editorState, setEditorState] = useState({
@@ -36,9 +32,6 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
   );
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-  const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
-  const [mindmapData, setMindmapData] = useState(null);
-  const [showMindmap, setShowMindmap] = useState(false);
 
   const {
     register,
@@ -59,27 +52,15 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
           noteDetail.text_note.text_content,
         );
       }
-      // Fetch mindmap data
-      fetchMindmapData();
     } else {
       reset({ summary: "" });
       setEditorState({ type: "doc", content: [] });
       setShowSummary(false);
-      setMindmapData(null);
-      setShowMindmap(false);
       if (editorRef.current) {
         editorRef.current.commands.setContent({ type: "doc", content: [] });
       }
     }
   }, [noteDetail.text_note, reset]);
-
-  const fetchMindmapData = async () => {
-    if (!noteDetail?.id) return;
-    const res = await getMindmapApi(noteDetail.id);
-    if (res.data) {
-      setMindmapData(res.data);
-    }
-  };
 
   const handleUploadFile = async (
     attachment,
@@ -182,7 +163,13 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
 
     const textNoteRes = noteDetail.text_note
       ? await updateTextNoteApi(
-          { text_content: updatedEditorState },
+          {
+            text_content: [
+              {
+                body: updatedEditorState,
+              },
+            ],
+          },
           noteDetail.text_note.id,
         )
       : await createNewTextNoteApi(updatedEditorState, noteId);
@@ -286,42 +273,11 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
     }));
   };
 
-  function updateNodeRecursive(node, updatedNode) {
-    if (node.branch === updatedNode.branch) {
-      return { ...node, ...updatedNode };
-    }
-    if (node.children) {
-      return {
-        ...node,
-        children: node.children.map(child => updateNodeRecursive(child, updatedNode))
-      };
-    }
-    return node;
-  }
-
-  const handleNodeUpdate = async (updatedNode) => {
-    const updateSuccess = await updateMindmapApi(noteDetail.id, mindmapData);
-
-    // TODO: After BE completed, add logic only update mindmap when updateSuccess is true
-    setMindmapData(prev => {
-      if (Array.isArray(prev.parent_content)) {
-        return {
-          ...prev,
-          parent_content: prev.parent_content.map(rootNode =>
-            updateNodeRecursive(rootNode, updatedNode)
-          )
-        };
-      } else {
-        return updateNodeRecursive(prev, updatedNode);
-      }
-    });
-  };
-
   return (
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-4 overflow-y-auto`}
+      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-4`}
     >
       <Tiptap
         noteDetail={noteDetail}
@@ -346,37 +302,6 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
           {showSummary && (
             <div className="mt-1.5 h-40 border-t border-gray-200 pt-4 dark:border-gray-100/20">
               <TextArea {...register("summary")} disabled={isSummarizing} />
-            </div>
-          )}
-        </div>
-      )}
-
-      {noteDetail?.text_note && (
-        <div className="max-w-[calc(100vw-645px)]">
-          <IconButton
-            onClick={() => setShowMindmap(!showMindmap)}
-            icon={showMindmap ? ChevronUp : ChevronDown}
-            label="Mindmap"
-            isProcessing={isGeneratingMindMap}
-          />
-
-          {showMindmap && mindmapData && (
-            <div className="mt-1.5 border-t border-gray-200 pt-4 dark:border-gray-100/20">
-              {Array.isArray(mindmapData.parent_content) ? (
-                mindmapData.parent_content.map((rootNode, idx) => (
-                  <div key={idx} className="mb-8">
-                    <MindMap 
-                      data={rootNode} 
-                      onNodeUpdate={handleNodeUpdate}
-                    />
-                  </div>
-                ))
-              ) : (
-                <MindMap 
-                  data={mindmapData} 
-                  onNodeUpdate={handleNodeUpdate}
-                />
-              )}
             </div>
           )}
         </div>

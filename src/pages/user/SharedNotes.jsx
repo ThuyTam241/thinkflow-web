@@ -1,16 +1,15 @@
 import {
   getAllAudioApi,
   getAllUserSharedNotesApi,
+  getMindmapApi,
   getTextNoteByNoteIdApi,
+  updateMindmapApi,
   updateNoteApi,
 } from "../../services/api.service";
 import notify from "../../components/ui/CustomToast";
 import Skeleton from "react-loading-skeleton";
 import TextNotes from "../../components/ui/TextNotes";
 import AudioNotes from "../../components/ui/AudioNotes";
-import NoteCardSkeleton from "../../components/ui/skeleton/NoteCardSkeleton";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { PulseLoader } from "react-spinners";
 import { useForm } from "react-hook-form";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -20,6 +19,9 @@ import Avatar from "../../components/ui/Avatar";
 import { fullName } from "../../utils/userUtils";
 import ListNotes from "../../components/ui/ListNotes";
 import { useOutletContext } from "react-router";
+import MindMap from "../../components/ui/MindMap";
+import IconButton from "../../components/ui/buttons/IconButton";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 dayjs.extend(customParseFormat);
 
@@ -53,6 +55,10 @@ const SharedNotes = () => {
 
   const { register, reset, getValues, setValue } = useForm();
 
+  const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
+  const [mindmapData, setMindmapData] = useState(null);
+  const [showMindmap, setShowMindmap] = useState(false);
+
   const loadSharedNotesList = async (nextCursor, isInitial = false) => {
     if (isInitial) {
       setIsInitialLoadingSharedNotes(true);
@@ -79,7 +85,7 @@ const SharedNotes = () => {
 
   const handleLoadMoreSharedNotes = async () => {
     if (!nextCursor) return;
-    loadSharedNotesList(nextCursor);
+    await loadSharedNotesList(nextCursor);
   };
 
   useEffect(() => {
@@ -107,6 +113,12 @@ const SharedNotes = () => {
       text_note: null,
       audio_note: [],
     });
+
+    //Mindmap
+    const res = await getMindmapApi(note.id);
+    if (res.data) {
+      setMindmapData(res.data);
+    }
 
     const textContent = await getTextNoteByNoteIdApi(note.id);
     if (textContent.data) {
@@ -189,6 +201,38 @@ const SharedNotes = () => {
     );
   };
 
+  const updateNodeRecursive = (node, updatedNode) => {
+    if (node.branch === updatedNode.branch) {
+      return { ...node, ...updatedNode };
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: node.children.map((child) =>
+          updateNodeRecursive(child, updatedNode),
+        ),
+      };
+    }
+    return node;
+  };
+
+  const handleNodeUpdate = async (updatedNode) => {
+    const updateSuccess = await updateMindmapApi(noteDetail.id, mindmapData);
+
+    setMindmapData((prev) => {
+      if (Array.isArray(prev.parent_content)) {
+        return {
+          ...prev,
+          parent_content: prev.parent_content.map((rootNode) =>
+            updateNodeRecursive(rootNode, updatedNode),
+          ),
+        };
+      } else {
+        return updateNodeRecursive(prev, updatedNode);
+      }
+    });
+  };
+
   return (
     <div className="flex h-full">
       <ListNotes
@@ -206,112 +250,136 @@ const SharedNotes = () => {
       />
 
       {sharedNoteDetail && (
-        <div className="flex w-full flex-col gap-4 rounded-md p-8">
-          <>
-            {/* Title */}
-            <div className="relative flex cursor-pointer items-start justify-between gap-8">
-              {sharedNoteDetail.title ? (
-                <TextArea
-                  style="text-2xl! text-ebony-clay font-semibold max-h-16"
-                  disabled={sharedNoteDetail.permission === "read"}
-                  rows={1}
-                  onInput={(e) => {
-                    e.currentTarget.style.height = "auto";
-                    e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                  }}
-                  placeholder="Title"
-                  {...register("title")}
-                  onBlur={(e) => {
-                    const currentTitle = getValues("title").trim();
-                    if (currentTitle === "") {
-                      setValue("title", sharedNoteDetail.title, {
-                        shouldDirty: false,
-                      });
-                      return;
-                    }
-                    if (dirtyFields.title) {
-                      updateTitleSharedNote(currentTitle);
-                    }
-                    e.currentTarget.style.height = "auto";
-                    e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      e.currentTarget.blur();
-                    }
-                  }}
-                />
-              ) : (
-                <Skeleton height={44} containerClassName="flex-1" />
-              )}
-            </div>
+        <div className="no-scrollbar flex w-full flex-col gap-4 overflow-y-auto rounded-md p-8">
+          {/* Title */}
+          <div className="relative flex cursor-pointer items-start justify-between gap-8">
+            {sharedNoteDetail.title ? (
+              <TextArea
+                style="text-2xl! text-ebony-clay font-semibold max-h-16"
+                disabled={sharedNoteDetail.permission === "read"}
+                rows={1}
+                onInput={(e) => {
+                  e.currentTarget.style.height = "auto";
+                  e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                }}
+                placeholder="Title"
+                {...register("title")}
+                onBlur={(e) => {
+                  const currentTitle = getValues("title").trim();
+                  if (currentTitle === "") {
+                    setValue("title", sharedNoteDetail.title, {
+                      shouldDirty: false,
+                    });
+                    return;
+                  }
+                  if (dirtyFields.title) {
+                    updateTitleSharedNote(currentTitle);
+                  }
+                  e.currentTarget.style.height = "auto";
+                  e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.currentTarget.blur();
+                  }
+                }}
+              />
+            ) : (
+              <Skeleton height={44} containerClassName="flex-1" />
+            )}
+          </div>
 
+          {/* Created Date */}
+          <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-100/20">
             {/* Created Date */}
-            <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-100/20">
-              {/* Created Date */}
-              {sharedNoteDetail.date ? (
-                <span className="font-body text-silver-chalice pr-8 text-base">
-                  Created on{" "}
-                  {dayjs(sharedNoteDetail.date, "DD/MM/YYYY").format("MMM D")}
-                </span>
-              ) : (
-                <Skeleton height={16} width={40} />
-              )}
+            {sharedNoteDetail.date ? (
+              <span className="font-body text-silver-chalice pr-8 text-base">
+                Created on{" "}
+                {dayjs(sharedNoteDetail.date, "DD/MM/YYYY").format("MMM D")}
+              </span>
+            ) : (
+              <Skeleton height={16} width={40} />
+            )}
 
-              {/* Owner */}
-              <div className="flex items-center gap-3 pl-8">
+            {/* Owner */}
+            <div className="flex items-center gap-3 pl-8">
+              <span className="font-body text-silver-chalice text-base">
+                Shared by
+              </span>
+              <div className="flex items-center gap-3">
+                <Avatar
+                  src={sharedNoteDetail.owner.avatar?.url}
+                  className="h-8 w-8 rounded-full"
+                />
                 <span className="font-body text-silver-chalice text-base">
-                  Shared by
+                  {fullName(sharedNoteDetail.owner)}
                 </span>
-                <div className="flex items-center gap-3">
-                  <Avatar
-                    src={sharedNoteDetail.owner.avatar?.url}
-                    className="h-8 w-8 rounded-full"
-                  />
-                  <span className="font-body text-silver-chalice text-base">
-                    {fullName(sharedNoteDetail.owner)}
-                  </span>
-                </div>
               </div>
             </div>
+          </div>
 
-            {/* Content */}
-            <div className="mb-1 flex w-full border-b border-b-gray-200 dark:border-gray-100/20">
-              {tabs.map((tab, index) => (
-                <div
-                  key={index}
-                  onClick={() => setActiveSharedNoteType(tab.id)}
-                  className={`flex h-full w-1/2 cursor-pointer items-center justify-center ${activeSharedNoteType === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
+          {/* Content */}
+          <div className="mb-1 flex w-full border-b border-b-gray-200 dark:border-gray-100/20">
+            {tabs.map((tab, index) => (
+              <div
+                key={index}
+                onClick={() => setActiveSharedNoteType(tab.id)}
+                className={`flex h-full w-1/2 cursor-pointer items-center justify-center ${activeSharedNoteType === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
+              >
+                <span
+                  className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeSharedNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
                 >
-                  <span
-                    className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeSharedNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
-                  >
-                    {tab.label}{" "}
-                    {tab.label === "Audio" && sharedNoteDetail
-                      ? ` (${sharedNoteDetail.audio_note?.length})`
-                      : ""}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  {tab.label}{" "}
+                  {tab.label === "Audio" && sharedNoteDetail
+                    ? ` (${sharedNoteDetail.audio_note?.length})`
+                    : ""}
+                </span>
+              </div>
+            ))}
+          </div>
 
-            {activeSharedNoteType === "text" && (
-              <TextNotes
-                noteDetail={sharedNoteDetail}
-                setNoteDetail={setSharedNoteDetail}
-                permission={sharedNoteDetail.permission}
-              />
-            )}
+          {activeSharedNoteType === "text" && (
+            <TextNotes
+              noteDetail={sharedNoteDetail}
+              setNoteDetail={setSharedNoteDetail}
+              permission={sharedNoteDetail.permission}
+            />
+          )}
 
-            {activeSharedNoteType === "audio" && (
-              <AudioNotes
-                noteDetail={sharedNoteDetail}
-                setNoteDetail={setSharedNoteDetail}
-                permission={sharedNoteDetail.permission}
-              />
+          {activeSharedNoteType === "audio" && (
+            <AudioNotes
+              noteDetail={sharedNoteDetail}
+              setNoteDetail={setSharedNoteDetail}
+              permission={sharedNoteDetail.permission}
+            />
+          )}
+
+          <div className="max-w-[calc(100vw-645px)]">
+            <IconButton
+              onClick={() => setShowMindmap(!showMindmap)}
+              icon={showMindmap ? ChevronUp : ChevronDown}
+              label="Mindmap"
+              isProcessing={isGeneratingMindMap}
+            />
+
+            {showMindmap && mindmapData && (
+              <div className="mt-1.5 border-t border-gray-200 pt-4 dark:border-gray-100/20">
+                {Array.isArray(mindmapData.parent_content) ? (
+                  mindmapData.parent_content.map((rootNode, idx) => (
+                    <div key={idx} className="mb-8">
+                      <MindMap
+                        data={rootNode}
+                        onNodeUpdate={handleNodeUpdate}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <MindMap data={mindmapData} onNodeUpdate={handleNodeUpdate} />
+                )}
+              </div>
             )}
-          </>
+          </div>
         </div>
       )}
     </div>

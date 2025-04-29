@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Tooltip } from "react-tooltip";
 import { submenuVariants } from "../../../utils/motion";
 import { ChevronDown } from "lucide-react";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { ThemeContext } from "../../context/ThemeContext";
 import union from "../../../assets/images/union.svg";
 import unionDark from "../../../assets/images/union-dark.svg";
@@ -52,16 +52,16 @@ const SidebarItem = ({
         }
       >
         <item.icon
-          className={`group-hover:text-white mr-4 h-5 w-5 min-w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "text-white stroke-2 " : "text-white stroke-[1.5]"}`}
+          className={`mr-4 h-5 w-5 min-w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 group-hover:text-white dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "stroke-2 text-white" : "stroke-[1.5] text-white"}`}
         />
         <span
-          className={`font-body group-hover:text-white overflow-hidden text-base whitespace-nowrap transition-all duration-300 ease-in-out group-hover:font-semibold dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "text-white font-semibold " : "text-white"} ${isExpanded ? "w-32" : "w-0"}`}
+          className={`font-body overflow-hidden text-base whitespace-nowrap transition-all duration-300 ease-in-out group-hover:font-semibold group-hover:text-white dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "font-semibold text-white" : "text-white"} ${isExpanded ? "w-32" : "w-0"}`}
         >
           {item.label}
         </span>
         {item.children && isExpanded && (
           <ChevronDown
-            className={`group-hover:text-white ml-auto h-5 w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 dark:group-hover:text-white ${isChildActive || isCurrentPage ? (openSubmenu === index ? "text-white rotate-180 stroke-2 " : "text-white rotate-0 stroke-2 ") : openSubmenu === index ? "text-white rotate-180 stroke-2 " : "text-white rotate-0 stroke-[1.5]"}`}
+            className={`ml-auto h-5 w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 group-hover:text-white dark:group-hover:text-white ${isChildActive || isCurrentPage ? (openSubmenu === index ? "rotate-180 stroke-2 text-white" : "rotate-0 stroke-2 text-white") : openSubmenu === index ? "rotate-180 stroke-2 text-white" : "rotate-0 stroke-[1.5] text-white"}`}
           />
         )}
         {!isExpanded && (
@@ -99,9 +99,9 @@ const SidebarItem = ({
                   key={childIndex}
                   to={child.to}
                   className={({ isActive }) => {
-                    return `font-body hover:text-white cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold dark:hover:text-white ${
+                    return `font-body cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold hover:text-white dark:hover:text-white ${
                       isActive
-                        ? "bg-cornflower-blue/10 text-white font-semibold "
+                        ? "bg-cornflower-blue/10 font-semibold text-white"
                         : "text-white"
                     }`;
                   }}
@@ -115,16 +115,16 @@ const SidebarItem = ({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="absolute top-12 left-14 flex w-40 flex-col gap-1 rounded-xl border border-gray-200 bg-white p-2 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]"
+              className="bg-ebony-clay absolute top-12 left-14 flex w-40 flex-col gap-1 rounded-xl border border-gray-200/20 p-2 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]"
             >
               {item.children.map((child, childIndex) => (
                 <NavLink
                   key={childIndex}
                   to={child.to}
                   className={({ isActive }) => {
-                    return `font-body hover:text-white cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold dark:hover:text-white ${
+                    return `font-body cursor-pointer rounded-xl px-4 py-2.5 text-base whitespace-nowrap transition-all duration-300 ease-in-out hover:font-semibold hover:text-white dark:hover:text-white ${
                       isActive
-                        ? "bg-cornflower-blue/10 text-white font-semibold "
+                        ? "bg-cornflower-blue/10 font-semibold text-white"
                         : "text-white"
                     }`;
                   }}

@@ -7,7 +7,7 @@ const ToolbarButton = ({ icon: Icon, onClick, isActive, ...props }) => {
       {...props}
     >
       <Icon
-        className={`h-5 w-5 cursor-pointer ${isActive ? "text-ebony-clay stroke-2" : "text-silver-chalice stroke-[1.5]"} `}
+        className={`h-5 w-5 cursor-pointer stroke-[1.5] ${isActive ? "text-ebony-clay" : "text-silver-chalice"} `}
       />
     </button>
   );

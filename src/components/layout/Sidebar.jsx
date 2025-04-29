@@ -21,20 +21,17 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   useEffect(() => {
-    if (openSubmenu !== null) {
-      const isInSubmenu = menuItems[openSubmenu]?.children?.some((child) =>
-        location.pathname.startsWith(child.to),
-      );
+    const submenuIndex = menuItems.findIndex((item) =>
+      item.children?.some((child) => location.pathname.startsWith(child.to)),
+    );
 
-      if (!isInSubmenu) {
-        setOpenSubmenu(null);
-      }
-    }
-  }, [isExpanded, location.pathname]);
+    setOpenSubmenu(submenuIndex !== -1 ? submenuIndex : null);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     const res = await logoutApi();
     if (res.data) {
+      sessionStorage.clear();
       setUser({
         id: "",
         first_name: "",
@@ -69,7 +66,7 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
       style={getSidebarStyles(isExpanded)}
       className="bg-ebony-clay fixed top-0 left-0 z-10 h-screen dark:bg-[#16163B]"
     >
-      <nav className="border-r-gray-200/20 flex h-full flex-col border-r px-6">
+      <nav className="flex h-full flex-col border-r border-r-gray-200/20 px-6">
         <Link
           to="/"
           className={`mt-6 overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-12"}`}
@@ -90,7 +87,7 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
           ))}
         </div>
 
-        <div className="border-t-gray-200/20 flex flex-col gap-2 border-t py-6">
+        <div className="flex flex-col gap-2 border-t border-t-gray-200/20 py-6">
           {extraItems.map((extraItem, index) => (
             <SidebarItem
               key={index}
@@ -160,7 +157,7 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
             )}
           </div>
 
-          <div className="border-t-gray-200/20 mt-6 w-full flex cursor-pointer overflow-hidden border-t py-6">
+          <div className="mt-6 flex w-full cursor-pointer overflow-hidden border-t border-t-gray-200/20 py-6">
             <Avatar
               className="mr-3 h-11 w-11 rounded-full"
               src={user?.avatar?.url}
@@ -169,10 +166,10 @@ const Sidebar = ({ menuItems, extraItems, isExpanded }) => {
               className={`flex items-center justify-between transition-all duration-300 ease-in-out ${isExpanded ? "w-full" : "w-0"}`}
             >
               <div className="flex flex-col justify-between">
-                <h4 className="font-body text-white text-sm whitespace-nowrap">
+                <h4 className="font-body text-sm whitespace-nowrap text-white">
                   Welcome back 👋🏼
                 </h4>
-                <span className="font-body text-white text-base font-semibold whitespace-nowrap">
+                <span className="font-body text-base font-semibold whitespace-nowrap text-white">
                   {user.first_name}
                 </span>
               </div>

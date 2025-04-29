@@ -111,7 +111,11 @@ const createNewNoteApi = (title) => {
 const createNewTextNoteApi = (text_content, noteId) => {
   const URL_BACKEND = `/note/v1/texts/note/${noteId}`;
   const data = {
-    text_content,
+    text_content: [
+      {
+        body: text_content,
+      },
+    ],
   };
   return instance.post(URL_BACKEND, data);
 };
@@ -283,15 +287,20 @@ const deletePermissionApi = (noteId, userId) => {
 const getMindmapApi = async (noteId) => {
   // TODO: Update URL when BE completed
   const URL_BACKEND = `/note/v1/notes/${noteId}/mindmaps`;
-    const response = await instance.get(URL_BACKEND);
-    if (response.status === 200) {
-      return response;
-    } else {
-      // Return mock data if endpoint is not available
-      return {
-        data: mockMindmapData
-      };
-    }
+  const response = await instance.get(URL_BACKEND);
+  if (response.status === 200) {
+    return response;
+  } else {
+    // Return mock data if endpoint is not available
+    return {
+      data: mockMindmapData,
+    };
+  }
+};
+
+const searchNotesApi = (title, nextCursor) => {
+  const URL_BACKEND = `/note/v1/notes?${nextCursor ? `cursor=${nextCursor}&` : ""}limit=10&title=${encodeURIComponent(title)}`;
+  return instance.get(URL_BACKEND);
 };
 
 const updateMindmapApi = async (noteId, mindmapData) => {
@@ -345,4 +354,5 @@ export {
   deletePermissionApi,
   getMindmapApi,
   updateMindmapApi,
+  searchNotesApi,
 };
