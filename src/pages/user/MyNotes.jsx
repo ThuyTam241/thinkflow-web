@@ -31,7 +31,7 @@ import ShareNoteModal from "../../components/ui/popup/ShareNoteModal";
 import ListNotes from "../../components/ui/ListNotes";
 import { useOutletContext } from "react-router";
 import MindMapIcon from "../../assets/icons/mindmap-icon.svg";
-import MindMap from "../../components/ui/MindMap";
+import MindMapFlow from "../../components/ui/MindMapFlow";
 
 dayjs.extend(customParseFormat);
 
@@ -281,21 +281,8 @@ const MyNotes = () => {
     return node;
   };
 
-  const handleNodeUpdate = async (updatedNode) => {
-    const updateSuccess = await updateMindmapApi(noteDetail.id, mindmapData);
-
-    setMindmapData((prev) => {
-      if (Array.isArray(prev.parent_content)) {
-        return {
-          ...prev,
-          parent_content: prev.parent_content.map((rootNode) =>
-            updateNodeRecursive(rootNode, updatedNode),
-          ),
-        };
-      } else {
-        return updateNodeRecursive(prev, updatedNode);
-      }
-    });
+  const handleNodeUpdate = (updatedMindMap) => {
+    setMindmapData(updatedMindMap);
   };
 
   return (
@@ -471,19 +458,11 @@ const MyNotes = () => {
             />
 
             {showMindmap && mindmapData && (
-              <div className="mt-1.5 border-t border-gray-200 pt-4 dark:border-gray-100/20">
-                {Array.isArray(mindmapData.parent_content) ? (
-                  mindmapData.parent_content.map((rootNode, idx) => (
-                    <div key={idx} className="mb-8">
-                      <MindMap
-                        data={rootNode}
-                        onNodeUpdate={handleNodeUpdate}
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <MindMap data={mindmapData} onNodeUpdate={handleNodeUpdate} />
-                )}
+              <div className="mt-1.5 border-t border-gray-200 dark:border-gray-100/20 h-[600px] bg-white rounded-xl shadow-sm border border-gray-200">
+                <MindMapFlow
+                  data={mindmapData}
+                  onNodeUpdate={handleNodeUpdate}
+                />
               </div>
             )}
           </div>
