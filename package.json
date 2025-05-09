@@ -35,6 +35,7 @@
     "react-spinners": "^0.15.0",
     "react-toastify": "^11.0.5",
     "react-tooltip": "^5.28.0",
+    "reactflow": "^11.11.4",
     "tailwindcss": "^4.0.17",
     "wavesurfer.js": "^7.9.4"
   },

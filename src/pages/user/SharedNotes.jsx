@@ -19,7 +19,6 @@ import Avatar from "../../components/ui/Avatar";
 import { fullName } from "../../utils/userUtils";
 import ListNotes from "../../components/ui/ListNotes";
 import { useOutletContext } from "react-router";
-import MindMap from "../../components/ui/MindMap";
 import IconButton from "../../components/ui/buttons/IconButton";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
