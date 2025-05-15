@@ -1,10 +1,14 @@
 import {
   getAllAudioApi,
   getAllUserSharedNotesApi,
-  getMindmapApi,
+  createMindmapApi,
   getTextNoteByNoteIdApi,
   updateMindmapApi,
   updateNoteApi,
+  createNoteSummaryApi,
+  getNoteApi,
+  updateSummaryApi,
+  getAudioApi,
 } from "../../services/api.service";
 import notify from "../../components/ui/CustomToast";
 import Skeleton from "react-loading-skeleton";
@@ -21,6 +25,9 @@ import ListNotes from "../../components/ui/ListNotes";
 import { useOutletContext } from "react-router";
 import IconButton from "../../components/ui/buttons/IconButton";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import Summary from "../../components/ui/Summary";
+import MindMapFlow from "../../components/ui/MindMapFlow";
+import { SyncLoader } from "react-spinners";
 
 dayjs.extend(customParseFormat);
 
@@ -40,23 +47,30 @@ const SharedNotes = () => {
   const [nextCursor, setNextCursor] = useState();
   const [totalSharedNotes, setTotalSharedNotes] = useState(0);
 
-  const [activeSharedNoteType, setActiveSharedNoteType] = useState(
-    sessionStorage.getItem("activeSharedNoteType") || "text",
+  const [activeSharedNoteTab, setActiveSharedNoteTab] = useState(
+    sessionStorage.getItem("activeSharedNoteTab") || "text",
   );
   const tabs = [
     { id: "text", label: "Text" },
     { id: "audio", label: "Audio" },
+    { id: "ai", label: "Summary & Mindmap" },
   ];
 
   useEffect(() => {
-    sessionStorage.setItem("activeSharedNoteType", activeSharedNoteType);
-  }, [activeSharedNoteType]);
+    sessionStorage.setItem("activeSharedNoteTab", activeSharedNoteTab);
+  }, [activeSharedNoteTab]);
 
   const { register, reset, getValues, setValue } = useForm();
+
+  const [showOption, setShowOption] = useState(false);
+
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
   const [mindmapData, setMindmapData] = useState(null);
   const [showMindmap, setShowMindmap] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const loadSharedNotesList = async (nextCursor, isInitial = false) => {
     if (isInitial) {
@@ -95,9 +109,7 @@ const SharedNotes = () => {
     if (isFetchingSharedNote) return;
     setIsFetchingSharedNote(true);
 
-    const note = sharedNotesListData.find(
-      (note) => note.id === activeSharedNoteId,
-    );
+    const note = await getNoteApi(activeSharedNoteId);
     if (!note) {
       setIsFetchingSharedNote(false);
       return;
@@ -109,15 +121,12 @@ const SharedNotes = () => {
       date: note.created_at,
       owner: note.user,
       permission: note.permission,
+      summary: note.summary,
       text_note: null,
       audio_note: [],
     });
 
-    //Mindmap
-    const res = await getMindmapApi(note.id);
-    if (res.data) {
-      setMindmapData(res.data);
-    }
+    setMindmapData(note.data.mindmap);
 
     const textContent = await getTextNoteByNoteIdApi(note.id);
     if (textContent.data) {
@@ -133,15 +142,22 @@ const SharedNotes = () => {
 
     const audioContent = await getAllAudioApi(note.id);
     if (audioContent.data) {
-      const mappedAudioData = audioContent.data.map((item) => ({
-        id: item.id,
-        file_url: item.file_url,
-        transcript: item.transcript,
-        summary: item.summary,
-      }));
+      const audioList = audioContent.data;
+      const detailedAudios = await Promise.all(
+        audioList.map(async (item) => {
+          const detailAudio = await getAudioApi(item.id);
+          return {
+            id: item.id,
+            name: item.name,
+            file_url: item.file_url,
+            transcript: detailAudio?.data?.transcript || "",
+            summary: detailAudio?.data?.summary || "",
+          };
+        }),
+      );
       setSharedNoteDetail((prev) => ({
         ...prev,
-        audio_note: mappedAudioData,
+        audio_note: detailedAudios,
       }));
     }
 
@@ -175,13 +191,14 @@ const SharedNotes = () => {
   useEffect(() => {
     if (sharedNoteDetail) {
       reset({
-        title: sharedNoteDetail.title,
+        shared_title: sharedNoteDetail.title,
+        shared_note_summary: sharedNoteDetail.summary,
       });
     }
   }, [sharedNoteDetail]);
 
   const updateTitleSharedNote = async (currentTitle) => {
-    const res = await updateNoteApi(currentTitle, activeSharedNoteId);
+    const res = await updateNoteApi({title: currentTitle}, activeSharedNoteId);
     if (!res.data) {
       notify(
         "error",
@@ -200,6 +217,72 @@ const SharedNotes = () => {
     );
   };
 
+  const handleCreateNoteSummary = async () => {
+    setActiveNoteTab("ai");
+    setShowSummary(true);
+    setIsSummarizing(true);
+    const summary = await createNoteSummaryApi(noteDetail.id);
+    if (!summary.data) {
+      notify("error", "Create summary failed", "", "var(--color-crimson-red)");
+      setIsSummarizing(false);
+      return;
+    }
+    notify("success", "Summary created!", "", "var(--color-silver-tree)");
+    reset({ note_summary: summary.data.summary });
+    setSharedNoteDetail((prev) => ({
+      ...prev,
+      summary: summary.data,
+    }));
+    setIsSummarizing(false);
+  };
+
+  const handleCreateNoteMindmap = async () => {
+    setActiveNoteTab("ai");
+    setIsGeneratingMindMap(true);
+    setShowMindmap(true);
+    const mindmapId = await createMindmapApi(noteDetail.id);
+    if (!mindmapId.data) {
+      notify("error", "Create mindmap failed", "", "var(--color-crimson-red)");
+      setIsGeneratingMindMap(false);
+      return;
+    }
+    const addMindmap = await updateNoteApi(
+      { mindmap_id: mindmapId.data },
+      noteDetail.id,
+    );
+    if (addMindmap.data) {
+      notify("success", "Mindmap created!", "", "var(--color-silver-tree)");
+      const mindmapRes = await getNoteApi(noteDetail.id);
+      if (mindmapRes.data) {
+        setMindmapData(mindmapRes.data.mindmap?.mindmap_data);
+      }
+    }
+    setIsGeneratingMindMap(false);
+  };
+
+  const handleUpdateSummary = async () => {
+    const updateSummary = getValues("shared_note_summary");
+    setIsSaving(true);
+    const res = await updateSummaryApi(
+      sharedNoteDetail.summary?.id,
+      updateSummary,
+    );
+    if (!res.data) {
+      notify("error", "Update summary failed", "", "var(--color-crimson-red)");
+      setIsSaving(false);
+      return;
+    }
+    notify("success", "Summary updated!", "", "var(--color-silver-tree)");
+    setSharedNoteDetail((prev) => ({
+      ...prev,
+      summary: {
+        id: sharedNoteDetail.summary?.id,
+        summary_text: updateSummary,
+      },
+    }));
+    setIsSaving(false);
+  };
+
   const updateNodeRecursive = (node, updatedNode) => {
     if (node.branch === updatedNode.branch) {
       return { ...node, ...updatedNode };
@@ -215,21 +298,8 @@ const SharedNotes = () => {
     return node;
   };
 
-  const handleNodeUpdate = async (updatedNode) => {
-    const updateSuccess = await updateMindmapApi(noteDetail.id, mindmapData);
-
-    setMindmapData((prev) => {
-      if (Array.isArray(prev.parent_content)) {
-        return {
-          ...prev,
-          parent_content: prev.parent_content.map((rootNode) =>
-            updateNodeRecursive(rootNode, updatedNode),
-          ),
-        };
-      } else {
-        return updateNodeRecursive(prev, updatedNode);
-      }
-    });
+  const handleNodeUpdate = (updatedMindMap) => {
+    setMindmapData(updatedMindMap);
   };
 
   return (
@@ -249,41 +319,73 @@ const SharedNotes = () => {
       />
 
       {sharedNoteDetail && (
-        <div className="no-scrollbar flex w-full flex-col gap-4 overflow-y-auto rounded-md p-8">
+        <div className="no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto p-8">
           {/* Title */}
           <div className="relative flex cursor-pointer items-start justify-between gap-8">
             {sharedNoteDetail.title ? (
-              <TextArea
-                style="text-2xl! text-ebony-clay font-semibold max-h-16"
-                disabled={sharedNoteDetail.permission === "read"}
-                rows={1}
-                onInput={(e) => {
-                  e.currentTarget.style.height = "auto";
-                  e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                }}
-                placeholder="Title"
-                {...register("title")}
-                onBlur={(e) => {
-                  const currentTitle = getValues("title").trim();
-                  if (currentTitle === "") {
-                    setValue("title", sharedNoteDetail.title, {
-                      shouldDirty: false,
-                    });
-                    return;
-                  }
-                  if (dirtyFields.title) {
-                    updateTitleSharedNote(currentTitle);
-                  }
-                  e.currentTarget.style.height = "auto";
-                  e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    e.currentTarget.blur();
-                  }
-                }}
-              />
+              <>
+                <TextArea
+                  style="text-2xl! text-ebony-clay font-semibold"
+                  register={register("shared_title")}
+                  placeholder="Title"
+                  onBlur={(e) => {
+                    const currentTitle = getValues("shared_title").trim();
+                    if (currentTitle === "") {
+                      setValue("shared_title", sharedNoteDetail.title, {
+                        shouldDirty: false,
+                      });
+                      return;
+                    }
+                    if (dirtyFields.shared_title) {
+                      updateTitleSharedNote(currentTitle);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      e.currentTarget.blur();
+                    }
+                  }}
+                />
+
+                {(sharedNoteDetail.text_note ||
+                  sharedNoteDetail.audio_note?.length > 0) && (
+                  <div
+                    onClick={() => setShowOption(!showOption)}
+                    className="border-silver-chalice relative h-7 w-7 shrink-0 rounded-full border p-1"
+                  >
+                    <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
+                    {showOption && (
+                      <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
+                        <IconButton
+                          onClick={handleCreateNoteSummary}
+                          customStyle="text-silver-chalice stroke-[1.5]"
+                          size="w-5 h-5"
+                          icon={Sparkles}
+                          label={
+                            sharedNoteDetail.summary
+                              ? "Resummarize"
+                              : "Summarize"
+                          }
+                        />
+                        {sharedNoteDetail.summary && (
+                          <IconButton
+                            onClick={handleCreateNoteMindmap}
+                            customStyle="text-silver-chalice stroke-[1.5]"
+                            size="w-5 h-5"
+                            icon={WandSparkles}
+                            label={
+                              sharedNoteDetail.summary
+                                ? "Regenerate mindmap"
+                                : "Generate mindmap"
+                            }
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             ) : (
               <Skeleton height={44} containerClassName="flex-1" />
             )}
@@ -323,11 +425,11 @@ const SharedNotes = () => {
             {tabs.map((tab, index) => (
               <div
                 key={index}
-                onClick={() => setActiveSharedNoteType(tab.id)}
-                className={`flex h-full w-1/2 cursor-pointer items-center justify-center ${activeSharedNoteType === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
+                onClick={() => setActiveSharedNoteTab(tab.id)}
+                className={`flex h-full w-1/2 cursor-pointer items-center justify-center ${activeSharedNoteTab === tab.id ? "bg-white dark:bg-[#16163B]" : ""}`}
               >
                 <span
-                  className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeSharedNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
+                  className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeSharedNoteTab === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
                 >
                   {tab.label}{" "}
                   {tab.label === "Audio" && sharedNoteDetail
@@ -338,47 +440,94 @@ const SharedNotes = () => {
             ))}
           </div>
 
-          {activeSharedNoteType === "text" && (
-            <TextNotes
-              noteDetail={sharedNoteDetail}
-              setNoteDetail={setSharedNoteDetail}
-              permission={sharedNoteDetail.permission}
-            />
-          )}
+          {!isFetchingSharedNote ? (
+            <div>
+              {activeSharedNoteTab === "text" && (
+                <TextNotes
+                  noteDetail={sharedNoteDetail}
+                  setNoteDetail={setSharedNoteDetail}
+                  permission={sharedNoteDetail.permission}
+                />
+              )}
 
-          {activeSharedNoteType === "audio" && (
-            <AudioNotes
-              noteDetail={sharedNoteDetail}
-              setNoteDetail={setSharedNoteDetail}
-              permission={sharedNoteDetail.permission}
-            />
-          )}
+              {activeSharedNoteTab === "audio" && (
+                <AudioNotes
+                  noteDetail={sharedNoteDetail}
+                  setNoteDetail={setSharedNoteDetail}
+                  permission={sharedNoteDetail.permission}
+                />
+              )}
 
-          <div className="max-w-[calc(100vw-645px)]">
-            <IconButton
-              onClick={() => setShowMindmap(!showMindmap)}
-              icon={showMindmap ? ChevronUp : ChevronDown}
-              label="Mindmap"
-              isProcessing={isGeneratingMindMap}
-            />
-
-            {showMindmap && mindmapData && (
-              <div className="mt-1.5 border-t border-gray-200 pt-4 dark:border-gray-100/20">
-                {Array.isArray(mindmapData.parent_content) ? (
-                  mindmapData.parent_content.map((rootNode, idx) => (
-                    <div key={idx} className="mb-8">
-                      <MindMap
-                        data={rootNode}
-                        onNodeUpdate={handleNodeUpdate}
+              {activeSharedNoteTab === "ai" && (
+                <div className="flex flex-col gap-6">
+                  {(showSummary ||
+                    isSummarizing ||
+                    sharedNoteDetail.summary) && (
+                    <div className="space-y-5">
+                      <Summary
+                        showSummary={showSummary}
+                        setShowSummary={setShowSummary}
+                        isSummarizing={isSummarizing}
+                        register={register}
+                        registerField="shared_note_summary"
+                        permission={sharedNoteDetail.permission}
                       />
+                      {dirtyFields.shared_note_summary && (
+                        <div className="ml-auto flex w-fit gap-4">
+                          <PrimaryButton
+                            onClick={() =>
+                              reset({
+                                shared_note_summary:
+                                  sharedNoteDetail.summary?.summary_text,
+                              })
+                            }
+                            color="white"
+                            label="Cancel"
+                          />
+                          <PrimaryButton
+                            type="submit"
+                            color="blue"
+                            label="Save"
+                            onClick={handleUpdateSummary}
+                            isProcessing={isSaving}
+                          />
+                        </div>
+                      )}
                     </div>
-                  ))
-                ) : (
-                  <MindMap data={mindmapData} onNodeUpdate={handleNodeUpdate} />
-                )}
-              </div>
-            )}
-          </div>
+                  )}
+
+                  {(showMindmap || isGeneratingMindMap || mindmapData) && (
+                    <div>
+                      <IconButton
+                        onClick={() => setShowMindmap(!showMindmap)}
+                        icon={showMindmap ? ChevronUp : ChevronDown}
+                        label="Mindmap"
+                        isProcessing={isGeneratingMindMap}
+                      />
+
+                      {showMindmap && (
+                        <div className="mt-1.5 border-t border-gray-200 pt-4 dark:border-gray-100/20">
+                          {mindmapData.parent_content.map((rootNode, idx) => (
+                            <div key={idx} className="mb-8">
+                              <MindMapFlow
+                                data={rootNode}
+                                onNodeUpdate={handleNodeUpdate}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="h-8 shrink-0" />
+            </div>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <SyncLoader color="var(--color-cornflower-blue)" size={10} />
+            </div>
+          )}
         </div>
       )}
     </div>

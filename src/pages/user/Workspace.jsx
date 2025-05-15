@@ -7,6 +7,7 @@ import {
   Archive,
   Settings,
   CircleHelp,
+  Bell,
 } from "lucide-react";
 
 const Workspace = () => {
@@ -20,6 +21,11 @@ const Workspace = () => {
         { to: "/workspace/notes/my-notes", label: "Notes" },
         { to: "/workspace/notes/shared-notes", label: "Shared with me" },
       ],
+    },
+    {
+      to: "/notifications",
+      icon: Bell,
+      label: "Notifications"
     },
     {
       to: "/workspace/archived",

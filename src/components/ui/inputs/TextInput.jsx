@@ -20,6 +20,7 @@ const TextInput = ({
       className={`${type === "password" ? "relative" : ""} relative flex w-full flex-col items-start gap-1.5`}
     >
       <input
+        spellCheck="false"
         type={type === "password" && showPassword ? "text" : type}
         placeholder={placeholder}
         {...props}

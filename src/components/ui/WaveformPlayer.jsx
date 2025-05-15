@@ -4,7 +4,7 @@ import PlayIcon from "../../assets/icons/play-icon.svg";
 import PauseIcon from "../../assets/icons/pause-icon.svg";
 import IconButton from "./buttons/IconButton";
 
-const WaveformPlayer = ({ audioUrl, length, index }) => {
+const WaveformPlayer = ({ audioUrl, audioTitle }) => {
   const containerRef = useRef(null);
 
   const [duration, setDuration] = useState(0);
@@ -64,7 +64,7 @@ const WaveformPlayer = ({ audioUrl, length, index }) => {
 
         <div className="flex flex-col gap-1">
           <h4 className="font-body text-ebony-clay text-base font-semibold">
-            Audio #{length - index}
+            {audioTitle}
           </h4>
           {isPlaying ? (
             <div className="flex items-center gap-5">

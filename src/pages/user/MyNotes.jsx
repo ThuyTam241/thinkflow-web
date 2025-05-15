@@ -5,19 +5,25 @@ import {
   ChevronUp,
   Ellipsis,
   Share2,
+  Sparkles,
+  WandSparkles,
 } from "lucide-react";
 import IconButton from "../../components/ui/buttons/IconButton";
 import TextNotes from "../../components/ui/TextNotes";
 import {
   archiveNoteApi,
   createNewNoteApi,
+  createNoteSummaryApi,
   getAllAudioApi,
   getAllUserNotesApi,
-  getMindmapApi,
+  createMindmapApi,
   getNoteMemberApi,
+  getNoteApi,
   getTextNoteByNoteIdApi,
   updateMindmapApi,
   updateNoteApi,
+  updateSummaryApi,
+  getAudioApi,
 } from "../../services/api.service";
 import { useForm } from "react-hook-form";
 import notify from "../../components/ui/CustomToast";
@@ -30,8 +36,10 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import ShareNoteModal from "../../components/ui/popup/ShareNoteModal";
 import ListNotes from "../../components/ui/ListNotes";
 import { useOutletContext } from "react-router";
-import MindMapIcon from "../../assets/icons/mindmap-icon.svg";
 import MindMapFlow from "../../components/ui/MindMapFlow";
+import Summary from "../../components/ui/Summary";
+import { SyncLoader } from "react-spinners";
+import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 
 dayjs.extend(customParseFormat);
 
@@ -52,24 +60,29 @@ const MyNotes = () => {
 
   const [isCreatingNote, setIsCreatingNote] = useState(false);
 
-  const [activeNoteType, setActiveNoteType] = useState(
-    sessionStorage.getItem("activeNoteType") || "text",
+  const [activeNoteTab, setActiveNoteTab] = useState(
+    sessionStorage.getItem("activeNoteTab") || "text",
   );
   const tabs = [
     { id: "text", label: "Text" },
     { id: "audio", label: "Audio" },
+    { id: "ai", label: "Summary & Mindmap" },
   ];
 
   const [showOption, setShowOption] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+
   const [isGeneratingMindMap, setIsGeneratingMindMap] = useState(false);
   const [mindmapData, setMindmapData] = useState(null);
   const [showMindmap, setShowMindmap] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    sessionStorage.setItem("activeNoteType", activeNoteType);
-  }, [activeNoteType]);
+    sessionStorage.setItem("activeNoteTab", activeNoteTab);
+  }, [activeNoteTab]);
 
   const today = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -86,7 +99,6 @@ const MyNotes = () => {
     formState: { dirtyFields },
   } = useForm({
     defaultValues: {
-      title: "",
       date: today,
     },
   });
@@ -126,31 +138,27 @@ const MyNotes = () => {
     if (isFetchingNote) return;
     setIsFetchingNote(true);
 
-    const note = notesListData.find((note) => note.id === activeNoteId);
+    const note = await getNoteApi(activeNoteId);
     if (!note) {
       setIsFetchingNote(false);
       return;
     }
 
     setNoteDetail({
-      id: note.id,
-      title: note.title,
-      date: note.created_at,
-      owner: note.user,
-      permission: "all",
+      id: note.data.id,
+      title: note.data.title,
+      date: note.data.created_at,
+      owner: note.data.user,
+      permission: note.data.permission,
       collaborators: [],
-      mindmap: null,
+      summary: note.data.summary,
       text_note: null,
       audio_note: [],
     });
 
-    //Mindmap
-    const res = await getMindmapApi(note.id);
-    if (res.data) {
-      setMindmapData(res.data);
-    }
+    setMindmapData(note.data.mindmap);
 
-    const noteCollaborators = await getNoteMemberApi(note.id);
+    const noteCollaborators = await getNoteMemberApi(note.data.id);
     if (noteCollaborators.data) {
       setNoteDetail((prev) => ({
         ...prev,
@@ -160,7 +168,7 @@ const MyNotes = () => {
       }));
     }
 
-    const textContent = await getTextNoteByNoteIdApi(note.id);
+    const textContent = await getTextNoteByNoteIdApi(note.data.id);
     if (textContent.data) {
       setNoteDetail((prev) => ({
         ...prev,
@@ -172,17 +180,24 @@ const MyNotes = () => {
       }));
     }
 
-    const audioContent = await getAllAudioApi(note.id);
+    const audioContent = await getAllAudioApi(note.data.id);
     if (audioContent.data) {
-      const mappedAudioData = audioContent.data.map((item) => ({
-        id: item.id,
-        file_url: item.file_url,
-        transcript: item.transcript,
-        summary: item.summary,
-      }));
+      const audioList = audioContent.data;
+      const detailedAudios = await Promise.all(
+        audioList.map(async (item) => {
+          const detailAudio = await getAudioApi(item.id);
+          return {
+            id: item.id,
+            name: item.name,
+            file_url: item.file_url,
+            transcript: detailAudio?.data?.transcript || "",
+            summary: detailAudio?.data?.summary || "",
+          };
+        }),
+      );
       setNoteDetail((prev) => ({
         ...prev,
-        audio_note: mappedAudioData,
+        audio_note: detailedAudios,
       }));
     }
 
@@ -217,6 +232,7 @@ const MyNotes = () => {
     if (noteDetail) {
       reset({
         title: noteDetail.title,
+        note_summary: noteDetail.summary?.summary_text,
       });
     }
   }, [noteDetail]);
@@ -236,7 +252,7 @@ const MyNotes = () => {
   };
 
   const updateTitleNote = async (currentTitle) => {
-    const res = await updateNoteApi(currentTitle, activeNoteId);
+    const res = await updateNoteApi({ title: currentTitle }, activeNoteId);
     if (!res.data) {
       notify(
         "error",
@@ -266,6 +282,69 @@ const MyNotes = () => {
     }
   };
 
+  const handleCreateNoteSummary = async () => {
+    setActiveNoteTab("ai");
+    setShowSummary(true);
+    setIsSummarizing(true);
+    const summary = await createNoteSummaryApi(noteDetail.id);
+    if (!summary.data) {
+      notify("error", "Create summary failed", "", "var(--color-crimson-red)");
+      setIsSummarizing(false);
+      return;
+    }
+    notify("success", "Summary created!", "", "var(--color-silver-tree)");
+    reset({ note_summary: summary.data.summary });
+    setNoteDetail((prev) => ({
+      ...prev,
+      summary: summary.data,
+    }));
+    setIsSummarizing(false);
+  };
+
+  const handleCreateNoteMindmap = async () => {
+    setActiveNoteTab("ai");
+    setIsGeneratingMindMap(true);
+    setShowMindmap(true);
+    const mindmapId = await createMindmapApi(noteDetail.id);
+    if (!mindmapId.data) {
+      notify("error", "Create mindmap failed", "", "var(--color-crimson-red)");
+      setIsGeneratingMindMap(false);
+      return;
+    }
+    const addMindmap = await updateNoteApi(
+      { mindmap: mindmapId.data },
+      noteDetail.id,
+    );
+    if (addMindmap.data) {
+      notify("success", "Mindmap created!", "", "var(--color-silver-tree)");
+      const mindmapRes = await getNoteApi(noteDetail.id);
+      if (mindmapRes.data) {
+        setMindmapData(mindmapRes.data.mindmap);
+      }
+    }
+    setIsGeneratingMindMap(false);
+  };
+
+  const handleUpdateSummary = async () => {
+    const updateSummary = getValues("note_summary");
+    setIsSaving(true);
+    const res = await updateSummaryApi(noteDetail.summary?.id, updateSummary);
+    if (!res.data) {
+      notify("error", "Update summary failed", "", "var(--color-crimson-red)");
+      setIsSaving(false);
+      return;
+    }
+    notify("success", "Summary updated!", "", "var(--color-silver-tree)");
+    setNoteDetail((prev) => ({
+      ...prev,
+      summary: {
+        id: noteDetail.summary?.id,
+        summary_text: updateSummary,
+      },
+    }));
+    setIsSaving(false);
+  };
+
   const updateNodeRecursive = (node, updatedNode) => {
     if (node.branch === updatedNode.branch) {
       return { ...node, ...updatedNode };
@@ -281,8 +360,11 @@ const MyNotes = () => {
     return node;
   };
 
-  const handleNodeUpdate = (updatedMindMap) => {
-    setMindmapData(updatedMindMap);
+  const handleNodeUpdate = (updatedMindmap) => {
+    setMindmapData((prev) => ({
+      ...prev,
+      mindmap_data: updatedMindmap,
+    }));
   };
 
   return (
@@ -317,20 +399,15 @@ const MyNotes = () => {
       )}
 
       {noteDetail && (
-        <div className="no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto rounded-md p-8">
+        <div className="no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto p-8 pb-0">
           {/* Title */}
           <div className="relative flex cursor-pointer items-start justify-between gap-8">
             {noteDetail.title ? (
               <>
                 <TextArea
-                  style="text-2xl! text-ebony-clay font-semibold max-h-16"
-                  rows={1}
-                  onInput={(e) => {
-                    e.currentTarget.style.height = "auto";
-                    e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                  }}
+                  style="text-2xl! text-ebony-clay font-semibold"
+                  register={register("title")}
                   placeholder="Title"
-                  {...register("title")}
                   onBlur={(e) => {
                     const currentTitle = getValues("title").trim();
                     if (currentTitle === "") {
@@ -342,8 +419,6 @@ const MyNotes = () => {
                     if (dirtyFields.title) {
                       updateTitleNote(currentTitle);
                     }
-                    e.currentTarget.style.height = "auto";
-                    e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -360,6 +435,31 @@ const MyNotes = () => {
                   <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
                   {showOption && (
                     <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
+                      {(noteDetail.text_note ||
+                        noteDetail.audio_note?.length > 0) && (
+                        <IconButton
+                          onClick={handleCreateNoteSummary}
+                          customStyle="text-silver-chalice stroke-[1.5]"
+                          size="w-5 h-5"
+                          icon={Sparkles}
+                          label={
+                            noteDetail.summary ? "Resummarize" : "Summarize"
+                          }
+                        />
+                      )}
+                      {noteDetail.summary && (
+                        <IconButton
+                          onClick={handleCreateNoteMindmap}
+                          customStyle="text-silver-chalice stroke-[1.5]"
+                          size="w-5 h-5"
+                          icon={WandSparkles}
+                          label={
+                            mindmapData
+                              ? "Regenerate mindmap"
+                              : "Generate mindmap"
+                          }
+                        />
+                      )}
                       <IconButton
                         customStyle="text-silver-chalice stroke-[1.5]"
                         size="w-5 h-5"
@@ -418,11 +518,11 @@ const MyNotes = () => {
             {tabs.map((tab, index) => (
               <div
                 key={index}
-                onClick={() => setActiveNoteType(tab.id)}
-                className="flex h-full w-1/2 cursor-pointer items-center justify-center"
+                onClick={() => setActiveNoteTab(tab.id)}
+                className="flex h-full w-1/3 cursor-pointer items-center justify-center"
               >
                 <span
-                  className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeNoteType === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
+                  className={`font-body inline-block w-full border-b-2 pt-4 pb-2 text-center text-base whitespace-nowrap transition-all duration-300 ease-in-out ${activeNoteTab === tab.id ? "text-indigo border-indigo font-semibold dark:text-white" : "text-gravel border-transparent"}`}
                 >
                   {tab.label}{" "}
                   {tab.label === "Audio" && noteDetail
@@ -433,39 +533,92 @@ const MyNotes = () => {
             ))}
           </div>
 
-          {activeNoteType === "text" && (
-            <TextNotes
-              noteDetail={noteDetail}
-              setNoteDetail={setNoteDetail}
-              permission={noteDetail.permission}
-            />
-          )}
-
-          {activeNoteType === "audio" && (
-            <AudioNotes
-              noteDetail={noteDetail}
-              setNoteDetail={setNoteDetail}
-              permission={noteDetail.permission}
-            />
-          )}
-
-          <div className="max-w-[calc(100vw-645px)] mt-8">
-            <IconButton
-              onClick={() => setShowMindmap(!showMindmap)}
-              icon={showMindmap ? ChevronUp : ChevronDown}
-              label="Mindmap"
-              isProcessing={isGeneratingMindMap}
-            />
-
-            {showMindmap && mindmapData && (
-              <div className="mt-1.5 border-t border-gray-200 dark:border-gray-100/20 h-[600px] bg-white rounded-xl shadow-sm border border-gray-200">
-                <MindMapFlow
-                  data={mindmapData}
-                  onNodeUpdate={handleNodeUpdate}
+          {!isFetchingNote ? (
+            <div>
+              {activeNoteTab === "text" && (
+                <TextNotes
+                  noteDetail={noteDetail}
+                  setNoteDetail={setNoteDetail}
+                  permission={noteDetail.permission}
                 />
-              </div>
-            )}
-          </div>
+              )}
+
+              {activeNoteTab === "audio" && (
+                <AudioNotes
+                  noteDetail={noteDetail}
+                  setNoteDetail={setNoteDetail}
+                  permission={noteDetail.permission}
+                />
+              )}
+
+              {activeNoteTab === "ai" && (
+                <div className="flex flex-col gap-6">
+                  {(showSummary || isSummarizing || noteDetail.summary) && (
+                    <div className="space-y-5">
+                      <Summary
+                        showSummary={showSummary}
+                        setShowSummary={setShowSummary}
+                        isSummarizing={isSummarizing}
+                        register={register}
+                        registerField="note_summary"
+                      />
+                      {dirtyFields.note_summary && (
+                        <div className="ml-auto flex w-fit gap-4">
+                          <PrimaryButton
+                            onClick={() =>
+                              reset({
+                                note_summary: noteDetail.summary?.summary_text,
+                              })
+                            }
+                            color="white"
+                            label="Cancel"
+                          />
+                          <PrimaryButton
+                            type="submit"
+                            color="blue"
+                            label="Save"
+                            onClick={handleUpdateSummary}
+                            isProcessing={isSaving}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {(showMindmap || isGeneratingMindMap || mindmapData) && (
+                    <div>
+                      <IconButton
+                        onClick={() => setShowMindmap(!showMindmap)}
+                        icon={showMindmap ? ChevronUp : ChevronDown}
+                        label="Mindmap"
+                        isProcessing={isGeneratingMindMap}
+                      />
+
+                      {showMindmap &&
+                        mindmapData?.mindmap_data?.parent_content?.length && (
+                          <div className="mt-1.5 rounded-md border border-gray-200 pt-4 dark:border-gray-100/20">
+                            <div className="mb-8">
+                              <MindMapFlow
+                                mindmapId={mindmapData.id}
+                                setMindmapData={setMindmapData}
+                                data={
+                                  mindmapData.mindmap_data
+                                }
+                                onNodeUpdate={handleNodeUpdate}
+                              />
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="h-8 shrink-0" />
+            </div>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <SyncLoader color="var(--color-cornflower-blue)" size={10} />
+            </div>
+          )}
         </div>
       )}
     </div>

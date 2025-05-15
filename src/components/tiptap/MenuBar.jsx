@@ -30,7 +30,7 @@ const MenuBar = ({
   editor,
   setPendingAttachments,
   unsetLink,
-  handleCreateSummary,
+  handleCreateTextNoteSummary,
   permission,
 }) => {
   if (!editor) {
@@ -71,7 +71,7 @@ const MenuBar = ({
   };
 
   return (
-    <div className="mb-4 flex items-center divide-x divide-gray-200 rounded-xl border border-gray-200 bg-slate-50 p-3 dark:divide-gray-100/20 dark:border-gray-100/20 shadow-xs dark:bg-[#16163B]/25">
+    <div className="mb-4 flex items-center divide-x divide-gray-200 rounded-xl border border-gray-200 bg-slate-50 p-3 shadow-xs dark:divide-gray-100/20 dark:border-gray-100/20 dark:bg-[#16163B]/25">
       <div className="flex items-center gap-4 pr-4">
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 1 })}
@@ -212,7 +212,7 @@ const MenuBar = ({
       {noteDetail?.text_note?.text_content && (
         <div className="flex items-center pl-4">
           <IconButton
-            onClick={handleCreateSummary}
+            onClick={handleCreateTextNoteSummary}
             customStyle="text-silver-chalice stroke-[1.5]"
             size="w-5 h-5"
             icon={Sparkles}

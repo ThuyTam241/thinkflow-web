@@ -1,5 +1,4 @@
 import instance from "./axios.customize";
-import { mockMindmapData } from "./mock-data";
 
 const registerUserApi = (email, password, first_name, last_name) => {
   const URL_BACKEND = "/auth/v1/register";
@@ -64,7 +63,7 @@ const logoutApi = () => {
 };
 
 const uploadImageApi = (file) => {
-  const URL_BACKEND = "/media/v1/media/images";
+  const URL_BACKEND = "/media/v1/images";
   let config = {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -100,6 +99,11 @@ const getAllUserNotesApi = (nextCursor) => {
   return instance.get(URL_BACKEND);
 };
 
+const getNoteApi = (noteId) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}`;
+  return instance.get(URL_BACKEND);
+};
+
 const createNewNoteApi = (title) => {
   const URL_BACKEND = "/note/v1/notes";
   const data = {
@@ -108,7 +112,7 @@ const createNewNoteApi = (title) => {
   return instance.post(URL_BACKEND, data);
 };
 
-const createNewTextNoteApi = (text_content, noteId) => {
+const createNewTextNoteApi = (text_content, text_string, noteId) => {
   const URL_BACKEND = `/note/v1/texts/note/${noteId}`;
   const data = {
     text_content: [
@@ -116,16 +120,14 @@ const createNewTextNoteApi = (text_content, noteId) => {
         body: text_content,
       },
     ],
+    text_string: text_string,
   };
   return instance.post(URL_BACKEND, data);
 };
 
-const updateNoteApi = (title, noteId) => {
+const updateNoteApi = (updateNoteData, noteId) => {
   const URL_BACKEND = `/note/v1/notes/${noteId}`;
-  const data = {
-    title,
-  };
-  return instance.patch(URL_BACKEND, data);
+  return instance.patch(URL_BACKEND, updateNoteData);
 };
 
 const updateTextNoteApi = (updateData, text_noteId) => {
@@ -134,7 +136,7 @@ const updateTextNoteApi = (updateData, text_noteId) => {
 };
 
 const uploadAttachmentApi = (file, noteId) => {
-  const URL_BACKEND = "/media/v1/media/attachments";
+  const URL_BACKEND = "/media/v1/attachments";
   let config = {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -152,12 +154,12 @@ const deleteAttachmentApi = (attachmentId) => {
 };
 
 const getAttachmentApi = (fileId) => {
-  const URL_BACKEND = `/media/v1/media/attachments/${fileId}`;
+  const URL_BACKEND = `/media/v1/attachments/${fileId}`;
   return instance.get(URL_BACKEND);
 };
 
 const getAllNoteAttachmentsApi = (noteId) => {
-  const URL_BACKEND = `/media/v1/media/attachments/notes/${noteId}`;
+  const URL_BACKEND = `/media/v1/attachments/notes/${noteId}`;
   return instance.get(URL_BACKEND);
 };
 
@@ -191,12 +193,14 @@ const getAllUserArchivedResourcesApi = (page, pageSize) => {
   return instance.get(URL_BACKEND);
 };
 
-const createSummaryApi = (summary_text) => {
-  const URL_BACKEND = "gen/v1/gen/summaries";
-  const data = {
-    summary_text,
-  };
-  return instance.post(URL_BACKEND, data);
+const createNoteSummaryApi = (noteId) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}/summary`;
+  return instance.post(URL_BACKEND);
+};
+
+const createTextNoteSummaryApi = (textNoteId) => {
+  const URL_BACKEND = `/note/v1/texts/${textNoteId}/summary`;
+  return instance.post(URL_BACKEND);
 };
 
 const updateSummaryApi = (summary_id, summary_text) => {
@@ -207,8 +211,13 @@ const updateSummaryApi = (summary_id, summary_text) => {
   return instance.patch(URL_BACKEND, data);
 };
 
+const createAudioNoteSummaryApi = (audioId) => {
+  const URL_BACKEND = `/media/v1/audios/${audioId}/summary`;
+  return instance.post(URL_BACKEND);
+};
+
 const uploadAudioApi = (file, noteId) => {
-  const URL_BACKEND = `/media/v1/media/audios/${noteId}`;
+  const URL_BACKEND = `/media/v1/audios/note/${noteId}`;
   let config = {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -220,22 +229,30 @@ const uploadAudioApi = (file, noteId) => {
 };
 
 const updateAudioApi = (updateData, noteId) => {
-  const URL_BACKEND = `/media/v1/media/audios/${noteId}`;
+  const URL_BACKEND = `/media/v1/audios/${noteId}`;
   return instance.patch(URL_BACKEND, updateData);
 };
 
+const updateTranscriptApi = (updateData, transcriptId) => {
+  const URL_BACKEND = `/gen/v1/gen/transcripts/${transcriptId}`;
+  const data = {
+    content: updateData,
+  };
+  return instance.patch(URL_BACKEND, data);
+};
+
 const deleteAudioApi = (audioId) => {
-  const URL_BACKEND = `/media/v1/media/audios/${audioId}`;
+  const URL_BACKEND = `/media/v1/audios/${audioId}`;
   return instance.delete(URL_BACKEND);
 };
 
 const getAudioApi = (audioId) => {
-  const URL_BACKEND = `/media/v1/media/audios/${audioId}`;
+  const URL_BACKEND = `/media/v1/audios/${audioId}`;
   return instance.get(URL_BACKEND);
 };
 
 const getAllAudioApi = (noteId) => {
-  const URL_BACKEND = `/media/v1/media/audios?note-id=${noteId}&limit=100`;
+  const URL_BACKEND = `/media/v1/audios?note-id=${noteId}&limit=100`;
   return instance.get(URL_BACKEND);
 };
 
@@ -284,18 +301,9 @@ const deletePermissionApi = (noteId, userId) => {
   return instance.delete(URL_BACKEND);
 };
 
-const getMindmapApi = async (noteId) => {
-  // TODO: Update URL when BE completed
-  const URL_BACKEND = `/note/v1/notes/${noteId}/mindmaps`;
-  const response = await instance.get(URL_BACKEND);
-  if (response.status === 200) {
-    return response;
-  } else {
-    // Return mock data if endpoint is not available
-    return {
-      data: mockMindmapData,
-    };
-  }
+const createMindmapApi = async (noteId) => {
+  const URL_BACKEND = `/note/v1/notes/${noteId}/mindmap`;
+  return instance.post(URL_BACKEND);
 };
 
 const searchNotesApi = (title, nextCursor) => {
@@ -303,11 +311,12 @@ const searchNotesApi = (title, nextCursor) => {
   return instance.get(URL_BACKEND);
 };
 
-const updateMindmapApi = async (noteId, mindmapData) => {
-  // TODO: Update URL when BE completed
-  const URL_BACKEND = `/note/v1/notes/${noteId}/mindmaps`;
-  const response = await instance.patch(URL_BACKEND, mindmapData);
-  return response.status === 200;
+const updateMindmapApi = async (mindmapId, mindmapData) => {
+  const URL_BACKEND = `/gen/v1/gen/mindmaps/${mindmapId}`;
+  const data = {
+    mindmap_data: mindmapData,
+  };
+  return instance.patch(URL_BACKEND, data);
 };
 
 export {
@@ -324,6 +333,7 @@ export {
   uploadImageApi,
   updateUserProfileApi,
   getAllUserNotesApi,
+  getNoteApi,
   createNewNoteApi,
   createNewTextNoteApi,
   updateNoteApi,
@@ -338,8 +348,10 @@ export {
   unArchiveNoteApi,
   deleteNoteApi,
   getAllUserArchivedResourcesApi,
-  createSummaryApi,
+  createNoteSummaryApi,
+  createTextNoteSummaryApi,
   updateSummaryApi,
+  createAudioNoteSummaryApi,
   uploadAudioApi,
   updateAudioApi,
   deleteAudioApi,
@@ -352,7 +364,8 @@ export {
   getAllUserSharedNotesApi,
   updatePermissionApi,
   deletePermissionApi,
-  getMindmapApi,
+  createMindmapApi,
   updateMindmapApi,
   searchNotesApi,
+  updateTranscriptApi,
 };

@@ -15,7 +15,7 @@ const Tiptap = ({
   getEditorInstance,
   setPendingAttachments,
   unsetLink,
-  handleCreateSummary,
+  handleCreateTextNoteSummary,
   permission,
 }) => {
   const editor = useEditor({
@@ -73,10 +73,11 @@ const Tiptap = ({
         editor={editor}
         setPendingAttachments={setPendingAttachments}
         unsetLink={() => unsetLink(editor)}
-        handleCreateSummary={() => handleCreateSummary(editor.getText())}
+        handleCreateTextNoteSummary={handleCreateTextNoteSummary}
         permission={permission}
       />
       <EditorContent
+        spellCheck={false}
         className="font-body text-ebony-clay break-words"
         editor={editor}
       />

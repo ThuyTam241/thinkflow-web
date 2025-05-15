@@ -62,7 +62,7 @@ const ShareNoteModal = ({
     setIsSharing(true);
 
     const permission = getValues("permission");
-    const email = getValues("email");
+    const email = getValues("email").trim();
     const res = await shareLinkToEmailApi(noteDetail.id, email, permission);
     if (!res.data) {
       notify("error", "Share note failed", "", "var(--color-crimson-red)");

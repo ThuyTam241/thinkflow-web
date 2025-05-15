@@ -2,7 +2,6 @@ import { useState } from "react";
 import UploadIcon from "../../assets/icons/upload-icon.svg";
 import RecordIcon from "../../assets/icons/record-icon.svg";
 import IconButton from "../ui/buttons/IconButton";
-import { useForm } from "react-hook-form";
 import AudioItemSkeleton from "./skeleton/AudioItemSkeleton";
 import {
   deleteAudioApi,
@@ -20,11 +19,6 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const [showRecorder, setShowRecorder] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const [isTranscripting, setIsTranscripting] = useState(false);
-  const [isSummarizing, setIsSummarizing] = useState(false);
-
-  const { register, reset, getValues } = useForm();
 
   const handleUploadAudio = async (event) => {
     if (!event.target.files[0] || event.target.files.length === 0) {
@@ -52,8 +46,8 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
     const newAudioItem = {
       id: res.data.id,
       file_url: res.data.file_url,
-      transcript: null,
-      summary: null,
+      transcript: "",
+      summary: "",
     };
     setNoteDetail((prev) => ({
       ...prev,
@@ -76,31 +70,6 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
     } else {
       notify("error", "Delete audio failed", "", "var(--color-crimson-red)");
     }
-  };
-
-  const generateTranscript = (index) => {
-    setNoteDetail((prev) => ({
-      ...prev,
-      audio_note: prev.audio_note.map((audio, i) =>
-        i === index
-          ? { ...audio, transcript: "This is a generated transcript from AI." }
-          : audio,
-      ),
-    }));
-  };
-
-  const generateSummary = (index) => {
-    setNoteDetail((prev) => ({
-      ...prev,
-      audio_note: prev.audio_note.map((audio, i) =>
-        i === index
-          ? {
-              ...audio,
-              summary: "This is a concise summary based on the transcript.",
-            }
-          : audio,
-      ),
-    }));
   };
 
   return (
@@ -158,16 +127,12 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
           <>
             {noteDetail.audio_note.map((audio, index) => (
               <AudioItem
+                setNoteDetail={setNoteDetail}
                 key={audio.id}
                 index={index}
                 audio={audio}
                 length={noteDetail.audio_note.length}
                 handleDelete={handleDelete}
-                register={register}
-                generateTranscript={generateTranscript}
-                generateSummary={generateSummary}
-                isTranscripting={isTranscripting}
-                isSummarizing={isSummarizing}
                 permission={permission}
               />
             ))}

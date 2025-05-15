@@ -117,8 +117,8 @@ const AudioRecorderModal = ({
       const newAudioItem = {
         id: res.data.id,
         file_url: res.data.file_url,
-        transcript: null,
-        summary: null,
+        transcript: "",
+        summary: "",
       };
       setNoteDetail((prev) => ({
         ...prev,

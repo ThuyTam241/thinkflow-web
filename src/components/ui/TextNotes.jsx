@@ -1,23 +1,20 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import IconButton from "./buttons/IconButton";
 import Tiptap from "../tiptap/TipTap";
 import { useForm } from "react-hook-form";
 import PrimaryButton from "./buttons/PrimaryButton";
 import {
   createNewTextNoteApi,
-  createSummaryApi,
+  createTextNoteSummaryApi,
   deleteAttachmentApi,
   getAllNoteAttachmentsApi,
   getAttachmentApi,
-  getTextNoteApi,
   updateSummaryApi,
   updateTextNoteApi,
   uploadAttachmentApi,
 } from "../../services/api.service";
 import notify from "./CustomToast";
-import TextArea from "./inputs/TextArea";
 import { Tooltip } from "react-tooltip";
+import Summary from "./Summary";
 
 const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const [editorState, setEditorState] = useState({
@@ -42,7 +39,7 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
 
   useEffect(() => {
     if (noteDetail.text_note) {
-      reset({ summary: noteDetail.text_note.summary?.summary_text });
+      reset({ text_summary: noteDetail.text_note.summary?.summary_text });
       setEditorState(noteDetail.text_note.text_content);
       if (noteDetail.text_note.summary?.summary_text) {
         setShowSummary(true);
@@ -53,14 +50,14 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
         );
       }
     } else {
-      reset({ summary: "" });
+      reset({ text_summary: "" });
       setEditorState({ type: "doc", content: [] });
       setShowSummary(false);
       if (editorRef.current) {
         editorRef.current.commands.setContent({ type: "doc", content: [] });
       }
     }
-  }, [noteDetail.text_note, reset]);
+  }, [noteDetail.text_note]);
 
   const handleUploadFile = async (
     attachment,
@@ -169,13 +166,18 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
                 body: updatedEditorState,
               },
             ],
+            text_string: editorRef.current?.getText(),
           },
           noteDetail.text_note.id,
         )
-      : await createNewTextNoteApi(updatedEditorState, noteId);
+      : await createNewTextNoteApi(
+          updatedEditorState,
+          editorRef.current?.getText(),
+          noteId,
+        );
 
     // Update summary
-    if (noteDetail.text_note && dirtyFields.summary) {
+    if (noteDetail.text_note && dirtyFields.text_summary) {
       await handleUpdateSummary(
         noteDetail.text_note.summary?.id,
         values.summary,
@@ -210,7 +212,7 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
         : {
             id: textNoteRes.data,
             text_content: updatedEditorState,
-            summary: null,
+            summary: "",
           },
     }));
     if (!noteDetail.text_note) {
@@ -220,38 +222,31 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
   };
 
   const handleCancel = () => {
-    if (!noteDetail.text_note || !editorRef.current) return;
-
     editorRef.current.commands.setContent(noteDetail.text_note.text_content);
     setEditorState(noteDetail.text_note.text_content);
+    if (dirtyFields.text_summary) {
+      reset({ text_summary: noteDetail.text_note.summary?.summary_text });
+    }
   };
 
-  const handleCreateSummary = async (text_content) => {
+  const handleCreateTextNoteSummary = async () => {
     setIsSummarizing(true);
     setShowSummary(true);
-    const summaryId = await createSummaryApi(text_content);
-    if (summaryId.data) {
-      const addSummary = await updateTextNoteApi(
-        { summary_id: summaryId.data },
-        noteDetail?.text_note?.id,
-      );
-      if (addSummary.data) {
-        notify("success", "Summary created!", "", "var(--color-silver-tree)");
-        const summaryRes = await getTextNoteApi(noteDetail?.text_note?.id);
-        if (summaryRes.data) {
-          reset({ summary: summaryRes.data.summary?.summary_text });
-          setNoteDetail((prev) => ({
-            ...prev,
-            text_note: {
-              ...prev.text_note,
-              summary: summaryRes.data.summary,
-            },
-          }));
-        }
-      }
-    } else {
+    const summary = await createTextNoteSummaryApi(noteDetail.text_note.id);
+    if (!summary.data) {
       notify("error", "Create summary failed", "", "var(--color-crimson-red)");
+      setIsSummarizing(false);
+      return;
     }
+    notify("success", "Summary created!", "", "var(--color-silver-tree)");
+    reset({ text_summary: summary.data.summary });
+    setNoteDetail((prev) => ({
+      ...prev,
+      text_note: {
+        ...prev.text_note,
+        summary: summary.data,
+      },
+    }));
     setIsSummarizing(false);
   };
 
@@ -277,7 +272,7 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex h-full w-full flex-col gap-4`}
+      className={`${isProcessing ? "pointer-events-none opacity-50" : ""} flex flex-col gap-6`}
     >
       <Tiptap
         noteDetail={noteDetail}
@@ -286,30 +281,24 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
         getEditorInstance={(editor) => (editorRef.current = editor)}
         setPendingAttachments={setPendingAttachments}
         unsetLink={unsetLink}
-        handleCreateSummary={handleCreateSummary}
+        handleCreateTextNoteSummary={handleCreateTextNoteSummary}
         permission={permission}
       />
 
-      {(showSummary || isSummarizing || noteDetail?.text_note?.summary) && (
-        <div>
-          <IconButton
-            onClick={() => setShowSummary(!showSummary)}
-            icon={showSummary ? ChevronUp : ChevronDown}
-            label="Summary"
-            isProcessing={isSummarizing}
-          />
-
-          {showSummary && (
-            <div className="mt-1.5 h-40 border-t border-gray-200 pt-4 dark:border-gray-100/20">
-              <TextArea {...register("summary")} disabled={isSummarizing} />
-            </div>
-          )}
-        </div>
+      {(showSummary || isSummarizing || noteDetail.text_note?.summary) && (
+        <Summary
+          showSummary={showSummary}
+          setShowSummary={setShowSummary}
+          isSummarizing={isSummarizing}
+          permission={permission}
+          register={register}
+          registerField="text_summary"
+        />
       )}
 
-      <div className="mt-auto ml-auto flex gap-4">
+      <div className="mt-4 ml-auto flex gap-4">
         {noteDetail.text_note &&
-        (dirtyFields.summary ||
+        (dirtyFields.text_summary ||
           JSON.stringify(editorState) !==
             JSON.stringify(noteDetail.text_note.text_content)) ? (
           <>

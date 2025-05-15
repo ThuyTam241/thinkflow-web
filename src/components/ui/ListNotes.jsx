@@ -159,7 +159,7 @@ const ListNotes = ({
                     className={`relative cursor-pointer px-6 py-3 ${note.id === activeNoteId ? "bg-cornflower-blue/10" : ""}`}
                   >
                     <div
-                      className={`absolute top-0 bottom-0 left-0 h-full w-1 transition-colors duration-300 ease-in-out ${note.id === activeNoteId ? "bg-cornflower-blue/80" : "bg-transparent"}`}
+                      className={`absolute top-0 bottom-0 left-0 w-1 transition-colors duration-300 ease-in-out ${note.id === activeNoteId ? "bg-cornflower-blue/80" : "bg-transparent"}`}
                     ></div>
                     <h3
                       className={`font-body line-clamp-2 text-base font-medium transition-all duration-300 ease-in-out ${note.id === activeNoteId ? "text-indigo dark:text-white" : "text-ebony-clay"}`}

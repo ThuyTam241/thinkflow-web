@@ -5,6 +5,7 @@ const SearchBar = ({ register }) => {
     <div className="flex w-48 items-center">
       <Search className="text-gravel h-4 w-4 min-w-4" />
       <input
+        spellCheck="false"
         type="search"
         name="search"
         {...register("searchTitle")}
