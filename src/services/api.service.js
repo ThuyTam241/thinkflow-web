@@ -301,7 +301,7 @@ const deletePermissionApi = (noteId, userId) => {
   return instance.delete(URL_BACKEND);
 };
 
-const createMindmapApi = async (noteId) => {
+const createMindmapApi = (noteId) => {
   const URL_BACKEND = `/note/v1/notes/${noteId}/mindmap`;
   return instance.post(URL_BACKEND);
 };
@@ -311,12 +311,32 @@ const searchNotesApi = (title, nextCursor) => {
   return instance.get(URL_BACKEND);
 };
 
-const updateMindmapApi = async (mindmapId, mindmapData) => {
+const updateMindmapApi = (mindmapId, mindmapData) => {
   const URL_BACKEND = `/gen/v1/gen/mindmaps/${mindmapId}`;
   const data = {
     mindmap_data: mindmapData,
   };
   return instance.patch(URL_BACKEND, data);
+};
+
+const getListNotificationsApi = () => {
+  const URL_BACKEND = "/notification/v1/notifications";
+  return instance.get(URL_BACKEND);
+};
+
+const markAsReadApi = (notiId) => {
+  const URL_BACKEND = `/notification/v1/notifications/${notiId}/read`;
+  return instance.patch(URL_BACKEND);
+};
+
+const markAllAsReadApi = () => {
+  const URL_BACKEND = `/notification/v1/notifications/read-all`;
+  return instance.patch(URL_BACKEND);
+};
+
+const deleteNotiApi = (notiId) => {
+  const URL_BACKEND = `/notification/v1/notifications/${notiId}`;
+  return instance.delete(URL_BACKEND);
 };
 
 export {
@@ -368,4 +388,8 @@ export {
   updateMindmapApi,
   searchNotesApi,
   updateTranscriptApi,
+  getListNotificationsApi,
+  markAsReadApi,
+  markAllAsReadApi,
+  deleteNotiApi,
 };

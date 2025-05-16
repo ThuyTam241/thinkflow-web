@@ -12,6 +12,7 @@ import {
 
 const Workspace = () => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [hasNew, setHasNew] = useState(false);
 
   const menuItems = [
     {
@@ -23,9 +24,10 @@ const Workspace = () => {
       ],
     },
     {
-      to: "/notifications",
+      to: "/workspace/notifications",
       icon: Bell,
-      label: "Notifications"
+      label: "Notifications",
+      hasNew: hasNew,
     },
     {
       to: "/workspace/archived",
@@ -52,7 +54,7 @@ const Workspace = () => {
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="flex flex-1 flex-col"
       >
-        <Outlet context={{isExpanded, setIsExpanded}} />
+        <Outlet context={{isExpanded, setIsExpanded, setHasNew}} />
       </motion.div>
     </div>
   );

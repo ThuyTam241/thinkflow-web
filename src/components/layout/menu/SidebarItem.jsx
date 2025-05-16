@@ -38,7 +38,7 @@ const SidebarItem = ({
         className={
           item.to
             ? ({ isActive }) => {
-                return `group flex items-center rounded-xl px-4 py-3 transition-all duration-300 ease-in-out ${
+                return `group relative flex items-center rounded-xl px-4 py-3 transition-all duration-300 ease-in-out ${
                   isActive || isChildActive || openSubmenu === index
                     ? "bg-cornflower-blue/10"
                     : ""
@@ -54,6 +54,9 @@ const SidebarItem = ({
         <item.icon
           className={`mr-4 h-5 w-5 min-w-5 transition-all duration-300 ease-in-out group-hover:stroke-2 group-hover:text-white dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "stroke-2 text-white" : "stroke-[1.5] text-white"}`}
         />
+        {item.hasNew && (
+          <span className="bg-crimson-red absolute top-3 left-[26px] h-2 w-2 rounded-full"></span>
+        )}
         <span
           className={`font-body overflow-hidden text-base whitespace-nowrap transition-all duration-300 ease-in-out group-hover:font-semibold group-hover:text-white dark:group-hover:text-white ${openSubmenu === index || isCurrentPage || isChildActive ? "font-semibold text-white" : "text-white"} ${isExpanded ? "w-32" : "w-0"}`}
         >

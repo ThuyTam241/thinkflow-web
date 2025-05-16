@@ -231,7 +231,7 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
 
   const handleCreateTextNoteSummary = async () => {
     setIsSummarizing(true);
-    setShowSummary(true);
+    setShowSummary(false);
     const summary = await createTextNoteSummaryApi(noteDetail.text_note.id);
     if (!summary.data) {
       notify("error", "Create summary failed", "", "var(--color-crimson-red)");
@@ -248,6 +248,7 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
       },
     }));
     setIsSummarizing(false);
+    setShowSummary(true);
   };
 
   const handleUpdateSummary = async (summary_id, summary_text) => {

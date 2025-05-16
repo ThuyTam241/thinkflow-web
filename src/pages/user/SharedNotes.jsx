@@ -219,8 +219,8 @@ const SharedNotes = () => {
 
   const handleCreateNoteSummary = async () => {
     setActiveNoteTab("ai");
-    setShowSummary(true);
     setIsSummarizing(true);
+    setShowSummary(false);
     const summary = await createNoteSummaryApi(noteDetail.id);
     if (!summary.data) {
       notify("error", "Create summary failed", "", "var(--color-crimson-red)");
@@ -234,6 +234,7 @@ const SharedNotes = () => {
       summary: summary.data,
     }));
     setIsSummarizing(false);
+    setShowSummary(true);
   };
 
   const handleCreateNoteMindmap = async () => {
