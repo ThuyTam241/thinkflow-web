@@ -32,7 +32,7 @@ const Table = ({
       {isLoadingTable ? (
         <TableSkeleton columnCount={columns.length} />
       ) : data && data.length > 0 ? (
-        <div className="flex h-[calc(100vh-100px)] flex-col space-y-10 px-10">
+        <div className="flex h-full flex-col space-y-10">
           <table className="w-full border-collapse">
             <thead className="border-b border-gray-200 text-left dark:border-gray-100/20">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -41,7 +41,7 @@ const Table = ({
                     <th
                       colSpan={header.colSpan}
                       key={header.id}
-                      className="text-ebony-clay font-body px-5 py-4 text-sm font-bold uppercase first:w-[15%] last:w-[20%] nth-[2]:w-[35%] nth-[3]:w-[30%]"
+                      className="text-ebony-clay font-body px-2 py-4 text-sm font-bold uppercase first:w-[15%] last:w-[20%] nth-[2]:w-[35%] nth-[3]:w-[30%]"
                     >
                       {header.isPlaceholder
                         ? null
@@ -60,7 +60,7 @@ const Table = ({
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="font-body text-gravel p-5 text-base"
+                      className="font-body text-gravel p-2 text-base"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
