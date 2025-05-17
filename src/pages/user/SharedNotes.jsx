@@ -24,7 +24,7 @@ import { fullName } from "../../utils/userUtils";
 import ListNotes from "../../components/ui/ListNotes";
 import { useOutletContext } from "react-router";
 import IconButton from "../../components/ui/buttons/IconButton";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Ellipsis, Sparkles, WandSparkles } from "lucide-react";
 import Summary from "../../components/ui/Summary";
 import MindMapFlow from "../../components/ui/MindMapFlow";
 import { SyncLoader } from "react-spinners";
@@ -60,7 +60,13 @@ const SharedNotes = () => {
     sessionStorage.setItem("activeSharedNoteTab", activeSharedNoteTab);
   }, [activeSharedNoteTab]);
 
-  const { register, reset, getValues, setValue } = useForm();
+  const {
+    register,
+    reset,
+    getValues,
+    setValue,
+    formState: { dirtyFields },
+  } = useForm();
 
   const [showOption, setShowOption] = useState(false);
 
@@ -110,37 +116,38 @@ const SharedNotes = () => {
     setIsFetchingSharedNote(true);
 
     const note = await getNoteApi(activeSharedNoteId);
+    console.log("🚀 ~ getSharedNoteDetail ~ note:", note)
     if (!note) {
       setIsFetchingSharedNote(false);
       return;
     }
 
     setSharedNoteDetail({
-      id: note.id,
-      title: note.title,
-      date: note.created_at,
-      owner: note.user,
-      permission: note.permission,
-      summary: note.summary,
+      id: note.data.id,
+      title: note.data.title,
+      date: note.data.created_at,
+      owner: note.data.user,
+      permission: note.data.permission,
+      summary: note.data.summary,
       text_note: null,
       audio_note: [],
     });
 
     setMindmapData(note.data.mindmap);
 
-    const textContent = await getTextNoteByNoteIdApi(note.id);
+    const textContent = await getTextNoteByNoteIdApi(note.data.id);
     if (textContent.data) {
       setSharedNoteDetail((prev) => ({
         ...prev,
         text_note: {
           id: textContent.data.id,
-          text_content: textContent.data.text_content,
+          text_content: textContent.data.text_content[0].body,
           summary: textContent.data.summary,
         },
       }));
     }
 
-    const audioContent = await getAllAudioApi(note.id);
+    const audioContent = await getAllAudioApi(note.data.id);
     if (audioContent.data) {
       const audioList = audioContent.data;
       const detailedAudios = await Promise.all(
@@ -192,7 +199,7 @@ const SharedNotes = () => {
     if (sharedNoteDetail) {
       reset({
         shared_title: sharedNoteDetail.title,
-        shared_note_summary: sharedNoteDetail.summary,
+        shared_note_summary: sharedNoteDetail.summary?.summary_text,
       });
     }
   }, [sharedNoteDetail]);
@@ -350,42 +357,43 @@ const SharedNotes = () => {
                 />
 
                 {(sharedNoteDetail.text_note ||
-                  sharedNoteDetail.audio_note?.length > 0) && (
-                  <div
-                    onClick={() => setShowOption(!showOption)}
-                    className="border-silver-chalice relative h-7 w-7 shrink-0 rounded-full border p-1"
-                  >
-                    <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
-                    {showOption && (
-                      <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
-                        <IconButton
-                          onClick={handleCreateNoteSummary}
-                          customStyle="text-silver-chalice stroke-[1.5]"
-                          size="w-5 h-5"
-                          icon={Sparkles}
-                          label={
-                            sharedNoteDetail.summary
-                              ? "Resummarize"
-                              : "Summarize"
-                          }
-                        />
-                        {sharedNoteDetail.summary && (
+                  sharedNoteDetail.audio_note?.length > 0) &&
+                  sharedNoteDetail.permission !== "read" && (
+                    <div
+                      onClick={() => setShowOption(!showOption)}
+                      className="border-silver-chalice relative h-7 w-7 shrink-0 rounded-full border p-1"
+                    >
+                      <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
+                      {showOption && (
+                        <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
                           <IconButton
-                            onClick={handleCreateNoteMindmap}
+                            onClick={handleCreateNoteSummary}
                             customStyle="text-silver-chalice stroke-[1.5]"
                             size="w-5 h-5"
-                            icon={WandSparkles}
+                            icon={Sparkles}
                             label={
                               sharedNoteDetail.summary
-                                ? "Regenerate mindmap"
-                                : "Generate mindmap"
+                                ? "Resummarize"
+                                : "Summarize"
                             }
                           />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                          {sharedNoteDetail.summary && (
+                            <IconButton
+                              onClick={handleCreateNoteMindmap}
+                              customStyle="text-silver-chalice stroke-[1.5]"
+                              size="w-5 h-5"
+                              icon={WandSparkles}
+                              label={
+                                sharedNoteDetail.summary
+                                  ? "Regenerate mindmap"
+                                  : "Generate mindmap"
+                              }
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
               </>
             ) : (
               <Skeleton height={44} containerClassName="flex-1" />
@@ -411,11 +419,11 @@ const SharedNotes = () => {
               </span>
               <div className="flex items-center gap-3">
                 <Avatar
-                  src={sharedNoteDetail.owner.avatar?.url}
+                  src={sharedNoteDetail.owner?.avatar?.url}
                   className="h-8 w-8 rounded-full"
                 />
                 <span className="font-body text-silver-chalice text-base">
-                  {fullName(sharedNoteDetail.owner)}
+                  {fullName(sharedNoteDetail?.owner)}
                 </span>
               </div>
             </div>
@@ -506,18 +514,20 @@ const SharedNotes = () => {
                         isProcessing={isGeneratingMindMap}
                       />
 
-                      {showMindmap && (
-                        <div className="mt-1.5 border-t border-gray-200 pt-4 dark:border-gray-100/20">
-                          {mindmapData.parent_content.map((rootNode, idx) => (
-                            <div key={idx} className="mb-8">
+                      {showMindmap &&
+                        mindmapData?.mindmap_data?.parent_content?.length && (
+                          <div className="mt-1.5 rounded-md border border-gray-200 pt-4 dark:border-gray-100/20">
+                            <div className="mb-8">
                               <MindMapFlow
-                                data={rootNode}
+                                mindmapId={mindmapData.id}
+                                setMindmapData={setMindmapData}
+                                data={mindmapData.mindmap_data}
                                 onNodeUpdate={handleNodeUpdate}
+                                permission={sharedNoteDetail.permission}
                               />
                             </div>
-                          ))}
-                        </div>
-                      )}
+                          </div>
+                        )}
                     </div>
                   )}
                 </div>

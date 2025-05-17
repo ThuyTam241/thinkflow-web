@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   Background,
   useNodesState,
   useEdgesState,
   Handle,
   Position,
-} from 'reactflow';
-import { Pencil } from 'lucide-react';
-import 'reactflow/dist/style.css';
-import { updateMindmapApi } from '../../services/api.service';
-import notify from './CustomToast';
+} from "reactflow";
+import { Pencil } from "lucide-react";
+import "reactflow/dist/style.css";
+import { updateMindmapApi } from "../../services/api.service";
+import notify from "./CustomToast";
 
 function updateNodeContentInMindmap(node, branchId, newContent) {
   if (node.branch === branchId) {
@@ -18,7 +18,9 @@ function updateNodeContentInMindmap(node, branchId, newContent) {
   if (node.children && node.children.length > 0) {
     return {
       ...node,
-      children: node.children.map((child) => updateNodeContentInMindmap(child, branchId, newContent)),
+      children: node.children.map((child) =>
+        updateNodeContentInMindmap(child, branchId, newContent),
+      ),
     };
   }
   return node;
@@ -29,19 +31,19 @@ const CustomNode = ({ data }) => {
   return (
     <div
       style={{
-        background: '#fff',
-        border: '2px solid #6368D1',
-        borderRadius: '16px',
-        padding: '16px',
+        background: "#fff",
+        border: "2px solid #6368D1",
+        borderRadius: "16px",
+        padding: "16px",
         width: 260,
         height: data.height || 60,
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        transition: 'box-shadow 0.2s',
-        boxShadow: isHovered ? '0 2px 12px 0 rgba(99,104,209,0.10)' : 'none',
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        transition: "box-shadow 0.2s",
+        boxShadow: isHovered ? "0 2px 12px 0 rgba(99,104,209,0.10)" : "none",
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -50,25 +52,37 @@ const CustomNode = ({ data }) => {
         <Handle
           type="target"
           position={Position.Top}
-          style={{ background: '#6368D1', width: 8, height: 8, top: -8, left: '50%', transform: 'translateX(-50%)' }}
+          style={{
+            background: "#6368D1",
+            width: 8,
+            height: 8,
+            top: -8,
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}
         />
       )}
-      <div className="text-sm font-medium text-gray-900" style={{ width: '100%' }}>{data.label}</div>
+      <div
+        className="text-sm font-medium text-gray-900"
+        style={{ width: "100%" }}
+      >
+        {data.label}
+      </div>
       <button
         onClick={data.onEdit}
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 8,
           right: 8,
           padding: 6,
-          borderRadius: '50%',
-          background: '#e0e7ff',
-          boxShadow: '0 8px 32px 0 rgba(99,104,209,0.40)',
-          border: 'none',
-          outline: 'none',
-          cursor: 'pointer',
-          display: isHovered ? 'block' : 'none',
-          transition: 'box-shadow 0.2s, background 0.2s',
+          borderRadius: "50%",
+          background: "#e0e7ff",
+          boxShadow: "0 8px 32px 0 rgba(99,104,209,0.40)",
+          border: "none",
+          outline: "none",
+          cursor: "pointer",
+          display: isHovered && data.permission !== "read" ? "block" : "none",
+          transition: "box-shadow 0.2s, background 0.2s",
         }}
       >
         <Pencil size={14} color="#6368D1" />
@@ -77,7 +91,14 @@ const CustomNode = ({ data }) => {
         <Handle
           type="source"
           position={Position.Bottom}
-          style={{ background: '#6368D1', width: 8, height: 8, bottom: -8, left: '50%', transform: 'translateX(-50%)' }}
+          style={{
+            background: "#6368D1",
+            width: 8,
+            height: 8,
+            bottom: -8,
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}
         />
       )}
     </div>
@@ -88,7 +109,13 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
-const MindMapFlow = ({ mindmapId, setMindmapData, data, onNodeUpdate }) => {
+const MindMapFlow = ({
+  mindmapId,
+  setMindmapData,
+  data,
+  onNodeUpdate,
+  permission,
+}) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [editNode, setEditNode] = useState(null);
@@ -156,11 +183,15 @@ const MindMapFlow = ({ mindmapId, setMindmapData, data, onNodeUpdate }) => {
           hasChildren: node.children && node.children.length > 0,
           hasParent: level > 0,
           height: nodeHeight,
-          onEdit: () =>
-            openEditDialog({
-              id: node.branch,
-              label: node.content || node.topic,
-            }),
+          onEdit: () => {
+            if (permission !== "read") {
+              openEditDialog({
+                id: node.branch,
+                label: node.content || node.topic,
+              });
+            }
+          },
+          permission,
         },
         style: {
           height: nodeHeight,
@@ -220,7 +251,7 @@ const MindMapFlow = ({ mindmapId, setMindmapData, data, onNodeUpdate }) => {
     };
 
     const res = await updateMindmapApi(mindmapId, updatedMindmap);
-    if(!res.data) {
+    if (!res.data) {
       notify("error", "Update mindmap failed", "", "var(--color-crimson-red)");
       return;
     }
@@ -389,4 +420,4 @@ const MindMapFlow = ({ mindmapId, setMindmapData, data, onNodeUpdate }) => {
   );
 };
 
-export default MindMapFlow; 
+export default MindMapFlow;

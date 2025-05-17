@@ -70,6 +70,12 @@ const Notifications = () => {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          notify(
+            "info",
+            "New notification",
+            data.noti_content,
+            "var(--color-danube)",
+          );
           setNotifications((prev) => [data, ...prev]);
           setHasNew(true);
         } catch (err) {
@@ -215,7 +221,7 @@ const Notifications = () => {
                       customStyle="text-indigo stroke-[1.5]"
                       onClick={() => {
                         const options = JSON.parse(n.noti_options);
-                        navigator(options.tokenShareLink);
+                        navigator(`/share/${options.tokenShareLink}`);
                       }}
                       size="w-5 h-5"
                       icon={LogIn}

@@ -20,7 +20,6 @@ import {
   getNoteMemberApi,
   getNoteApi,
   getTextNoteByNoteIdApi,
-  updateMindmapApi,
   updateNoteApi,
   updateSummaryApi,
   getAudioApi,
@@ -40,6 +39,7 @@ import MindMapFlow from "../../components/ui/MindMapFlow";
 import Summary from "../../components/ui/Summary";
 import { SyncLoader } from "react-spinners";
 import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
+import ConfirmDialog from "../../components/ui/popup/ConfirmDialog";
 
 dayjs.extend(customParseFormat);
 
@@ -79,6 +79,8 @@ const MyNotes = () => {
   const [mindmapData, setMindmapData] = useState(null);
   const [showMindmap, setShowMindmap] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     sessionStorage.setItem("activeNoteTab", activeNoteTab);
@@ -272,6 +274,7 @@ const MyNotes = () => {
   const handleArchiveNote = async () => {
     const res = await archiveNoteApi(activeNoteId);
     if (res.data) {
+      setIsOpen(false);
       notify("success", "Note archived!", "", "var(--color-silver-tree)");
       await loadNotesList(undefined, true);
 
@@ -473,7 +476,7 @@ const MyNotes = () => {
                         size="w-5 h-5"
                         icon={Archive}
                         label="Archive"
-                        onClick={handleArchiveNote}
+                        onClick={() => setIsOpen(true)}
                       />
                     </div>
                   )}
@@ -483,6 +486,16 @@ const MyNotes = () => {
               <Skeleton height={44} containerClassName="flex-1" />
             )}
           </div>
+
+          <ConfirmDialog
+            isOpen={isOpen}
+            title="Archive Note"
+            message="Are you sure you want to archive this note?"
+            confirmText="Archive"
+            cancelText="Cancel"
+            onConfirm={handleArchiveNote}
+            onCancel={() => setIsOpen(false)}
+          />
 
           <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-100/20">
             {/* Created Date */}
@@ -601,10 +614,9 @@ const MyNotes = () => {
                               <MindMapFlow
                                 mindmapId={mindmapData.id}
                                 setMindmapData={setMindmapData}
-                                data={
-                                  mindmapData.mindmap_data
-                                }
+                                data={mindmapData.mindmap_data}
                                 onNodeUpdate={handleNodeUpdate}
+                                permission={noteDetail.permission}
                               />
                             </div>
                           </div>

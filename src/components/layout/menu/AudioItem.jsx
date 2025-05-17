@@ -16,7 +16,7 @@ import {
 import notify from "../../ui/CustomToast";
 import { useForm } from "react-hook-form";
 
-const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
+const AudioItem = ({ setNoteDetail, audio, confirmDelete, permission }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const [showTranscript, setShowTranscript] = useState(false);
@@ -103,7 +103,10 @@ const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
   const handleUpdateTranscript = async () => {
     const updateTranscript = getValues(`audio_transcript_${audio.id}`);
     setIsSaving(true);
-    const res = await updateTranscriptApi(updateTranscript, audio.transcript?.id);
+    const res = await updateTranscriptApi(
+      updateTranscript,
+      audio.transcript?.id,
+    );
     if (!res.data) {
       notify(
         "error",
@@ -147,7 +150,7 @@ const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
             <IconButton
               size="w-5 h-5"
               icon={Trash2}
-              onClick={() => handleDelete(audio.id)}
+              onClick={() => confirmDelete(audio.id)}
             />
           )}
         </div>
@@ -166,13 +169,14 @@ const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
                 <IconButton
                   onClick={() => setShowTranscript(!showTranscript)}
                   icon={showTranscript ? ChevronUp : ChevronDown}
+                  isProcessing={!audio.transcript}
                   label="Transcript"
                 />
                 {showTranscript && (
                   <div className="mt-2 rounded-md border border-gray-200 p-3 dark:border-gray-100/20">
                     <TextArea
-                      style="text-gravel h-auto"
-                      {...register(`audio_transcript_${audio.id}`)}
+                      register={register(`audio_transcript_${audio.id}`)}
+                      disabled={permission === "read"}
                     />
                   </div>
                 )}
@@ -236,7 +240,7 @@ const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
             </div>
           )}
 
-          <div className="mt-2">
+          <div className="mt-2 w-fit">
             <IconButton
               onClick={handleCreateAudioNoteSummary}
               size="w-5 h-5"
@@ -249,7 +253,7 @@ const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
             {permission === "read" && (
               <Tooltip
                 id="disable-summary"
-                place="top"
+                place="right"
                 style={{
                   backgroundColor: "#6368d1",
                   color: "white",

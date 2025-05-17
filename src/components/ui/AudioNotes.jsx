@@ -14,11 +14,15 @@ import { MoonLoader } from "react-spinners";
 import AudioItem from "../layout/menu/AudioItem";
 import AudioRecorderModal from "./popup/AudioRecorderModal";
 import { Tooltip } from "react-tooltip";
+import ConfirmDialog from "./popup/ConfirmDialog";
 
 const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
   const [showRecorder, setShowRecorder] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [selectedAudioId, setSelectedAudioId] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleUploadAudio = async (event) => {
     if (!event.target.files[0] || event.target.files.length === 0) {
@@ -57,15 +61,21 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
     setIsUploading(false);
   };
 
-  const handleDelete = async (audioId) => {
+  const confirmDelete = (audioId) => {
+    setSelectedAudioId(audioId);
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
     setIsDeleting(true);
-    const res = await deleteAudioApi(audioId);
+    const res = await deleteAudioApi(selectedAudioId);
     setIsDeleting(false);
     if (res.data) {
+      setIsDialogOpen(false);
       notify("success", "Audio deleted!", "", "var(--color-silver-tree)");
       setNoteDetail((prev) => ({
         ...prev,
-        audio_note: prev.audio_note.filter((audio) => audio.id !== audioId),
+        audio_note: prev.audio_note.filter((audio) => audio.id !== selectedAudioId),
       }));
     } else {
       notify("error", "Delete audio failed", "", "var(--color-crimson-red)");
@@ -132,7 +142,7 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
                 index={index}
                 audio={audio}
                 length={noteDetail.audio_note.length}
-                handleDelete={handleDelete}
+                confirmDelete={confirmDelete}
                 permission={permission}
               />
             ))}
@@ -141,6 +151,16 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
           <AudioItemSkeleton />
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={isDialogOpen}
+        title="Delete Audio"
+        message="Do you really want to delete this audio recording?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDelete}
+        onCancel={() => setIsDialogOpen(false)}
+      />
     </div>
   );
 };

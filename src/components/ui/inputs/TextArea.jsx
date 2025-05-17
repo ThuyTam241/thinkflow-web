@@ -11,7 +11,7 @@ const TextArea = ({ style = "text-ebony-clay", placeholder, ...props }) => {
       textarea.style.height = "auto";
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
-  }, [textareaRef]);
+  }, [textareaRef, props.register]);
 
 
   return (

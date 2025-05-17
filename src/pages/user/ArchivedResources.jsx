@@ -1,4 +1,9 @@
-import { ArchiveRestore, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import {
+  ArchiveRestore,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+} from "lucide-react";
 import {
   deleteNoteApi,
   getAllUserArchivedResourcesApi,
@@ -9,6 +14,7 @@ import IconButton from "../../components/ui/buttons/IconButton";
 import notify from "../../components/ui/CustomToast";
 import Table from "../../components/ui/Table";
 import { useOutletContext } from "react-router";
+import ConfirmDialog from "../../components/ui/popup/ConfirmDialog";
 
 const ArchivedResources = () => {
   const { isExpanded, setIsExpanded } = useOutletContext();
@@ -21,6 +27,9 @@ const ArchivedResources = () => {
   });
   const [totalResources, setTotalResources] = useState(0);
   const [isLoadingTable, setIsLoadingTable] = useState(false);
+
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const loadArchivedResourcesList = async (pageIndex) => {
     setIsLoadingTable(true);
@@ -67,7 +76,7 @@ const ArchivedResources = () => {
             />
             <IconButton
               size="w-5 h-5"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => confirmDelete(row.original.id)}
               icon={Trash2}
             />
           </div>
@@ -105,9 +114,15 @@ const ArchivedResources = () => {
     }
   };
 
-  const handleDelete = async (noteId) => {
-    const res = await deleteNoteApi(noteId);
+  const confirmDelete = (noteId) => {
+    setSelectedNoteId(noteId);
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    const res = await deleteNoteApi(selectedNoteId);
     if (res.data) {
+      setIsDialogOpen(false);
       notify("success", "Note deleted!", "", "var(--color-silver-tree)");
       await refreshListAfterChange();
     } else {
@@ -116,8 +131,8 @@ const ArchivedResources = () => {
   };
 
   return (
-    <div className="h-full rounded-md p-6 ">
-      <div className="flex items-center justify-between mb-6">
+    <div className="h-full rounded-md px-10 py-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex gap-2.5">
           <IconButton
             customStyle="text-ebony-clay stroke-2"
@@ -137,6 +152,16 @@ const ArchivedResources = () => {
         pagination={pagination}
         setPagination={setPagination}
         isLoadingTable={isLoadingTable}
+        height="h-[calc(100vh-100px)]"
+      />
+      <ConfirmDialog
+        isOpen={isDialogOpen}
+        title="Delete Note"
+        message="Are you sure you want to delete this note?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDelete}
+        onCancel={() => setIsDialogOpen(false)}
       />
     </div>
   );
