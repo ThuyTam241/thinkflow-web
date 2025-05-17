@@ -319,6 +319,31 @@ const updateMindmapApi = async (mindmapId, mindmapData) => {
   return instance.patch(URL_BACKEND, data);
 };
 
+const getDashboardStatsApi = () => {
+  const URL_BACKEND = "/user/v1/users/dashboard/stats";
+  return instance.get(URL_BACKEND);
+};
+
+const getAllUsersApi = (page = 1, limit = 10) => {
+  const URL_BACKEND = `/user/v1/users?page=${page}&limit=${limit}`;
+  return instance.get(URL_BACKEND);
+};
+
+const deleteUserApi = (userId) => {
+  const URL_BACKEND = `/user/v1/users/${userId}`;
+  return instance.delete(URL_BACKEND);
+};
+
+const createUserApi = (userData) => {
+  const URL_BACKEND = "/user/v1/users";
+  return instance.post(URL_BACKEND, userData);
+};
+
+const deactivateUserApi = (userId) => {
+  const URL_BACKEND = `/user/v1/users/${userId}/deactivate`;
+  return instance.post(URL_BACKEND);
+};
+
 export {
   registerUserApi,
   loginApi,
@@ -368,4 +393,9 @@ export {
   updateMindmapApi,
   searchNotesApi,
   updateTranscriptApi,
+  getDashboardStatsApi,
+  getAllUsersApi,
+  deleteUserApi,
+  createUserApi,
+  deactivateUserApi,
 };

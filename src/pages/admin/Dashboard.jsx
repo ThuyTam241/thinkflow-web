@@ -70,7 +70,7 @@ const Dashboard = () => {
         <div className="flex-1 flex justify-end">
           <button
             onClick={logout}
-            className="p-2 rounded-full hover:bg-gray-100 transition"
+            className="p-2 rounded-full hover:bg-gray-100 transition cursor-pointer"
             title="Logout"
           >
             <LogOut className="w-6 h-6 text-gray-500" />

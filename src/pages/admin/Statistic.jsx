@@ -2,27 +2,23 @@ import { Users, FileText, Monitor, ShieldCheck, ChevronUp } from "lucide-react";
 import Avatar from "../../components/ui/Avatar";
 import blankAvatar from "../../assets/images/blank-avatar.jpg";
 import { useEffect, useState } from "react";
-
-// Giả lập fetch API
-const fetchStatistic = async () => {
-  // Dữ liệu mẫu từ user
-  return {
-    total_users: 9,
-    total_notes: 74,
-    active_users: 7,
-    new_users_today: 2,
-    system_health: {
-      status: "healthy",
-      last_checked: "2025-05-16T11:45:59.049112337Z",
-    },
-  };
-};
+import { getDashboardStatsApi } from "../../services/api.service";
 
 const Statistic = () => {
   const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchStatistic().then(setData);
+    const fetchData = async () => {
+      try {
+        const response = await getDashboardStatsApi();
+        setData(response.data);
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching statistics:", err);
+      }
+    };
+    fetchData();
   }, []);
 
   // Giả lập danh sách avatar (nếu có thể lấy từ API thì thay thế)
@@ -33,6 +29,16 @@ const Statistic = () => {
     blankAvatar,
     blankAvatar,
   ];
+
+  if (error) {
+    return (
+      <div className="w-full flex justify-center items-center py-6">
+        <div className="w-full max-w-4xl bg-white dark:bg-gray-900 rounded-2xl shadow p-8 flex justify-center text-red-500">
+          Error loading statistics: {error}
+        </div>
+      </div>
+    );
+  }
 
   if (!data) {
     return (

@@ -1,101 +1,235 @@
-import { useState } from "react";
-import Table from "../../components/ui/Table";
-import SearchBar from "../../components/ui/SearchBar";
-import CustomSelect from "../../components/ui/CustomSelect";
+import { useState, useEffect } from "react";
+import { Trash2, Plus, UserX } from "lucide-react";
+import Avatar from "../../components/ui/Avatar";
+import blankAvatar from "../../assets/images/blank-avatar.jpg";
+import { getAllUsersApi, deleteUserApi, createUserApi, deactivateUserApi } from "../../services/api.service";
+import UserDialog from "./UserDialog";
 
-const mockUsers = [
-  { name: "Jane Cooper", company: "Microsoft", phone: "(225) 555-0118", email: "jane@microsoft.com", country: "United States", status: "Active" },
-  { name: "Floyd Miles", company: "Yahoo", phone: "(205) 555-0100", email: "floyd@yahoo.com", country: "Kiribati", status: "Inactive" },
-  { name: "Ronald Richards", company: "Adobe", phone: "(302) 555-0107", email: "ronald@adobe.com", country: "Israel", status: "Inactive" },
-  { name: "Marvin McKinney", company: "Tesla", phone: "(252) 555-0126", email: "marvin@tesla.com", country: "Iran", status: "Active" },
-  { name: "Jerome Bell", company: "Google", phone: "(629) 555-0129", email: "jerome@google.com", country: "Réunion", status: "Active" },
-  { name: "Kathryn Murphy", company: "Microsoft", phone: "(406) 555-0120", email: "kathryn@microsoft.com", country: "Curaçao", status: "Active" },
-  { name: "Jacob Jones", company: "Yahoo", phone: "(208) 555-0112", email: "jacob@yahoo.com", country: "Brazil", status: "Active" },
-  { name: "Kristin Watson", company: "Facebook", phone: "(704) 555-0127", email: "kristin@facebook.com", country: "Åland Islands", status: "Inactive" },
-];
-
-const columns = [
-  { header: "Customer Name", accessorKey: "name" },
-  { header: "Company", accessorKey: "company" },
-  { header: "Phone Number", accessorKey: "phone" },
-  { header: "Email", accessorKey: "email" },
-  { header: "Country", accessorKey: "country" },
-  {
-    header: "Status",
-    accessorKey: "status",
-    cell: ({ getValue }) => {
-      const value = getValue();
-      return (
-        <span className={`px-4 py-1 rounded-md text-sm font-medium ${value === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
-          {value}
-        </span>
-      );
-    },
-  },
-];
-
-const sortOptions = [
-  { value: "newest", label: "Newest" },
-  { value: "oldest", label: "Oldest" },
-];
+const PAGE_SIZE_DEFAULT = 5;
+const PAGE_INDEX_DEFAULT = 1;
 
 const UserManagement = () => {
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState(sortOptions[0]);
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 8 });
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({ page: PAGE_INDEX_DEFAULT, limit: PAGE_SIZE_DEFAULT, total: 0 });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Lọc và sort dữ liệu mock (giả lập search/sort)
-  const filtered = mockUsers.filter(
-    (u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.company.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
-  );
-  const sorted = [...filtered].sort((a, b) =>
-    sort.value === "newest" ? 0 : 0
-  );
-  const paged = sorted.slice(
-    pagination.pageIndex * pagination.pageSize,
-    (pagination.pageIndex + 1) * pagination.pageSize
-  );
+  const fetchUsers = async (page) => {
+    try {
+      setLoading(true);
+      const response = await getAllUsersApi(page, pagination.limit);
+      setUsers(response.data);
+      setPagination(prev => ({
+        ...prev,
+        page: response.paging.page,
+        total: response.paging.total
+      }));
+    } catch (err) {
+      setError(err.message);
+      console.error("Error fetching users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(pagination.page);
+  }, [pagination.page]);
+
+  const handlePreviousPage = () => {
+    if (pagination.page > 1) {
+      setPagination(prev => ({ ...prev, page: prev.page - 1 }));
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination.page * pagination.limit < pagination.total) {
+      setPagination(prev => ({ ...prev, page: prev.page + 1 }));
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      await deleteUserApi(userId);
+      // Refresh the current page
+      fetchUsers(pagination.page);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error deleting user:", err);
+    }
+  };
+
+  const handleDeactivateUser = async (userId) => {
+    try {
+      await deactivateUserApi(userId);
+      // Refresh the current page
+      fetchUsers(pagination.page);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error deactivating user:", err);
+    }
+  };
+
+  const handleCreateUser = async (userData) => {
+    try {
+      await createUserApi(userData);
+      setIsDialogOpen(false);
+      // Refresh the current page
+      fetchUsers(pagination.page);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error creating user:", err);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="w-full flex justify-center items-center py-6">
+        <div className="w-full max-w-6xl bg-white dark:bg-gray-900 rounded-2xl shadow p-8 flex justify-center text-red-500">
+          Error loading users: {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-2xl shadow p-8 max-w-8xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-black mb-1">All Customers</h2>
-          <button className="text-green-500 text-base font-medium hover:underline">Active Members</button>
+    <div className="w-full flex justify-center items-center py-6">
+      <div className="w-full max-w-6xl bg-white dark:bg-gray-900 rounded-2xl shadow">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">User Management</h2>
+          <button
+            onClick={() => setIsDialogOpen(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-5 h-5" />
+            Add User
+          </button>
         </div>
-        <div className="flex gap-3 items-center">
-          <div className="bg-[#F9FBFF] rounded-md px-3 py-1 flex items-center border border-gray-100">
-            <input
-              type="text"
-              placeholder="Search"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="bg-transparent outline-none px-2 py-1 text-sm"
-            />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-400 text-sm">Short by :</span>
-            <CustomSelect
-              value={sort}
-              onChange={setSort}
-              options={sortOptions}
-              customStyle={{ width: "w-28", text: "text-sm", padding: "py-1 px-2", border: "border border-gray-200", borderFocused: "border border-indigo", borderMenu: "border border-gray-200", paddingOption: "px-3 py-2" }}
-            />
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="p-8 flex justify-center text-gray-400">
+              Loading...
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Gender</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created At</th>
+                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <Avatar
+                          src={user.avatar?.url || blankAvatar}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {user.first_name} {user.last_name}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">{user.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">{user.phone || '-'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white capitalize">{user.gender || '-'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white capitalize">{user.system_role}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${user.status === 'active' ? 'bg-green-100 text-green-800' : 
+                          user.status === 'banned' ? 'bg-red-100 text-red-800' : 
+                          'bg-yellow-100 text-yellow-800'}`}>
+                        {user.status.replace('_', ' ').toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                      <div className="flex justify-center gap-2">
+                        {user.status !== 'banned' && (
+                          <button
+                            onClick={() => handleDeactivateUser(user.id)}
+                            className="text-red-500 hover:text-red-900 transition-colors inline-flex items-center justify-center cursor-pointer me-2"
+                            title="Deactivate User"
+                          >
+                            <UserX className="w-5 h-5" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="text-red-500 hover:text-red-700 transition-colors inline-flex items-center justify-center cursor-pointer"
+                          title="Delete User"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+              {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+              {pagination.total} results
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handlePreviousPage}
+                disabled={pagination.page === 1 || loading}
+                className="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNextPage}
+                disabled={pagination.page * pagination.limit >= pagination.total || loading}
+                className="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      <Table
-        data={paged}
-        columns={columns}
-        totalCount={filtered.length}
-        pagination={pagination}
-        setPagination={setPagination}
-        isLoadingTable={false}
+
+      {/* Create User Dialog */}
+      <UserDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSubmit={handleCreateUser}
       />
-      <div className="text-gray-400 text-sm mt-4">Showing data {pagination.pageIndex * pagination.pageSize + 1} to {Math.min((pagination.pageIndex + 1) * pagination.pageSize, filtered.length)} of 256K entries</div>
     </div>
   );
 };
