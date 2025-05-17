@@ -1,4 +1,9 @@
-import { ArchiveRestore, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import {
+  ArchiveRestore,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+} from "lucide-react";
 import {
   deleteNoteApi,
   getAllUserArchivedResourcesApi,
@@ -116,8 +121,8 @@ const ArchivedResources = () => {
   };
 
   return (
-    <div className="h-full rounded-md p-6 ">
-      <div className="flex items-center justify-between mb-6">
+    <div className="h-full rounded-md px-10 py-6">
+      <div className="mb-6 flex items-center justify-between">
         <div className="flex gap-2.5">
           <IconButton
             customStyle="text-ebony-clay stroke-2"
@@ -137,6 +142,7 @@ const ArchivedResources = () => {
         pagination={pagination}
         setPagination={setPagination}
         isLoadingTable={isLoadingTable}
+        height="h-[calc(100vh-100px)]"
       />
     </div>
   );

@@ -601,9 +601,7 @@ const MyNotes = () => {
                               <MindMapFlow
                                 mindmapId={mindmapData.id}
                                 setMindmapData={setMindmapData}
-                                data={
-                                  mindmapData.mindmap_data
-                                }
+                                data={mindmapData.mindmap_data}
                                 onNodeUpdate={handleNodeUpdate}
                               />
                             </div>
