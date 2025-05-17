@@ -46,8 +46,8 @@ const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
   }, [audio]);
 
   const handleCreateAudioNoteSummary = async () => {
-    setShowSummary(true);
     setIsSummarizing(true);
+    setShowSummary(false);
     const summary = await createAudioNoteSummaryApi(audio.id);
     if (!summary.data) {
       notify("error", "Create summary failed", "", "var(--color-crimson-red)");
@@ -70,6 +70,7 @@ const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
       ),
     }));
     setIsSummarizing(false);
+    setShowSummary(true);
   };
 
   const handleUpdateSummary = async () => {
@@ -241,8 +242,7 @@ const AudioItem = ({ setNoteDetail, audio, handleDelete, permission }) => {
               size="w-5 h-5"
               icon={Sparkles}
               label={audio.summary ? "Resummarize" : "Summarize"}
-              isProcessing={isSummarizing}
-              disabled={permission === "read"}
+              disabled={isSummarizing || permission === "read"}
               data-tooltip-id="disable-summary"
               data-tooltip-content="You cannot edit this note"
             />

@@ -20,6 +20,7 @@ import { ThemeContext } from "./components/context/ThemeContext.jsx";
 import Settings from "./pages/Settings.jsx";
 import ArchivedResources from "./pages/user/ArchivedResources.jsx";
 import AcceptSharedNote from "./pages/user/AcceptSharedNote.jsx";
+import Notifications from "./components/ui/Notifications.jsx";
 
 const RootApp = () => {
   const { theme } = useContext(ThemeContext);
@@ -41,6 +42,7 @@ const RootApp = () => {
             <Route path="notes/my-notes" element={<MyNotes />} />
             <Route path="notes/shared-notes" element={<SharedNotes />} />
             <Route path="archived" element={<ArchivedResources />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="share/:token" element={<AcceptSharedNote />} />
