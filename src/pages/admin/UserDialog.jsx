@@ -2,9 +2,12 @@ import { X } from "lucide-react";
 import TextInput from "../../components/ui/inputs/TextInput";
 import { Controller, useForm } from "react-hook-form";
 import CustomSelect from "../../components/ui/CustomSelect";
-import { useEffect } from "react";
+import { useState } from "react";
+import PrimaryButton from "../../components/ui/buttons/PrimaryButton";
 
 const UserDialog = ({ isOpen, onClose, handleCreateUser, errorCreateUser }) => {
+  const [creating, setCreating] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -20,6 +23,7 @@ const UserDialog = ({ isOpen, onClose, handleCreateUser, errorCreateUser }) => {
   ];
 
   const onSubmit = async (values) => {
+    setCreating(true);
     await handleCreateUser({
       first_name: values.first_name,
       last_name: values.last_name,
@@ -30,11 +34,9 @@ const UserDialog = ({ isOpen, onClose, handleCreateUser, errorCreateUser }) => {
       system_role: "user",
       status: "waiting_verify",
     });
-  };
-
-  useEffect(() => {
+    setCreating(false);
     reset();
-  }, [])
+  };
 
   if (!isOpen) return null;
 
@@ -46,7 +48,10 @@ const UserDialog = ({ isOpen, onClose, handleCreateUser, errorCreateUser }) => {
             Create New User
           </h2>
           <button
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              reset();
+            }}
             className="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
             <X className="h-5 w-5" />
@@ -171,19 +176,20 @@ const UserDialog = ({ isOpen, onClose, handleCreateUser, errorCreateUser }) => {
           )}
 
           <div className="mt-6 flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-            >
-              Cancel
-            </button>
-            <button
+            <PrimaryButton
+              onClick={() => {
+                onClose();
+                reset();
+              }}
+              label="Cancel"
+              color="white"
+            />
+            <PrimaryButton
               type="submit"
-              className="bg-cornflower-blue/80 hover:bg-cornflower-blue cursor-pointer rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-            >
-              Create User
-            </button>
+              label="Create User"
+              color="blue"
+              isProcessing={creating}
+            />
           </div>
         </form>
       </div>

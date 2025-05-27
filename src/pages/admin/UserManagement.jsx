@@ -95,7 +95,12 @@ const UserManagement = ({ users, setUsers }) => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await deleteUserApi(userId);
+      const res = await deleteUserApi(userId);
+      if (res.data) {
+        notify("success", "User deleted!", "", "var(--color-silver-tree)");
+      } else {
+        notify("error", "Delete user failed", "", "var(--color-crimson-red)");
+      }
       // Refresh the current page
       fetchUsers(pagination.page);
     } catch (err) {
@@ -108,7 +113,17 @@ const UserManagement = ({ users, setUsers }) => {
 
   const handleDeactivateUser = async (userId) => {
     try {
-      await deactivateUserApi(userId);
+      const res = await deactivateUserApi(userId);
+      if (res.data) {
+        notify("success", "User deactivated!", "", "var(--color-silver-tree)");
+      } else {
+        notify(
+          "error",
+          "Deactivate user failed",
+          "",
+          "var(--color-crimson-red)",
+        );
+      }
       // Refresh the current page
       fetchUsers(pagination.page);
     } catch (err) {
@@ -122,23 +137,17 @@ const UserManagement = ({ users, setUsers }) => {
   const handleCreateUser = async (userData) => {
     try {
       const res = await createUserApi(userData);
-      console.log("🚀 ~ handleCreateUser ~ res:", res)
       if (res.data) {
         setIsDialogOpen(false);
         setErrorCreateUser(null);
-        notify(
-          "success",
-          "Create user successfully",
-          "",
-          "var(--color-silver-tree)",
-        );
+        notify("success", "User created!", "", "var(--color-silver-tree)");
+        // Refresh the current page
+        fetchUsers(pagination.page);
       } else {
         if (res.code === 500) {
           setErrorCreateUser("Email already exists");
         }
       }
-      // Refresh the current page
-      fetchUsers(pagination.page);
     } catch (err) {
       setError(err.message);
       console.error("Error creating user:", err);
@@ -200,7 +209,7 @@ const UserManagement = ({ users, setUsers }) => {
                   <th className="font-body px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     Status
                   </th>
-                  <th className="font-body px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                  <th className="font-body whitespace-nowrap px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     Created At
                   </th>
                   <th className="font-body px-6 py-4 text-center text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">

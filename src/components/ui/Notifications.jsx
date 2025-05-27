@@ -33,11 +33,18 @@ const Notifications = () => {
   ];
 
   const navigator = useNavigate();
+  const notificationIds = useRef(new Set());
+  const lastNotiTimestamp = useRef(0);
+  const reconnectCount = useRef(0);
 
   const loadListNotifications = async () => {
     setIsLoading(true);
     const res = await getListNotificationsApi();
-    setNotifications(res.data || []);
+    const list = res.data || [];
+    setNotifications(list);
+    for (const noti of list) {
+      if (noti.id) notificationIds.current.add(noti.id);
+    }
     setIsLoading(false);
   };
 
@@ -56,10 +63,15 @@ const Notifications = () => {
 
       ws.onopen = () => {
         console.log("WebSocket connected");
+        reconnectCount.current = 0;
       };
 
       ws.onclose = () => {
+        reconnectCount.current++;
         console.log("WebSocket disconnected. Reconnecting in 5s...");
+        if (reconnectCount.current >= 3) {
+          loadListNotifications();
+        }
         reconnectTimeout = setTimeout(connect, 5000);
       };
 
@@ -70,12 +82,18 @@ const Notifications = () => {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          notify(
-            "info",
-            "New notification",
-            data.noti_content,
-            "var(--color-danube)",
-          );
+          if (data?.id && notificationIds.current.has(data.id)) return;
+          if (data?.id) notificationIds.current.add(data.id);
+          const now = Date.now();
+          if (now - lastNotiTimestamp.current > 3000) {
+            notify(
+              "info",
+              "New notification",
+              data.noti_content,
+              "var(--color-danube)",
+            );
+            lastNotiTimestamp.current = now;
+          }
           setNotifications((prev) => [data, ...prev]);
           setHasNew(true);
         } catch (err) {
@@ -122,7 +140,7 @@ const Notifications = () => {
       );
       return;
     }
-    notify("success", "Notification marked!", "", "var(--color-silver-tree)");
+    // notify("success", "Notification marked!", "", "var(--color-silver-tree)");
     setNotifications((prev) =>
       prev.map((n) => (n.id === notiId ? { ...n, is_read: true } : n)),
     );
@@ -139,7 +157,7 @@ const Notifications = () => {
       );
       return;
     }
-    notify("success", "Notification deleted!", "", "var(--color-silver-tree)");
+    // notify("success", "Notification deleted!", "", "var(--color-silver-tree)");
     setNotifications((prev) => prev.filter((n) => n.id !== notiId));
   };
 
@@ -195,9 +213,9 @@ const Notifications = () => {
             {(activeNotiTab === "all"
               ? notifications
               : notifications.filter((n) => !n.is_read)
-            ).map((n, index) => (
+            ).map((n) => (
               <div
-                key={index}
+                key={n.id}
                 className="border-b border-gray-200 py-4 first:pt-0 last:border-none last:pb-0 dark:border-gray-100/20"
               >
                 <div className="flex gap-5">
@@ -220,6 +238,9 @@ const Notifications = () => {
                     <IconButton
                       customStyle="text-indigo stroke-[1.5]"
                       onClick={() => {
+                        if (!n.is_read) {
+                          handleMarkAsRead(n.id);
+                        }
                         const options = JSON.parse(n.noti_options);
                         navigator(`/share/${options.tokenShareLink}`);
                       }}
@@ -229,22 +250,22 @@ const Notifications = () => {
                     />
                   </div>
                 )}
-                {!n.is_read && (
-                  <div className="mt-5 flex gap-6">
+                <div className="mt-5 flex gap-6">
+                  {!n.is_read && (
                     <IconButton
                       customStyle="text-silver-tree stroke-[1.5] group-hover:text-silver-tree!"
                       onClick={() => handleMarkAsRead(n.id)}
                       size="w-5 h-5"
                       icon={Check}
                     />
-                    <IconButton
-                      customStyle="text-crimson-red stroke-[1.5] group-hover:text-crimson-red!"
-                      onClick={() => handleDelete(n.id)}
-                      size="w-5 h-5"
-                      icon={X}
-                    />
-                  </div>
-                )}
+                  )}
+                  <IconButton
+                    customStyle="text-crimson-red stroke-[1.5] group-hover:text-crimson-red!"
+                    onClick={() => handleDelete(n.id)}
+                    size="w-5 h-5"
+                    icon={X}
+                  />
+                </div>
               </div>
             ))}
           </div>
