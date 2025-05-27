@@ -65,9 +65,20 @@ const AudioRecorderModal = ({
           timerIntervalRef.current = null;
         }
         const url = URL.createObjectURL(blob);
+        const safeTime = new Date()
+          .toLocaleTimeString("en-US", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })
+          .replace(/:/g, "-");
+
+        const name = `Recording-${recordings.length + 1}-${safeTime}`;
         const newRecording = {
           blob,
           url,
+          name,
         };
         setRecordings((prev) => [newRecording, ...prev]);
       });
@@ -94,7 +105,8 @@ const AudioRecorderModal = ({
     setIsUploading(true);
 
     for (const recording of recordings) {
-      const file = new File([recording.blob], "audio.webm", {
+      const fileName = `${recording.name}.mp3`.replace(/\s+/g, "_");
+      const file = new File([recording.blob], fileName, {
         type: recording.blob.type,
       });
       const uploadRes = await uploadAudioApi(file, noteId);
@@ -116,6 +128,7 @@ const AudioRecorderModal = ({
       notify("success", "Audios uploaded", "", "var(--color-silver-tree)");
       const newAudioItem = {
         id: res.data.id,
+        name: res.data.name,
         file_url: res.data.file_url,
         transcript: "",
         summary: "",
@@ -173,8 +186,7 @@ const AudioRecorderModal = ({
               <div key={index} className="flex items-center gap-6 py-3.5">
                 <WaveformPlayer
                   audioUrl={recording.url}
-                  length={recordings.length}
-                  index={index}
+                  audioTitle={recording.name}
                 />
 
                 <div className="ml-auto">

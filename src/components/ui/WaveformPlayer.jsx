@@ -73,7 +73,7 @@ const WaveformPlayer = ({ audioUrl, audioTitle }) => {
               </p>
             </div>
           ) : (
-            <p className="font-body text-silver-chalice text-sm">
+            <p className="font-body text-silver-chalice text-left text-sm">
               {formatTime(duration)} mins
             </p>
           )}

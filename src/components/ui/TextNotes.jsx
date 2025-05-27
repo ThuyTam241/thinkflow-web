@@ -178,6 +178,7 @@ const TextNotes = ({ noteDetail, setNoteDetail, permission }) => {
 
     // Update summary
     if (noteDetail.text_note && dirtyFields.text_summary) {
+      console.log(noteDetail.text_note.summary);
       await handleUpdateSummary(
         noteDetail.text_note.summary?.id,
         values.summary,

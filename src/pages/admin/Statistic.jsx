@@ -20,13 +20,6 @@ const Statistic = ({ users }) => {
     fetchData();
   }, []);
 
-  const activeAvatars = users
-    .filter((user) => user.status === "active")
-    .map((user) => user.avatar?.url);
-
-  const avatarsToShow = activeAvatars.slice(0, 5);
-  const extraCount = activeAvatars.length - 5;
-
   if (error) {
     return (
       <div className="flex w-full items-center justify-center py-6">
@@ -94,20 +87,6 @@ const Statistic = ({ users }) => {
             </div>
             <div className="font-body text-gravel text-2xl font-bold">
               {data.active_users}
-            </div>
-            <div className="mt-2 flex">
-              {avatarsToShow.map((src, idx) => (
-                <Avatar
-                  key={idx}
-                  src={src}
-                  className={`-ml-2 h-6 w-6 rounded-full border-2 border-white first:ml-0 dark:border-gray-900`}
-                />
-              ))}
-              {extraCount > 0 && (
-                <div className="font-body text-gravel -ml-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-xs leading-8 font-medium dark:border-gray-900 dark:bg-gray-700 dark:text-white">
-                  +{extraCount}
-                </div>
-              )}
             </div>
           </div>
         </div>

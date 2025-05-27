@@ -106,10 +106,7 @@ const ListNotes = ({
             </>
           )}
         </div>
-        <div className="flex items-center justify-between">
-          <SearchBar register={register} />
-          <IconButton size="w-5 h-5" icon={ListFilter} />
-        </div>
+        <SearchBar register={register} />
         <div className="flex items-center justify-between">
           <span className="text-body text-silver-chalice text-sm/[20px]">
             {debouncedSearch?.trim()

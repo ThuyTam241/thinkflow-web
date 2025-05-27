@@ -439,31 +439,6 @@ const MyNotes = () => {
                   <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
                   {showOption && (
                     <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
-                      {(noteDetail.text_note ||
-                        noteDetail.audio_note?.length > 0) && (
-                        <IconButton
-                          onClick={handleCreateNoteSummary}
-                          customStyle="text-silver-chalice stroke-[1.5]"
-                          size="w-5 h-5"
-                          icon={Sparkles}
-                          label={
-                            noteDetail.summary ? "Resummarize" : "Summarize"
-                          }
-                        />
-                      )}
-                      {noteDetail.summary && (
-                        <IconButton
-                          onClick={handleCreateNoteMindmap}
-                          customStyle="text-silver-chalice stroke-[1.5]"
-                          size="w-5 h-5"
-                          icon={WandSparkles}
-                          label={
-                            mindmapData
-                              ? "Regenerate mindmap"
-                              : "Generate mindmap"
-                          }
-                        />
-                      )}
                       <IconButton
                         customStyle="text-silver-chalice stroke-[1.5]"
                         size="w-5 h-5"
@@ -623,6 +598,33 @@ const MyNotes = () => {
                         )}
                     </div>
                   )}
+                  <div className="mt-2 flex gap-10">
+                    {(noteDetail.text_note ||
+                      noteDetail.audio_note?.length > 0) && (
+                      <div>
+                        <IconButton
+                          onClick={handleCreateNoteSummary}
+                          size="w-5 h-5"
+                          icon={Sparkles}
+                          label={
+                            noteDetail.summary ? "Resummarize" : "Summarize"
+                          }
+                        />
+                      </div>
+                    )}
+                    {noteDetail.summary && (
+                      <IconButton
+                        onClick={handleCreateNoteMindmap}
+                        size="w-5 h-5"
+                        icon={WandSparkles}
+                        label={
+                          mindmapData
+                            ? "Regenerate mindmap"
+                            : "Generate mindmap"
+                        }
+                      />
+                    )}
+                  </div>
                 </div>
               )}
               <div className="h-8 shrink-0" />

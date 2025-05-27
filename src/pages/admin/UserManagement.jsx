@@ -36,21 +36,22 @@ const UserManagement = ({ users, setUsers }) => {
   });
 
   const fetchUsers = async (page) => {
-    try {
-      setLoading(true);
-      const response = await getAllUsersApi(page, pagination.limit);
-      setUsers(response.data);
-      setPagination((prev) => ({
-        ...prev,
-        page: response.paging.page,
-        total: response.paging.total,
-      }));
-    } catch (err) {
-      setError(err.message);
-      console.error("Error fetching users:", err);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+
+    await getAllUsersApi(page, pagination.limit)
+      .then((response) => {
+        setUsers(response.data);
+        setPagination((prev) => ({
+          ...prev,
+          page: response.paging.page,
+          total: response.paging.total,
+        }));
+      })
+      .catch((err) => {
+        setError(err.message);
+        console.error("Error fetching users:", err);
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -209,7 +210,7 @@ const UserManagement = ({ users, setUsers }) => {
                   <th className="font-body px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     Status
                   </th>
-                  <th className="font-body whitespace-nowrap px-6 py-4 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                  <th className="font-body px-6 py-4 text-left text-xs font-medium tracking-wider whitespace-nowrap text-gray-500 uppercase dark:text-gray-400">
                     Created At
                   </th>
                   <th className="font-body px-6 py-4 text-center text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">

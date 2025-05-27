@@ -24,7 +24,13 @@ import { fullName } from "../../utils/userUtils";
 import ListNotes from "../../components/ui/ListNotes";
 import { useOutletContext } from "react-router";
 import IconButton from "../../components/ui/buttons/IconButton";
-import { ChevronDown, ChevronUp, Ellipsis, Sparkles, WandSparkles } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Ellipsis,
+  Sparkles,
+  WandSparkles,
+} from "lucide-react";
 import Summary from "../../components/ui/Summary";
 import MindMapFlow from "../../components/ui/MindMapFlow";
 import { SyncLoader } from "react-spinners";
@@ -116,7 +122,7 @@ const SharedNotes = () => {
     setIsFetchingSharedNote(true);
 
     const note = await getNoteApi(activeSharedNoteId);
-    console.log("🚀 ~ getSharedNoteDetail ~ note:", note)
+    console.log("🚀 ~ getSharedNoteDetail ~ note:", note);
     if (!note) {
       setIsFetchingSharedNote(false);
       return;
@@ -205,7 +211,10 @@ const SharedNotes = () => {
   }, [sharedNoteDetail]);
 
   const updateTitleSharedNote = async (currentTitle) => {
-    const res = await updateNoteApi({title: currentTitle}, activeSharedNoteId);
+    const res = await updateNoteApi(
+      { title: currentTitle },
+      activeSharedNoteId,
+    );
     if (!res.data) {
       notify(
         "error",
@@ -331,70 +340,29 @@ const SharedNotes = () => {
           {/* Title */}
           <div className="relative flex cursor-pointer items-start justify-between gap-8">
             {sharedNoteDetail.title ? (
-              <>
-                <TextArea
-                  style="text-2xl! text-ebony-clay font-semibold"
-                  register={register("shared_title")}
-                  placeholder="Title"
-                  onBlur={(e) => {
-                    const currentTitle = getValues("shared_title").trim();
-                    if (currentTitle === "") {
-                      setValue("shared_title", sharedNoteDetail.title, {
-                        shouldDirty: false,
-                      });
-                      return;
-                    }
-                    if (dirtyFields.shared_title) {
-                      updateTitleSharedNote(currentTitle);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      e.currentTarget.blur();
-                    }
-                  }}
-                />
-
-                {(sharedNoteDetail.text_note ||
-                  sharedNoteDetail.audio_note?.length > 0) &&
-                  sharedNoteDetail.permission !== "read" && (
-                    <div
-                      onClick={() => setShowOption(!showOption)}
-                      className="border-silver-chalice relative h-7 w-7 shrink-0 rounded-full border p-1"
-                    >
-                      <Ellipsis className="text-silver-chalice stroke-1.5 h-full w-full" />
-                      {showOption && (
-                        <div className="absolute top-0 right-8 space-y-3 rounded-md border border-gray-200 bg-white p-4 shadow-[0px_1px_8px_rgba(39,35,64,0.1)] dark:border-gray-100/20 dark:bg-[#16163B]">
-                          <IconButton
-                            onClick={handleCreateNoteSummary}
-                            customStyle="text-silver-chalice stroke-[1.5]"
-                            size="w-5 h-5"
-                            icon={Sparkles}
-                            label={
-                              sharedNoteDetail.summary
-                                ? "Resummarize"
-                                : "Summarize"
-                            }
-                          />
-                          {sharedNoteDetail.summary && (
-                            <IconButton
-                              onClick={handleCreateNoteMindmap}
-                              customStyle="text-silver-chalice stroke-[1.5]"
-                              size="w-5 h-5"
-                              icon={WandSparkles}
-                              label={
-                                sharedNoteDetail.summary
-                                  ? "Regenerate mindmap"
-                                  : "Generate mindmap"
-                              }
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-              </>
+              <TextArea
+                style="text-2xl! text-ebony-clay font-semibold"
+                register={register("shared_title")}
+                placeholder="Title"
+                onBlur={(e) => {
+                  const currentTitle = getValues("shared_title").trim();
+                  if (currentTitle === "") {
+                    setValue("shared_title", sharedNoteDetail.title, {
+                      shouldDirty: false,
+                    });
+                    return;
+                  }
+                  if (dirtyFields.shared_title) {
+                    updateTitleSharedNote(currentTitle);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.currentTarget.blur();
+                  }
+                }}
+              />
             ) : (
               <Skeleton height={44} containerClassName="flex-1" />
             )}
@@ -504,7 +472,6 @@ const SharedNotes = () => {
                       )}
                     </div>
                   )}
-
                   {(showMindmap || isGeneratingMindMap || mindmapData) && (
                     <div>
                       <IconButton
@@ -530,6 +497,36 @@ const SharedNotes = () => {
                         )}
                     </div>
                   )}
+                  {(sharedNoteDetail.text_note ||
+                    sharedNoteDetail.audio_note?.length > 0) &&
+                    sharedNoteDetail.permission !== "read" && (
+                      <div className="mt-2 flex gap-10">
+                        <div>
+                          <IconButton
+                            onClick={handleCreateNoteSummary}
+                            size="w-5 h-5"
+                            icon={Sparkles}
+                            label={
+                              sharedNoteDetail.summary
+                                ? "Resummarize"
+                                : "Summarize"
+                            }
+                          />
+                        </div>
+                        {sharedNoteDetail.summary && (
+                          <IconButton
+                            onClick={handleCreateNoteMindmap}
+                            size="w-5 h-5"
+                            icon={WandSparkles}
+                            label={
+                              sharedNoteDetail.summary
+                                ? "Regenerate mindmap"
+                                : "Generate mindmap"
+                            }
+                          />
+                        )}
+                      </div>
+                    )}
                 </div>
               )}
               <div className="h-8 shrink-0" />

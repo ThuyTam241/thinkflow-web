@@ -163,7 +163,6 @@ const AudioItem = ({ setNoteDetail, audio, confirmDelete, permission }) => {
         className="overflow-hidden"
       >
         <div className="mt-4 border-t border-t-gray-200 px-3 py-2 dark:border-gray-100/20">
-          {audio.transcript && (
             <div className="space-y-2">
               <div className="py-2">
                 <IconButton
@@ -203,7 +202,6 @@ const AudioItem = ({ setNoteDetail, audio, confirmDelete, permission }) => {
                 </div>
               )}
             </div>
-          )}
 
           {(showSummary || isSummarizing || audio.summary) && (
             <div className="space-y-2">

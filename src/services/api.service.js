@@ -225,6 +225,7 @@ const uploadAudioApi = (file, noteId) => {
   };
   const bodyFormData = new FormData();
   bodyFormData.append("file", file);
+  bodyFormData.append("name", file.name);
   return instance.post(URL_BACKEND, bodyFormData, config);
 };
 
@@ -329,6 +330,11 @@ const getAllUsersApi = (page = 1, limit = 10) => {
   return instance.get(URL_BACKEND);
 };
 
+const getAllUser = () => {
+  const URL_BACKEND = "/user/v1/users?limit=99";
+  return instance.get(URL_BACKEND);
+}
+
 const deleteUserApi = (userId) => {
   const URL_BACKEND = `/user/v1/users/${userId}`;
   return instance.delete(URL_BACKEND);
@@ -415,6 +421,7 @@ export {
   updateTranscriptApi,
   getDashboardStatsApi,
   getAllUsersApi,
+  getAllUser,
   deleteUserApi,
   createUserApi,
   deactivateUserApi,

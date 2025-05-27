@@ -49,6 +49,7 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
     notify("success", "Audio uploaded", "", "var(--color-silver-tree)");
     const newAudioItem = {
       id: res.data.id,
+      name: res.data.name,
       file_url: res.data.file_url,
       transcript: "",
       summary: "",
@@ -75,7 +76,9 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
       notify("success", "Audio deleted!", "", "var(--color-silver-tree)");
       setNoteDetail((prev) => ({
         ...prev,
-        audio_note: prev.audio_note.filter((audio) => audio.id !== selectedAudioId),
+        audio_note: prev.audio_note.filter(
+          (audio) => audio.id !== selectedAudioId,
+        ),
       }));
     } else {
       notify("error", "Delete audio failed", "", "var(--color-crimson-red)");
@@ -137,11 +140,9 @@ const AudioNotes = ({ noteDetail, setNoteDetail, permission }) => {
           <>
             {noteDetail.audio_note.map((audio, index) => (
               <AudioItem
-                setNoteDetail={setNoteDetail}
                 key={audio.id}
-                index={index}
+                setNoteDetail={setNoteDetail}
                 audio={audio}
-                length={noteDetail.audio_note.length}
                 confirmDelete={confirmDelete}
                 permission={permission}
               />
